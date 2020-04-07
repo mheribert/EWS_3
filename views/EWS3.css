@@ -1,0 +1,95 @@
+﻿/*   Version 3.1.15   */
+.runden             { vertical-align:middle; text-align:center; background-color:#F0F080; height:40px; }
+.kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
+.rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
+.button_1           { font-family: Arial; vertical-align:middle; text-align:center ;background-color:#888; color:#fff; width:280px; height:35px; }
+.button_2           { font-family: Arial; vertical-align:middle; text-align:center ;background-color:#f00; color:#fff; width:280px; height:35px; }
+.button_b           { font-family: Arial; text-align:center ;background-color:#DDD; height:65px;}
+.wr_info            { font-family: Arial; text-align:left ;background-color:#DDD; height:65px;}
+.kriterium          { margin-top:0.1em; padding:0.3em; margin-bottom: 20px; border:1px solid #000;-moz-border-radius:5px;-webkit-border-radius:5px; border-radius:5px;height:29px; width:400px;}
+.kriterium div      { font-family: Arial; display:inline-block; width:16px; text-align:center; font-size: 14px; padding:0.3em;margin-right:0.2em;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px}
+.akro               { font-family: Arial; vertical-align:middle; text-align:left; font-size:14px; height:20px;  padding-top: 5px; }
+.btn_grn            { background-color:#6d4; color:#000; border: 1px solid #000; height:28px; min-width: 19px; text-align: center; }
+.btn_red            { background-color:#f44; color:#fff; border: 1px solid #000; height:28px; min-width: 19px; text-align: center; }
+.btn_wert           { background-color:#ccc; color:#000; border: 1px solid #000; height:28px; min-width: 19px; text-align: center;}
+.btn_bs             { background-color:#6d4; color:#000; border: 1px solid #000; height:28px; min-width: 19px; text-align: center;}
+.btn_leer           { background-color:#fff; color:#000; border: 1px solid #ddd;}
+.btn_sel            { background-color:#0d0; color:#000; border: 1px solid #0d0;}
+.btn_leer:hover     { background-color:#f74; color:#fff;}
+.btn_sel:hover      { background-color:#f74; color:#fff;}
+.btn_wert:hover     { background-color:#f74; color:#fff;}
+.btn_grn:hover      { background-color:#f74; color:#fff;}
+.btn_red:hover      { background-color:#f74; color:#fff;}
+.btn_bs:hover       { background-color:#f74; color:#fff;}
+.kriterium_NG       { height: 33px;  width: 400px; text-align: center; }
+.btn_NG_leer        { color: #000; background-color: #fff; WIDTH: 15px; HEIGHT: 33px; FONT-WEIGHT: bold;  border-radius: 3px; }
+.btn_NG_leer:hover  { color: #fff; background-color: #f00; }
+.btn_NG_sel         { color: #fff; background-color: #5a5; WIDTH: 15px; HEIGHT: 33px; FONT-WEIGHT: bold; border-radius: 3px; }
+.btn_NG_sel:hover   { color: #fff;  background-color: #f00; }
+.main_NG            { font-family: Arial; width: 450px; padding-left: 10px; padding-right: 10px; padding-bottom: 10px; }
+.div                { display: inline-block; margin-right: 0.5em; }
+.schrift            { font-family: Arial; font-size:14px; text-align:left; margin-top:10px; width: 400px}
+.main               { width: 450px; padding-left:10px; padding-right:10px; padding-bottom:10px; }
+.mistakes           { box-sizing: border-box; text-align:left; }
+.mistakes div       { display: inline-block; margin-right: 0.25em; vertical-align: middle; }
+.btn-warning        { font-family: Arial; font-size:14px; color: #fff; background-color: #fa4; border-color: #fa3; padding:3px; -moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;}
+.btn-attention      { font-family: Arial; font-size:14px; color: #fff; background-color: #5cf; border-color: #5cf; padding:3px; -moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;}
+.btn-danger         { font-family: Arial; font-size:14px; color: #fff; background-color: #d55 ;border-color: #d44; }
+.obsbuttons         { font-family: Arial; font-size:14px; color: #fff; background-color: #fa4; border-color: #fa3; text-align:center; padding:3px; -moz-border-radius:5px; -webkit-border-radius:5px; border-radius:5px;}
+.mistakes-list      { margin-bottom: 0.2em; padding: 0.2em; text-align: left; min-width: 5em; border: 1px solid #000; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; height: 1.7em; }
+.mistakes-list div  { display: inline-block; padding: 0.3em; margin-right: 0.2em; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;}
+.wertung_offen      { background-color: #f88; border-color: #ecd; color: #000; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+.wertung_check      { background-color: #ccf; border-color: #ecd; color: #000; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+.wertung_ok         { background-color: #0d0; border-color: #dec; color: #000; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+.wr_status div      { display: inline-block; padding: 0.7em; }
+.wr_nochmal         { border-radius:5px; background-color:#f00; color:#fff; }
+/* Observer */
+.verw               { width:60px; border: thin solid black; background-color:white;     color:black; vertical-align: middle; text-align: center; border-radius: 5px; height:40px }
+.verwbutton         { width:90px; border: thin solid black; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
+.verwpunkte         { width:40px; border: thin solid black; background-color:#ffffff;   vertical-align: middle; text-align: center; border-radius: 5px; }
+.leer               { background-color:white;     color:black; }
+.gray               { background-color:lightgray; color:black; }
+.yell               { background-color:#ffff50;   color:black; }
+.red                { background-color:red;       color:white; }
+.black              { background-color:black;     color:white; }
+.spalte             { width:40px; border: thin solid black; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
+.spalte:hover       { background-color:#ff7143; color:#ffffff; }
+.spalte_br          { width:90px; border: thin solid red; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
+/* für Beamer */
+.tb1                { font-family: Verdana; width: 100%; }
+.kopf               { height: 20%; vertical-align: middle; font-size: 3.5vw; background-color: #CCCCCC; padding: 15px; }
+.stnr               { width: 50%; text-align: center; vertical-align: middle; font-weight: bold; font-size: 5vw; }
+.tzer               { text-align: center; vertical-align: top; font-size: 4vw; }
+.tver               { text-align: center; vertical-align: top; font-size:2.8vw; }
+.sorting            { text-align: left; font-weight: normal; font-size: 2.5vw; }
+.text_left          { text-align: left; }
+.weiter             { font-size: 2.6vw; text-align: center; }
+.raus               { font-size: 2vw; text-align: center; }
+.trenn              { font-size: 1px; background-color:#000;}
+.runde              { text-align: center; font-size: 3.5vw;  }
+/*WR-Login*/
+.ind_o              { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; font-weight:bold; background-color:#CCCCCC; height: 40px; }
+.wr_l               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left; background-color:#F0F080; height: 50px; width: 600px}
+.wr_m               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; background-color:#F0F080; height: 50px;  width: 200px; }
+/* moderator */
+.mod_kopf           { font-family: Arial; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#ff8; height:6vw; border:1px solid #000; border-radius: 10px; margin:1em; }
+.mod_n              { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
+.mod_nb             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
+.mod_m              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
+.mod_s              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; }
+.mod_mk             { font-family: Arial; font-size: 3vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
+.mod_z              { font-family: Arial; font-size: 4.5vw; vertical-align:middle; text-align:center; color:#000000; background-color:#FFFFFF; height:25px; }
+.mod_verein         { font-family: Arial; font-size:4vw; vertical-align:middle; text-align:left; background-color:#F0F080; height:50px; }
+.mod_paar           { font-family: Arial; font-size:3vw; }
+/*   Breitensport  */
+.bs_krit            { font-family:Arial; width:18px; height:25px}
+.bs_head            { font-family:Arial; width:18px; height:25px; font-size:14px}
+.bs_wert            { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; border: 1px solid #000; border-radius: 5px; }
+.bs_sel             { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; background-color:#0d0; border: 1px solid #000; border-radius: 5px;}
+.bs_mist            { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; border: 1px solid #000; border-radius: 5px; }
+.bs_msel            { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; background-color: #f40; border: 1px solid #000; border-radius: 5px;}
+.bs_mist-list       { -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius:5px; height:25px; }
+.bs_points          { width:70px; height:18px; text-align:center; color:#000000; font-size:30px; border:1px solid #000; border-radius: 5px; }
+.hr                 { width: 95%; height: 3px; }
+.bs_schmal          { height: 10px; }
+.bs_ersatz          { height: 50px; }
