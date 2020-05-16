@@ -267,6 +267,8 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 node.exe
+Zeitplan.html
+config.json
 
 # Visual Studio 6 build log
 *.plg

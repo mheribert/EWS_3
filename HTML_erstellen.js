@@ -599,12 +599,12 @@ exports.RR_Form_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_
             HTML_Seite += '<tr><td height="12px"></td></tr>';
             break;
         case "Ft":
-            HTML_Seite += make_inpRRE('tk1', 10, 'Technik - Grund, Haltungs und Drehtechnik', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('ch1', 10, 'Tanz - Choreografie, Musikinterpretation & tänzerische Darbietung', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('tf1', 10, 'Tanz - Tanzfiguren', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('ab1', 10, 'AF - Bilder (Kreativität, Schwierigkeit, Ausführung)', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('aw1', 10, 'AF - Bildwechsel (Schwierigkeit, Ausführung)', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('af1', 10, 'AF - Formationsfiguren und Effekte', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('tk1', 10, 'Technik - Grund-, Haltungs- und Drehtechnik', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('ch1', 10, 'Tanz - Wert inkl. Formationsfiguren und Abstimmung zur Musik', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('tf1', 10, 'Tanz - Ausführung', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('ab1', 10, 'AF - Wert der Bilder, Bildwechsel und Effekte', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('aw1', 10, 'AF - Ausführung', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('af1', 10, 'Gesamtwirkung', st_kl) + '\r\n';
             HTML_Seite += '<tr><td height="12px"></td></tr>' + make_fehler(1, true, false);
             break;
         case "Ak":

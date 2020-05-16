@@ -390,7 +390,7 @@ function Punkteverteilung(Startklasse, trunde, rd) {
                     punkte_verteilung = Array(4.375, 4.375, 4.375, 4.375, 6.125, 6.125, 5.25);
                     break;
             }
-            if (rd == "Semi") { punkte_verteilung = Array(7.25, 7.25, 7.25, 7.25, 10.15, 10.15, 8.7); }
+            if (rd === "Semi") { punkte_verteilung = Array(7.25, 7.25, 7.25, 7.25, 10.15, 10.15, 8.7); }
             break;
         // Boogie
         case "BW_MA":

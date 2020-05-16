@@ -8,7 +8,7 @@
 .wr_info            { font-family: Arial; text-align:left ;background-color:#DDD; height:65px;}
 .kriterium          { margin-top:0.1em; padding:0.3em; margin-bottom: 20px; border:1px solid #000;-moz-border-radius:5px;-webkit-border-radius:5px; border-radius:5px;height:29px; width:400px;}
 .kriterium div      { font-family: Arial; display:inline-block; width:16px; text-align:center; font-size: 14px; padding:0.3em;margin-right:0.2em;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px}
-.akro               { font-family: Arial; vertical-align:middle; text-align:left; font-size:14px; height:20px;  padding-top: 5px; }
+.akro               { font-family: Arial; vertical-align:middle; text-align:left; font-size:14px; height:20px;  padding-top: 10px; }
 .btn_grn            { background-color:#6d4; color:#000; border: 1px solid #000; height:28px; min-width: 19px; text-align: center; }
 .btn_red            { background-color:#f44; color:#fff; border: 1px solid #000; height:28px; min-width: 19px; text-align: center; }
 .btn_wert           { background-color:#ccc; color:#000; border: 1px solid #000; height:28px; min-width: 19px; text-align: center;}
