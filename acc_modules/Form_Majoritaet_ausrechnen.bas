@@ -294,7 +294,9 @@ Private Sub Siegerehrung_Click()
     Runde = Me!Startklasse.Column(7)
     If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!Start)
-        If st = "beamer_siegerehrung" & Startklasse Then Me!Start = Me!Start - 1
+        If st = "beamer_siegerehrung" & Startklasse And Me!Start > 0 Then
+            Me!Start = Me!Start - 1
+        End If
     Else
         MsgBox "Es gibt keine Siegerehrung für diese Runde!"
     End If
@@ -330,7 +332,7 @@ Public Sub Startklasse_Change()
         Me!Ko_Sieger.Visible = False
         Me!Feld112.Visible = False
     End If
-    If Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" And get_properties("EWS") = "EWS3" Then
+    If (Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" Or Startklasse.Column(7) = "End_r_2") And get_properties("EWS") = "EWS3" Then
         Me!Start.Visible = True
         Me!Siegerehrung.Visible = True
     Else

@@ -162,7 +162,7 @@ exports.siegerehrung = function (io, connection, rt_id) {
             var HTML_Inhalt = make_thead() + '<tbody>';
             var cl = '';
             for (var p in data) {
-                HTML_Inhalt += '<tr class="weiter"  ' + cl + '><td class="mod_s">' + data[p].Platz + '&nbsp;</td>';
+                HTML_Inhalt += '<tr id="' + data[p].RT_ID + '" class="weiter"  ' + cl + '><td class="mod_s">' + data[p].Platz + '&nbsp;</td>';
                 if (data[p].Name_Team === null) {
                     HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td  class="mod_s">' + data[p].Dame + ' - ' + data[p].Herr + '</td>';
                 } else {

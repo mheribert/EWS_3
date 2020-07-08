@@ -144,6 +144,11 @@ Private Sub btn_Dokumentation_41_Click()    'Stellprobe
     DoCmd.OpenForm "Stellprobe"
 End Sub
 
+Private Sub btn_Dokumentation_42_Click()
+    If turnier_selected Then Exit Sub
+    Gen_Mail
+End Sub
+
 Private Sub btnErgebnisliste_Click()    'Ergebnisliste
     If (IsNull(Forms![A-Programmübersicht]![Akt_Turnier]) Or (Forms![A-Programmübersicht]![Akt_Turnier] = 0)) Then
        MsgBox ("Bitte Turnier auswählen!")
@@ -258,15 +263,10 @@ Function turnier_selected()
     End If
 End Function
 
-Private Sub zippen_versenden_Click()
-    If turnier_selected Then Exit Sub
-    Gen_Mail
-End Sub
-
 Function Doc_btn(nr)
     Dim doc As String
     Dim lae As String
-    lae = Forms![A-Programmübersicht]!Turnierausw.Column(8)
+    lae = IIf(IsNull(Forms![A-Programmübersicht]!Turnierausw.Column(8)), get_properties("LAENDER_VERSION"), Forms![A-Programmübersicht]!Turnierausw.Column(8))
     If Me("btn_Dokumentation_" & nr).Caption = ". . ." Then
         MsgBox "Hier ist kein Dokument hinterlegt."
     Else

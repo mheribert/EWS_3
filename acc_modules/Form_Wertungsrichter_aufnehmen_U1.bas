@@ -9,23 +9,25 @@ Function Einteil()
     Dim wr, re As Recordset
     Dim left, top As Integer
     Dim ctl As String
+    Dim of
     Set dbs = CurrentDb
-    
+        
     sel = Screen.ActiveControl.Name
     ctl = sel
     sel = Me(sel).ControlSource
     Set wr = dbs.OpenRecordset("SELECT Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & "));")
     left = Me.ActiveControl.Parent.SelLeft
     top = Me.ActiveControl.Parent.SelTop
+    
     Select Case Screen.ActiveControl & Forms![A-Programmübersicht]!Turnierausw.Column(8)
 
-        Case "X"
+        Case "XD"
             sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ft' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "Ft"
+        Case "FtD"
             sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ak' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "Ak"
+        Case "AkD"
             sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ob' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "Ob", "XSL", "XBW"
+        Case "ObD", "XSL", "XBW", "XBY"
             sqlcmd = "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
         Case Else
             Set re = dbs.OpenRecordset("SELECT * FROM Startklasse_wertungsrichter WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';")

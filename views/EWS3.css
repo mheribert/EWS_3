@@ -76,7 +76,7 @@
 .mod_n              { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
 .mod_nb             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
 .mod_m              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
-.mod_s              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; }
+.mod_s              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:100px; }
 .mod_mk             { font-family: Arial; font-size: 3vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
 .mod_z              { font-family: Arial; font-size: 4.5vw; vertical-align:middle; text-align:center; color:#000000; background-color:#FFFFFF; height:25px; }
 .mod_verein         { font-family: Arial; font-size:4vw; vertical-align:middle; text-align:left; background-color:#F0F080; height:50px; }

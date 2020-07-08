@@ -514,6 +514,9 @@ io.sockets.on('connection', function (socket) {
                     case "Vorst_2":
                         HTML_moderator.vorstellung(io, connection);
                         break;
+                    case "Sieger":
+                        HTML_beamer.beamer_siegerehrung(io, connection, data.rnd, data.Platz);
+                        break;
                 }
                 break;
             case "nochmal werten":

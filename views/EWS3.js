@@ -76,7 +76,8 @@ function set_events() {
                 "mod_kopf", "senden_mod(event)", 
                 "mod_nb", "senden_mod_zeit(event)", 
                 "bs_wert", "wr_onclick(event)", 
-                "bs_mist", "bs_mistake(event)"];
+                "bs_mist", "bs_mistake(event)",
+                "weiter", "senden_sieger(event)"];
 
     for (var add_ev = 0; add_ev < ev.length; add_ev += 2) {
         t = document.getElementsByClassName(ev[add_ev]);
@@ -233,6 +234,16 @@ function senden_mod_zeit(e) {
     e = e || window.event;
     var tar = e.target || e.srcElement;
     socket.emit('chat', { msg: "Moderator", text: "Paare", rnd: tar.id.substring(2, 5) });
+}
+
+function senden_sieger(e) {
+    e = e || window.event;
+    var tar = e.target || e.srcElement;
+    var s = tar.parentNode.children
+    for (var p = 0; p < s.length; p++) {
+        s[p].style.backgroundColor = "#f88";
+    }
+    socket.emit('chat', { msg: "Moderator", text: "Sieger", rnd: tar.parentNode.id, Platz: s[0].innerText});
 }
 
 function wr_addmistake(e) {

@@ -32,7 +32,7 @@ Public Function updateTLP(dl_data, rmldg)
         Dim i As Integer
         Dim cnt As Integer
         
-        Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+        Select Case get_properties("LAENDER_VERSION")
             Case "SL"
                 dateien = Array("Termine-Start-Daten.txt", "WR-TL-Start-Daten.txt", "DRBV-Akrotabelle.txt")
                 tbls = Array("TLP_TERMINE", "TLP_OFFIZIELLE", "Akrobatiken")
