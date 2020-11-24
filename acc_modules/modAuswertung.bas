@@ -6,9 +6,12 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
     Dim ft_ak As Recordset
     Dim pr As Recordset
     Dim maj As Recordset
+    Dim tu As Recordset
     Dim ft_pu, ak_pu, ftft_pu, bs_pu, bw_pu, bw_verst, ges_Punkte As Double
     Dim sqlstm As String
-    Dim Runde As String
+    Dim Runde, rnd As String
+    Dim i As Integer
+    Dim sum As Double
     Dim is_wertung As Boolean
     
     Set db = CurrentDb
@@ -16,7 +19,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
     Set pr = db.OpenRecordset("SELECT * FROM rundentab WHERE RT_ID=" & rt & ";")
     Runde = pr!Runde
     Set pr = db.OpenRecordset("SELECT * FROM Paare_Rundenqualifikation WHERE RT_ID=" & rt & " AND Anwesend_Status=1;")
-    
+
     pr.MoveFirst
     Do Until pr.EOF
         is_wertung = False
@@ -29,7 +32,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='Ft' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm) 'Fußtechnik Runde
         If Not ft_ak.EOF Then
-            ft_pu = get_mittel(ft_ak)
+            ft_pu = get_mittel(ft_ak, Runde)
             is_wertung = True
         End If
     
@@ -37,7 +40,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='Ak' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm) ' Akrorunde
         If Not ft_ak.EOF Then
-            ak_pu = get_mittel(ft_ak)
+            ak_pu = get_mittel(ft_ak, Runde)
             is_wertung = True
         End If
         
@@ -45,7 +48,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='X' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm)    'NewJudgingSystem
         If Not ft_ak.EOF Then
-            bw_pu = get_mittel(ft_ak)
+            bw_pu = get_mittel(ft_ak, Runde)
             If InStr(1, Runde, "schnell") > 0 Then bw_pu = bw_pu * 1.1
             is_wertung = True
         End If
@@ -55,6 +58,25 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
         Set ft_ak = db.OpenRecordset(sqlstm)    ' Observerabzüge NewJudgingSystem
         If Not ft_ak.EOF Then
             bw_verst = IIf(Nz(ft_ak!Punkte) = "", 0, ft_ak!Punkte)
+        End If
+        
+        sqlstm = "SELECT Wert_Richter.WR_Kuerzel, Auswertung.* FROM Startklasse_Wertungsrichter INNER JOIN (Wert_Richter INNER JOIN Auswertung ON Wert_Richter.WR_ID = Auswertung.WR_ID) ON Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID " & _
+                 "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='MA' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
+        Set ft_ak = db.OpenRecordset(sqlstm)    'Mehrkampf MA
+        If Not ft_ak.EOF Then
+            bw_pu = get_mittel(ft_ak, Runde)
+            sqlstm = "SELECT Wert_Richter.WR_Kuerzel, Auswertung.* FROM Startklasse_Wertungsrichter INNER JOIN (Wert_Richter INNER JOIN Auswertung ON Wert_Richter.WR_ID = Auswertung.WR_ID) ON Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID " & _
+                     "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='MB' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
+            Set ft_ak = db.OpenRecordset(sqlstm)    'Mehrkampf MB
+            If ft_ak.RecordCount > 0 Then
+                bw_pu = bw_pu + get_mittel(ft_ak, Runde)
+            End If
+'            bw_pu = bw_pu * 2 + 0.000000001
+'            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
+'            If Not IsNull(ft_ak!MK_Sum) Then ftft_pu = ft_ak!MK_Sum
+'            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9002 OR RT_ID=9002) AND TP_ID=" & pr!PR_ID & ";")
+'            If Not IsNull(ft_ak!MK_Sum) Then ft_pu = ft_ak!MK_Sum
+            is_wertung = True
         End If
         
         If ft_id > 0 Then   ' falls geteilte Endr 1.Runde holen
@@ -101,7 +123,44 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
     If Runde = "KO_r" Then
         Call RR_KO_Sieger_ermitteln(rt)
     End If
-    Call RR_platz_vergeben(rt)
+    Call RR_platz_vergeben(rt, 0)
+    Set tu = db.OpenRecordset("Turnier")
+    If Runde = "MK_5_TNZ" Then      ' Or ((st_kl <> "RR_A" Or st_kl <> "RR_B") And Nz(tu!MehrkampfStationen) <> "") Then      ' Zusammenführen von MK1 und MK2 Stationen und platzieren
+        db.Execute "DELETE * FROM Majoritaet WHERE rt_id >" & 9000
+        For i = 1 To 5
+            pr.MoveFirst
+            Do Until pr.EOF
+                db.Execute "DELETE * FROM Majoritaet WHERE rt_id=" & 9000 + i & " AND TP_ID=" & pr!PR_ID & ";"
+                rnd = "MK_" & i & "*"
+                If i = 5 And (st_kl <> "RR_S1" And st_kl <> "RR_S2") Then rnd = "End_r"
+                Set maj = db.OpenRecordset("SELECT * FROM Majoritaet INNER JOIN Rundentab ON Majoritaet.RT_ID = Rundentab.RT_ID WHERE Runde Like '" & rnd & "' And TP_ID=" & pr!TP_ID & ";")
+                sum = 0
+                Do Until maj.EOF
+                    sum = sum + maj!Platz
+                    maj.MoveNext
+                Loop
+                db.Execute "INSERT INTO Majoritaet (rt_id, TP_ID, WR7, WR7_Punkte) VALUES (" & 9000 + i & "," & pr!PR_ID & "," & sum & "," & sum & ");"
+                pr.MoveNext
+            Loop
+            RR_platz_vergeben 9000 + i, 0
+        Next
+        
+        pr.MoveFirst
+        Do Until pr.EOF
+            Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " AND tp_id=" & pr!TP_ID & ";")
+            maj.Edit
+            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE RT_ID=9005 AND TP_ID=" & pr!PR_ID & ";")
+            maj!WR1 = ft_ak!MK_Sum
+            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
+            maj!WR2 = ft_ak!MK_Sum
+            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9002 OR RT_ID=9004) AND TP_ID=" & pr!PR_ID & ";")
+            maj!WR3 = ft_ak!MK_Sum
+            maj!WR7 = maj!WR3 + maj!WR2 + (maj!WR1 * 2 + maj!WR1 * 0.0001)
+            maj.Update
+            pr.MoveNext
+        Loop
+        RR_platz_vergeben rt, 1
+    End If
 End Sub
 
 Public Sub RR_Punkteabzug(rt As Integer, stkl As String, TP As Integer, Anzahl_Abzuege As Integer, Runde As String)
@@ -120,15 +179,23 @@ Public Sub RR_Punkteabzug(rt As Integer, stkl As String, TP As Integer, Anzahl_A
     If Runde = "KO_r" Then
         Call RR_KO_Sieger_ermitteln(rt)
     End If
-    Call RR_platz_vergeben(rt)
+    Call RR_platz_vergeben(rt, 0)
 End Sub
 
-Public Sub RR_platz_vergeben(rt)
+Public Sub RR_platz_vergeben(rt, ord)
     Set db = CurrentDb
     Dim maj As Recordset
     Dim pl, pl_m, pl_a As Integer
-    
-    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7 DESC;")
+    Dim rd, zeit, so As String
+    rd = DLookup("Runde", "Rundentab", "RT_ID=" & rt)
+    zeit = "MK_1_KLE, MK_1_STL, MK_2_KAS, MK_2_KOO, MK_2_SCH, MK_2_STE"
+    If InStr(zeit, rd) = 0 And ord = 0 Then
+        so = " DESC"
+    Else
+        so = ""
+    End If
+'hier muss die Reihenfoge gedreht werden bei Zeit stop
+    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7" & so & ";")
     If maj.RecordCount = 0 Then
         MsgBox "Es gibt noch keine Wertungen in dieser Tanzrunde!"
     Else
@@ -213,22 +280,32 @@ Public Sub RR_KO_Sieger_ermitteln(rt)
 End Sub
 
 ' Neu wegen möglicher 6 oder 8 FT-WR
-Function get_mittel(avr)
+Function get_mittel(avr, Runde)
     Dim i(8) As Double
     Dim min As Integer
     Dim max As Integer
-    Dim X As Integer
+    Dim x As Integer
     
     avr.MoveLast
-    For X = 1 To avr.RecordCount
-        i(X) = Nz(avr!Punkte)
+    For x = 1 To avr.RecordCount
+        i(x) = Nz(avr!Punkte)
         avr.MovePrevious
     Next
     
     Select Case avr.RecordCount
-        Case 2, 3
+        Case 1
             min = 1
-            max = avr.RecordCount
+            max = 1
+        Case 2
+            min = 1
+            max = 2
+        Case 3
+            If left(Runde, 3) = "MK_" Then
+                min = 2
+            Else
+                min = 1
+            End If
+            max = 3
         Case 4
             min = 2
             max = 3
@@ -251,8 +328,8 @@ Function get_mittel(avr)
         min = 1
         max = avr.RecordCount
     End If
-    For X = min To max
-        i(0) = i(0) + i(X)
+    For x = min To max
+        i(0) = i(0) + i(x)
     Next
     get_mittel = i(0) / (max - min + 1)
 
@@ -298,6 +375,11 @@ Public Sub AuswertenundPlatzieren(StartklasseID As Integer, Startkl As String, A
                 ft_rt_id = check_1_Runde_von_2(Turniernr, Startkl, "End_r_Fuß")
                 Call RR_Auswertung(StartklasseID, Turniernr, ft_rt_id, Startkl)
                 
+'            ElseIf Runde = "MK_5_TNZ" Then
+'
+'                ft_rt_id = check_1_Runde_von_2(Turniernr, Startkl, "MK_")
+'                Call RR_Auswertung(StartklasseID, Turniernr, ft_rt_id, Startkl)
+'
             ElseIf Runde = "Vor_r_schnell" Then
                 ft_rt_id = check_1_Runde_von_2(Turniernr, Startkl, "Vor_r_lang")
                 Call RR_Auswertung(StartklasseID, Turniernr, ft_rt_id, Startkl)

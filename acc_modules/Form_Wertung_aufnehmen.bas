@@ -1,5 +1,6 @@
 Option Compare Database
 Option Explicit
+
 Private Sub Befehl27_Click()
 On Error GoTo Err_Befehl27_Click
 
@@ -14,6 +15,7 @@ Err_Befehl27_Click:
     Resume Exit_Befehl27_Click
     
 End Sub
+
 Sub Kombinationsfeld30_AfterUpdate()
     ' Den mit dem Steuerelement übereinstimmenden Datensatz suchen.
     Me.RecordsetClone.FindFirst "[ident] = " & Me![Kombinationsfeld30]
@@ -21,7 +23,26 @@ Sub Kombinationsfeld30_AfterUpdate()
 End Sub
 
 Private Sub Form_Open(Cancel As Integer)
+    Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+        Case "D"
+            If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
+                Me!mehrkampf_einlesen.Visible = True
+            End If
+        Case "SL"
+            Me!mehrkampf_einlesen.Visible = False
+        Case "BY"
+            Me!mehrkampf_einlesen.Visible = False
+        Case Else
+            Me!mehrkampf_einlesen.Visible = False
+    End Select
+
     Call Turnier_aktuell_check_VB
+End Sub
+
+Private Sub Form_Resize()
+    Me.[Wertung aufnehmen1 Unterformular].Height = Me.InsideHeight - 2400
+    Me.[Paare_ohne_Punkte_UF].Height = Me.InsideHeight - 2400
+    
 End Sub
 
 Sub Tanzrunde_AfterUpdate()
@@ -95,6 +116,7 @@ Err_Befehl56_Click:
     Resume Exit_Befehl56_Click
     
 End Sub
+
 Private Sub Befehl57_Click()
 On Error GoTo Err_Befehl57_Click
 
@@ -113,8 +135,21 @@ Err_Befehl57_Click:
     
 End Sub
 
+Private Sub mehrkampf_einlesen_Click()
+    If tanzrunde_selected Then Exit Sub
+    
+    Dim tr As String
+    tr = Tanzrunde.Column(4)
+    If InStr(7, tr, "klasse") Then
+        tr = Replace(Tanzrunde.Column(4), "klasse", "")
+    End If
+    lese_Auswerteunterlagen tr, Tanzrunde.Column(3)
+        
+    Debug.Print tr
+End Sub
+
 Private Sub Wertung_aufnehmen1_Unterformular_Enter()
-    Call ActivateTextfields
+'    Call ActivateTextfields
 End Sub
 
 Public Sub ActivateTextfields()
@@ -306,3 +341,11 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
     Form_Paare_ohne_Punkte_UF.Requery
     Call Wertung_aufnehmen1_Unterformular_Enter
 End Sub
+
+Function tanzrunde_selected()
+    If IsNull(Me!Tanzrunde) Or Me!Tanzrunde = 0 Then
+       MsgBox ("Bitte Tanzrunde auswählen!")
+       tanzrunde_selected = True
+    End If
+End Function
+

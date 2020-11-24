@@ -20,7 +20,7 @@ End Sub
 
 Public Sub btnAddOffiziellen_Click()
     Dim rstoff, rsCheck As Recordset
-    Dim Count As Integer
+    Dim Count, i As Integer
     
     ' Bezug auf aktuelle Datenbank zurückgeben.
     Set dbs = CurrentDb
@@ -37,6 +37,12 @@ Public Sub btnAddOffiziellen_Click()
             MsgBox "Dieser Wertungsrichter wurde dem Turnier schon hinzugefügt!"
             Exit Sub
         End If
+    Else
+        Set rsCheck = dbs.OpenRecordset("Select MAX(WR_Lizenznr) AS maxLiz FROM wert_richter;")
+        i = 9000
+        If rsCheck!maxLiz > i Then i = rsCheck!maxLiz + 1
+        Me!Lizenznr = i
+        Me!Club = 0
     End If
     
     If Not IsNull(VName) And Not IsNull(NName) Then
@@ -57,6 +63,11 @@ Public Sub btnAddOffiziellen_Click()
         !WR_Kuerzel = Chr(Asc(ZW_WR) + 1)
         .Update
         End With
+        Me!Lizenznr = ""
+        Me!VName = ""
+        Me!NName = ""
+        Me!Club = ""
+        
     End If
     Offizielle.Requery
 End Sub
@@ -107,7 +118,7 @@ Private Sub Form_Open(Cancel As Integer)
 
     If Not re.EOF Then re.MoveFirst
     lo = 1
-    Do Until (re.EOF Or lo = 17)
+    Do Until (re.EOF Or lo = 18)
         Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).ControlTipText = re!Ausdr1
         Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).Caption = re!Ausdr1
         Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).Visible = True
@@ -139,11 +150,11 @@ Private Sub Login_generieren_Click()
     End If
     Set wr = Me!Offizielle.Form.RecordsetClone
     For retl = 1 To 23
-        Rnd
+        rnd
     Next
     wr.MoveFirst
     Do Until wr.EOF
-        retl = Int((9999 * Rnd) + 1)
+        retl = Int((9999 * rnd) + 1)
         wr.Edit
         wr!WR_kenn = Format(retl, "0000")
         wr.Update

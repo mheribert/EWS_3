@@ -79,6 +79,7 @@ Private Sub Form_Load()
             Me.Wertungen_ausdrucken.Visible = False
         Case "BY"
             Me.Wertungen_ausdrucken.Visible = False
+            Me.Akro_anzeigen.Visible = False
         Case Else
     End Select
 
@@ -101,7 +102,7 @@ Private Sub Kombinationsfeld36_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
-Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String
 '    If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&text=0")

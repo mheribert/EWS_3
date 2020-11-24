@@ -539,7 +539,7 @@ Function msystem(RT_ID As Integer, tnr1, klasse, Runde, AnzahlWR, autoDeleteWert
         !wr4_Platz = thisRound(snr).Wertung(4)
         !wr5_Platz = thisRound(snr).Wertung(5)
         !wr6_Platz = thisRound(snr).Wertung(6)
-        !wr7_Platz = thisRound(snr).Wertung(7)
+        !WR7_Platz = thisRound(snr).Wertung(7)
         !WR1_Punkte = thisRound(snr).Punkt(1)
         !WR2_Punkte = thisRound(snr).Punkt(2)
         !WR3_Punkte = thisRound(snr).Punkt(3)
@@ -665,7 +665,7 @@ Sub PaareInDieNaechsteRunde2(Turniernr As Integer, currentRT_ID As Integer, next
                 rs.Close
             End If
             'Breitensport Baden-Württemberg
-            If get_bs_erg(re!Startklasse, 3) = "BWBS_" And InStr(1, re!Runde, "End_r_2") Then
+            If left(re!Startklasse, 3) = "BS_" And InStr(1, re!Runde, "End_r_2") Then
                 sqlstr = "select * from Rundentab where startklasse = '" & re!Startklasse & "' and turniernr = " & Turniernr & " and runde='End_r_1'"
                 Set rs = dbs.OpenRecordset(sqlstr)
                 ' wird quelle

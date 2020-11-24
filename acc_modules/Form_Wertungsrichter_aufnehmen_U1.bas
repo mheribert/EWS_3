@@ -9,36 +9,30 @@ Function Einteil()
     Dim wr, re As Recordset
     Dim left, top As Integer
     Dim ctl As String
+    Dim Art, wr_art, i
     Dim of
     Set dbs = CurrentDb
         
+    wr_art = Split(Me!stkl_w, ", ")
+    Art = Nz(Screen.ActiveControl)
+    For i = 0 To UBound(wr_art)
+        If wr_art(i) = Art Then
+            Exit For
+        End If
+    Next
     sel = Screen.ActiveControl.Name
     ctl = sel
     sel = Me(sel).ControlSource
     Set wr = dbs.OpenRecordset("SELECT Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & "));")
     left = Me.ActiveControl.Parent.SelLeft
     top = Me.ActiveControl.Parent.SelTop
-    
-    Select Case Screen.ActiveControl & Forms![A-Programmübersicht]!Turnierausw.Column(8)
-
-        Case "XD"
-            sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ft' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "FtD"
-            sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ak' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "AkD"
-            sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='Ob' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-        Case "ObD", "XSL", "XBW", "XBY"
-            sqlcmd = "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
-        Case Else
-            Set re = dbs.OpenRecordset("SELECT * FROM Startklasse_wertungsrichter WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';")
-            If re.RecordCount = 0 Then
-                sqlcmd = "INSERT into Startklasse_wertungsrichter( WR_ID, startklasse, WR_function)" & _
-                         " values(" & wr!WR_ID & ", """ & Me!Startklasse & """, ""X"");"
-            Else
-                sqlcmd = "UPDATE Startklasse_wertungsrichter SET WR_function='X' WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';"
-            End If
-    End Select
-    dbs.Execute (sqlcmd)
+    i = i + 1
+    If i > UBound(wr_art) Then i = 0
+        dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
+        If i > 0 Then
+            dbs.Execute "INSERT into Startklasse_wertungsrichter( WR_ID, startklasse, WR_function)" & _
+                     " values(" & wr!WR_ID & ", '" & Me!Startklasse & "', '" & wr_art(i) & "');"
+        End If
     Me.Requery
     Me.SelTop = top
     Me(ctl).SetFocus
@@ -51,18 +45,18 @@ End Function
 ' an WR-Einteilung angepasst erst FT/BW dann AK
 Function WR_Anzeige(Startkl, sle)
     Dim re As Recordset
-    Dim Anzeige As String
+    Dim anzeige As String
     Set dbs = CurrentDb
     
     Set re = dbs.OpenRecordset("SELECT Count(WR_ID) AS Ak_WR FROM Startklasse_wertungsrichter WHERE Startklasse = '" & Startkl & "' AND (WR_function = 'Ak' OR WR_function = 'X');", DB_OPEN_DYNASET)
     If re.RecordCount > 0 Then
-        Anzeige = re!Ak_WR
-        Set re = dbs.OpenRecordset("SELECT Count(WR_ID) AS Ft_WR FROM Startklasse_wertungsrichter WHERE Startklasse = '" & Startkl & "' AND WR_function = 'Ft';", DB_OPEN_DYNASET)
+        anzeige = re!Ak_WR
+        Set re = dbs.OpenRecordset("SELECT Count(WR_ID) AS Ft_WR FROM Startklasse_wertungsrichter WHERE Startklasse = '" & Startkl & "' AND (WR_function = 'Ft');", DB_OPEN_DYNASET)
         If re.RecordCount > 0 And (InStr(1, Startkl, "BW") = 0 And InStr(1, Startkl, "BS") = 0) Then
-            Anzeige = re!Ft_WR & " + " & Anzeige
+            anzeige = re!Ft_WR & " + " & anzeige
         End If
     End If
-    WR_Anzeige = Anzeige
+    WR_Anzeige = anzeige
 End Function
 
 Private Sub CTRL01_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -129,35 +123,41 @@ Private Sub CTRL16_KeyDown(KeyCode As Integer, Shift As Integer)
     taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
 End Sub
 
+Private Sub CTRL17_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
 Function taste_up_down(KeyCode, Shift, ctl, top)
 On Error GoTo Fehlerout
     Dim sqlcmd As String
-    Dim sel As String
+    Dim Art, sel As String
     Dim wr, re As Recordset
+    Dim wr_art
+    Dim i As Integer
      
     Set dbs = CurrentDb
     
     sel = Me(ctl).ControlSource
     Set wr = dbs.OpenRecordset("SELECT Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & "));")
     Set re = dbs.OpenRecordset("SELECT * FROM Startklasse_wertungsrichter WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';")
-    Select Case Chr(KeyCode) & Forms![A-Programmübersicht]!Turnierausw.Column(8)
-        Case "XD", "XBW", "XSL", "XBY"
-            update_insert wr!WR_ID, Me!Startklasse, re.RecordCount, "X"
-            KeyCode = 0
-        Case "FD"
-            update_insert wr!WR_ID, Me!Startklasse, re.RecordCount, "Ft"
-            KeyCode = 0
-        Case "AD"
-            update_insert wr!WR_ID, Me!Startklasse, re.RecordCount, "Ak"
-            KeyCode = 0
-        Case "OD", "OBY"
-            update_insert wr!WR_ID, Me!Startklasse, re.RecordCount, "Ob"
-            KeyCode = 0
-        Case " D", " BW", " SL", " BY"
-            sqlcmd = "DELETE Startklasse, wr_id FROM Startklasse_wertungsrichter WHERE WR_ID=" & wr!WR_ID & " AND Startklasse = '" & Me!Startklasse & "';"
-            dbs.Execute sqlcmd
-            KeyCode = 0
-    End Select
+        
+    wr_art = Split(Me!stkl_w, ", ")
+    Art = Chr(KeyCode)
+    For i = 0 To UBound(wr_art)
+        If left(wr_art(i), 1) = Art Then
+            Exit For
+        End If
+    Next
+    If KeyCode = 32 Then
+        dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
+    End If
+    If i <= UBound(wr_art) Then
+        If Screen.ActiveControl = "MA" Then i = i + 1
+        dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
+        dbs.Execute "INSERT into Startklasse_wertungsrichter( WR_ID, startklasse, WR_function)" & _
+                     " values(" & wr!WR_ID & ", '" & Me!Startklasse & "', '" & wr_art(i) & "');"
+    End If
+        
     Me.Requery
     Me.SelTop = top
     Me(ctl).SetFocus
@@ -183,3 +183,4 @@ Function update_insert(WR_ID, st_kl, anz, func)
     End If
     dbs.Execute sqlcmd
 End Function
+

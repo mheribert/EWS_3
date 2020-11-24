@@ -1,4 +1,4 @@
-var ver              = 'V3.1.15';
+var ver              = 'V3.1.16';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -25,8 +25,11 @@ exports.mod_seite = function() {
 exports.runde = function(io, runden_info, runde) {
     // Rundeninfo
     var HTML_Inhalt = "";
+    var rd_ind = 0;
     if (typeof runden_info[0] !== "undefined" && runden_info[0].Tanzrunde_MAX >= runde) {
-        var rd_ind = (runde - 1) * runden_info[0].PpR;
+        for (var i = 1; i < runde; i++) {
+            rd_ind += parseInt(runden_info[i].PpR);
+        }
 
         HTML_Inhalt = '<tr><td class="mod_m" style="background-color:#ff8">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td>';
         HTML_Inhalt += '<td class="mod_m" colspan ="3" style="background-color:#ff8">' + runden_info[rd_ind].Tanzrunde_Text + '</td></tr>';
@@ -41,7 +44,7 @@ exports.runde = function(io, runden_info, runde) {
             HTML_Inhalt += make_paar(runden_info, rd_ind + 1, 'mod_m');
         }
         HTML_Inhalt += '<tr><td class="wr_status" id="content1" colspan="4" align="center"></td></tr>';
-        rd_ind += runden_info[0].PpR;
+        rd_ind += runden_info[rd_ind].PpR;
         if (typeof runden_info[rd_ind] !== "undefined") {
             HTML_Inhalt += '<tr><td class="mod_m" colspan ="3" style="background-color:#ff8">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
             HTML_Inhalt += make_paar(runden_info, rd_ind, 'mod_mk');
@@ -191,73 +194,3 @@ function fix2(wert) {
     var pu = (Math.round(wert * 100) / 100).toString();
     return pu.replace(".", ",");
 }
-
-/*exports.ranking = function (io, runden_info, runde) {
-    var ratings = new Object();
-    var temp = new Object;
-    var anz = 0;
-    // Kopf Text
-    var rd_ind = (runde - 1) * runden_info[0].PpR;
-    var HTML_Kopf = runden_info[0].Turnier_Name  + '<br>' + runden_info[0].Tanzrunde_Text;
-	// nur getanzte Runden
-    var sum1;
-    var sum2;
-    for (var p in runden_info) {
-        if (runden_info[p].Rundennummer <= runde) {
-            ratings[p] = runden_info[p];
-            anz++;
-            sum1 = parseFloat(ratings[p].Punkte);
-            if (ratings[p].ersteRunde != null) {
-                sum1 += parseFloat(ratings[p].ersteRunde);
-            }
-            ratings[p].summe = sum1;
-        }
-    }
-    // sortieren nach punkten
-    for (var s = 0; s < anz - 1; s++) {
-        for (var t = 0; t < anz - 1; t++) {
-            sum1 = parseFloat(ratings[t].summe);
-            sum2 = parseFloat(ratings[t + 1].summe);
-            if (sum1 < sum2) {
-                temp = ratings[t];
-                ratings[t] = ratings[t + 1];
-                ratings[t + 1] = temp;
-            }
-        }
-    }
-    // bei ersten Durchlauf erfolgt keine Schleife
-    var pu = 0;
-    var HTML_class;
-    var HTML_Inhalt = '<thead><tr ><th style="width: 90px; font-size: 35px;" class="sorting text_center">Platz</th>';
-    HTML_Inhalt += '<th style="width: 130px; font-size: 35px;" class="sorting text_center">Startnr.</th>';
-    HTML_Inhalt += '<th style="width: auto;font-size: 35px;" class="sorting">Paar</th>';
-    HTML_Inhalt += '<th style="width: 160px; font-size: 35px;" class="sorting">Punkte</th></tr></thead>';
-    HTML_Inhalt += '<tbody>';
-
-    for (p in ratings) {
-        HTML_class = '<tr class="weiter">';
-        if (p >= ratings[p].NextPaare) {
-            HTML_Inhalt += '<tr class="trenn"><td>&nbsp;</td> <td>&nbsp;</td> <td>&nbsp;</td> <td>&nbsp;</td> </tr>';
-            HTML_class = '<tr class="raus">';
-        }
-        if (ratings[p].Rundennummer == runde) {
-            HTML_class = HTML_class.replace('>', ' style = "background-color:#cfc;">');
-        }
-        HTML_Inhalt += HTML_class + '<td>' + (parseInt(p) + 1 ) + '&nbsp;</td>';
-        if (ratings[p].Name_Team === null) {
-            HTML_Inhalt += '<td>' + ratings[p].Startnr + '</td><td class="text_left">' + ratings[p].Dame + ' - ' + ratings[p].Herr + '</td>';
-        } else {
-            HTML_Inhalt += '<td>' + ratings[p].Startnr + '</td><td class="text_left">' + ratings[p].Name_Team + '</td>';
-        }
-
-        if (ratings[p].ersteRunde != null) {
-            HTML_Inhalt += '<td style="font-size:1.6vw;">' + fix2(ratings[p].ersteRunde) + ' + ' + fix2(ratings[p].Punkte) + '</td>';
-        }
-        HTML_Inhalt += '<td>' + fix2(ratings[p].summe) + '</td></tr>';
-    }
-    HTML_Inhalt += '</tbody>';
-
-    io.emit('chat', { msg: 'beamer_kopf', text: HTML_Kopf });
-    io.emit('chat', { msg: 'beamer_inhalt', text: HTML_Inhalt });
-};
-*/

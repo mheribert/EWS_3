@@ -6,13 +6,13 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
     Dim re  As Recordset
     Dim res As Recordset
     Dim paa As Recordset
-    Dim strSQL As String
+    Dim strsql As String
     Dim anz As Integer
     Me.Requery
     Set dbs = CurrentDb
     Set re = Me.RecordsetClone
-    strSQL = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
-    Set res = dbs.OpenRecordset(strSQL)
+    strsql = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
+    Set res = dbs.OpenRecordset(strsql)
     re.MoveFirst
     Do Until re.EOF
         
@@ -32,9 +32,9 @@ End Sub
 
 Private Sub Feld81_AfterUpdate()
     If Me!Feld81 = "*" Then
-        Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Tanz_Runden_fix.InAuswertung, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab LEFT JOIN Tanz_Runden_fix ON Rundentab.Runde = Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=" & get_aktTNr() & ")) ORDER BY Rundentab.Rundenreihenfolge;"
+        Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr() & ")) ORDER BY Rundentab.Rundenreihenfolge;"
     Else
-        Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Tanz_Runden_fix.InAuswertung, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab LEFT JOIN Tanz_Runden_fix ON Rundentab.Runde = Tanz_Runden_fix.Runde WHERE (Rundentab.Startklasse=""" & Me!Feld81 & """ AND Rundentab.Turniernr= " & get_aktTNr() & ") ORDER BY Rundentab.Rundenreihenfolge;"
+        Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE (Rundentab.Startklasse=""" & Me!Feld81 & """ AND Rundentab.Turniernr= " & get_aktTNr() & ") ORDER BY Rundentab.Rundenreihenfolge;"
     End If
     Requery
 End Sub
@@ -109,6 +109,7 @@ Private Sub runden_ergaenzen_Click()
     Dim dbs As Database
     Dim rde As Recordset
     Dim rst As Recordset
+    Dim tu As Recordset
     Dim stmt As String
     Dim Runde As Variant
     Dim msg As String
@@ -176,17 +177,21 @@ Private Sub runden_ergaenzen_Click()
                     ' Löschen von End_r
                     dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde='End_r';"
                     
-                '****** ToDo Einfügen Mehrkampf, wenn Option gesetzt! ****
+                Case "RR_S1", "RR_S2"
                 '****** ToDo Endrunden nur bei mehr als sieben Paaren ****
-                
+                '   Debug.Print DCount("TP_ID", "Paare", "Anwesent_Status<>0 AND Startkl='" & rde!Startklasse & "'")
+                    Runde = get_mk("MK_5_TNZ, Sieger")
+                    
+                    If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
+                    
                 Case "RR_S", "RR_J", "RR_C"
-                    Runde = Array("End_r", "Sieger")
+                    Runde = get_mk("End_r, Sieger")
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
                     
                     ' Löschen von End_r_
                     dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde Like 'End_r_*';"
                     
-                Case "BWBS_", "SLBS_"
+                Case "BWBS_", "SLBS_", "BYBS_"
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'End_r_*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' wenn eine geteile Endrunde müssen beide da sein
@@ -194,6 +199,8 @@ Private Sub runden_ergaenzen_Click()
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde='End_r';"
                     End If
+                    Runde = Array("Sieger")
+                    If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
             End Select
         End If
         rde.MoveNext
@@ -317,7 +324,28 @@ Private Sub Zeitplan_Click()
     Else
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_zeitplan&text=" & Me!RT_ID)
     End If
-    
-        
-
 End Sub
+
+Public Function get_mk(rnd)        ' Mehrkampfstationen sammeln
+    Dim db As Database
+    Dim re As Recordset
+    Dim i As Integer
+    Set db = CurrentDb
+    Set re = db.OpenRecordset("SELECT * FROM Turnier;")
+    Select Case re!MehrkampfStationen
+        Case "Bodenturnen und Trampolin"
+            rnd = rnd & ", MK_3_BOT, MK_4_TRA"
+        Case "Kondition und Koordination"
+            Set re = db.OpenRecordset("SELECT * FROM (SELECT MK_11 FROM Turnier UNION  SELECT MK_12 FROM Turnier UNION SELECT MK_13 FROM Turnier UNION SELECT MK_21 FROM Turnier UNION SELECT MK_22 FROM Turnier UNION SELECT MK_23 FROM Turnier) WHERE NOT ISNULL([MK_11]) and [MK_11] <>'' ORDER BY MK_11;")
+            re.MoveFirst
+            i = 0
+            Do Until re.EOF
+                rnd = rnd & IIf(Len(rnd) > 0, ", ", "") & re!MK_11
+                re.MoveNext
+            Loop
+        Case ""
+            get_mk = ""
+    End Select
+    get_mk = Split(rnd, ", ")
+End Function
+

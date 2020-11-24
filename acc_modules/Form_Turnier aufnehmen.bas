@@ -33,7 +33,7 @@ End Sub
 Private Sub btnTurnierbericht_Click()
 On Error GoTo Err_btnTurnierbericht_Click
 
-    [Form_A-Programmübersicht]![Report_Turniernum] = Turniernum
+    [Form_A-Programmübersicht]![Report_Turniernum] = Turnier_Nummer
     Dim stDocName As String
     stDocName = "Turnierbericht"
     DoCmd.OpenReport stDocName, acPreview
@@ -74,11 +74,25 @@ Private Sub Form_Close()
     
 End Sub
 
+Private Sub Form_Current()
+    MehrkampfStationen_AfterUpdate
+End Sub
+
 Private Sub Form_Open(Cancel As Integer)
     If (Not IsNull([Form_A-Programmübersicht]![Akt_Turnier]) And [Form_A-Programmübersicht]![Akt_Turnier] <> 0 And [Form_A-Programmübersicht]![Akt_Turnier] <> "") Then
         Me.RecordsetClone.FindFirst "Turniernum=" & [Form_A-Programmübersicht]![Akt_Turnier]
         Me.Bookmark = Me.RecordsetClone.Bookmark
     End If
+    Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+        Case "SL"
+            Me!MehrkampfStationen.Visible = False
+        Case "BW"
+            Me!MehrkampfStationen.Visible = False
+        Case "BY"
+            Me!MehrkampfStationen.Visible = False
+            
+        Case Else
+    End Select
 End Sub
 
 Private Sub Form_Resize()
@@ -96,6 +110,29 @@ Sub Kombinationsfeld35_AfterUpdate()
     Me.RecordsetClone.FindFirst "Turniernum=" & Me![Kombinationsfeld35]
     Me.Bookmark = Me.RecordsetClone.Bookmark
 End Sub
+
+Private Sub MehrkampfStationen_AfterUpdate()
+    If Me!MehrkampfStationen = "Kondition und Koordination" Then
+        mk_visible True
+    Else
+        mk_visible False
+        Me!MK_11 = ""
+        Me!MK_12 = ""
+        Me!MK_13 = ""
+        Me!MK_21 = ""
+        Me!MK_22 = ""
+        Me!MK_23 = ""
+    End If
+End Sub
+
+Function mk_visible(vi)
+    Me!MK_11.Visible = vi
+    Me!MK_12.Visible = vi
+    Me!MK_13.Visible = vi
+    Me!MK_21.Visible = vi
+    Me!MK_22.Visible = vi
+    Me!MK_23.Visible = vi
+End Function
 
 Private Sub TurnierAnlegen_Click()
 On Error GoTo Err_TurnierAnlegen_Click

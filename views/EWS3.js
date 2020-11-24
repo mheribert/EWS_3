@@ -1,4 +1,4 @@
-﻿    var ver = 'V3.1.15';
+﻿    var ver = 'V3.1.16';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -282,10 +282,22 @@ function wr_onclick(e) {
 
 function paint_bar(tar) {
     var i;
-    var b;
+    var ke;
     var t = tar.parentNode;
     var s;
     switch (ausw) {
+        case "MK_":
+//            if (t.type === "keyup") {
+                ke = tar.value.replace(',', '.');
+                if (isNaN(ke)) {
+                    var we = document.getElementById(tar.id).value;
+                    i = we.length - 1;
+                    document.getElementById(tar.id).value = we.substr(0, i);
+                    return false;
+                }
+                s = document.getElementsByClassName("mk_inp");
+ //           }
+            break;
         case "BS_":
             for (i = 0; i <= t.childElementCount - 2; i++) {
                 if (i <= parseInt(tar.cellIndex)) {
@@ -359,6 +371,34 @@ function paint_bar(tar) {
     document.getElementById('WR-Info1').innerHTML = '';
     document.getElementById("absend").disabled = false;
     document.getElementById("absend").className = "button_2"; 
+}
+
+function test_mk(te) {
+    var cgivar = '';
+    var ke;
+    if (te.type === "keyup") {
+        ke = te.target.value.replace(',', '.');
+        if (isNaN(ke)) {
+            var we = document.getElementById(te.target.id).value;
+            var i = we.length - 1;
+            document.getElementById(te.target.id).value = we.substr(0, i);
+            return false;
+        }
+        s = document.getElementsByClassName("mk_inp");
+        for (i = 0; i < s.length; i++) {
+            if (document.getElementById(s[i].id).value === "NaN") {
+                document.getElementById('WR-Info1').innerHTML = '<h3><b>Fehler in der Berechnung!</b></h3>';
+                document.getElementById("absend").disabled = true;
+                document.getElementById("absend").className = "button_1";
+                return false;
+            }
+            if (document.getElementById(s[i].id).value === "") {
+                return false;
+            }
+        }
+        document.getElementById("absend").disabled = false;
+        document.getElementById("absend").className = "button_2";
+    }
 }
 
 function senden(cmd, text) {

@@ -1,4 +1,4 @@
-var ver           = 'V3.1.15';
+var ver           = 'V3.1.16';
 var beamer_inhalt = new Object();
 
 exports.inhalt = function () {
@@ -32,33 +32,38 @@ exports.beamer_seite = function () {
 
 exports.beamer_runde = function (io, runden_info, runde) {
     // Kopf Text
-    var rd_ind = (runde - 1) * runden_info[0].PpR;
-    if (runde > runden_info[0].Tanzrunde_MAX) { return; }
-
-    var HTML_Kopf = runden_info[rd_ind].Turnier_Name  + '<br>' + runden_info[rd_ind].Tanzrunde_Text;
-    // Rundeninfo
-    var HTML_Inhalt =  '<tr height="10%"><td colspan="2" class="runde">' + 'Runde ' + runden_info[rd_ind].Rundennummer + ' von ' + runden_info[rd_ind].Tanzrunde_MAX +  '</td></tr>';
-    // Startnummer(n)
-    HTML_Inhalt += '<tr height="15%"><td class="stnr">' + runden_info[rd_ind].Startnr + '</td>';
-    if (runden_info[rd_ind].PpR === 2) {
-        HTML_Inhalt += '<td class="stnr">' + runden_info[rd_ind +1].Startnr + '</td>';
-    }
-    HTML_Inhalt += '</tr>';
-    // Paar(e), Team, Verein
-    HTML_Inhalt += '<tr height="65%">';
-    if (runden_info[rd_ind].Name_Team === null) {        // Einzel
-        HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Dame + '<br>' + runden_info[rd_ind].Herr + '<br><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
-        if (runden_info[rd_ind].PpR === 2) {
-            HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind + 1].Dame + '<br>' + runden_info[rd_ind + 1].Herr + '<br><p class="tver">' + runden_info[rd_ind + 1].Verein_Name + '</p></td>';
+    var rd_ind = 0;
+    if (runde <= runden_info[0].Tanzrunde_MAX) {
+        for (i = 1; i < runde; i++) {
+            rd_ind += parseInt(runden_info[i].PpR);
         }
-    } else {                                    // Formationen
-        HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Name_Team + '<br><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
+        if (runde > runden_info[0].Tanzrunde_MAX) { return; }
+
+        var HTML_Kopf = runden_info[rd_ind].Turnier_Name + '<br>' + runden_info[rd_ind].Tanzrunde_Text;
+        // Rundeninfo
+        var HTML_Inhalt = '<tr height="10%"><td colspan="2" class="runde">' + 'Runde ' + runden_info[rd_ind].Rundennummer + ' von ' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
+        // Startnummer(n)
+        HTML_Inhalt += '<tr height="15%"><td class="stnr">' + runden_info[rd_ind].Startnr + '</td>';
+        if (runden_info[rd_ind].PpR === 2) {
+            HTML_Inhalt += '<td class="stnr">' + runden_info[rd_ind + 1].Startnr + '</td>';
+        }
+        HTML_Inhalt += '</tr>';
+        // Paar(e), Team, Verein
+        HTML_Inhalt += '<tr height="65%">';
+        if (runden_info[rd_ind].Name_Team === null) {        // Einzel
+            HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Dame + '<br>' + runden_info[rd_ind].Herr + '<br><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
+            if (runden_info[rd_ind].PpR === 2) {
+                HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind + 1].Dame + '<br>' + runden_info[rd_ind + 1].Herr + '<br><p class="tver">' + runden_info[rd_ind + 1].Verein_Name + '</p></td>';
+            }
+        } else {                                    // Formationen
+            HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Name_Team + '<br><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
+        }
+        HTML_Inhalt += '</tr>';
+        //WR-Info
+        HTML_Inhalt += '<tr height="10%"><td colspan="2" align="center"><div class="wr_status" id="beamer_wrinfo">&nbsp;</div></td></tr>';
+        beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
+        io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
     }
-    HTML_Inhalt += '</tr>';
-    //WR-Info
-    HTML_Inhalt += '<tr height="10%"><td colspan="2" align="center"><div class="wr_status" id="beamer_wrinfo">&nbsp;</div></td></tr>';
-    beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
-    io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
 };
 
 exports.beamer_zeitplan = function (io, connection, ab_rtid) {
@@ -70,7 +75,7 @@ exports.beamer_zeitplan = function (io, connection, ab_rtid) {
             var HTML_Kopf = 'Zeitplan';
             // Rundeninfo
             var HTML_Inhalt = '<tr height="100%"><td><table style="width: 100%; float: left; ">';
-            HTML_Inhalt += '<thead><tr class="runden" role="row"><th style="width: 250px; padding-left:100px; " colspan="1" rowspan="1" class="sorting">Beginn</th><th style="width: auto;" colspan="1" rowspan="1" class="sorting">Runde</th></tr></thead>';
+            HTML_Inhalt += '<thead><tr class="runden" role="row"><th style="width: 250px; padding-left:80px; " colspan="1" rowspan="1" class="sorting">Beginn</th><th style="width: auto;" colspan="1" rowspan="1" class="sorting">Runde</th></tr></thead>';
             HTML_Inhalt += '<tbody style="font-size: 2.5vw;">';
             for (var i in data) {
                 if (typeof ab_rtid === undefined || ab_rtid === "") {
@@ -95,7 +100,6 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var temp = new Object;
     var anz = 0;
     // Kopf Text
-    var rd_ind = (runde - 1) * runden_info[0].PpR;
     var HTML_Kopf = runden_info[0].Turnier_Name  + '<br>' + runden_info[0].Tanzrunde_Text;
 	// nur getanzte Runden
     var sum1;

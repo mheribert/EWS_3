@@ -161,14 +161,26 @@ End Sub
 
 Private Sub Form_Load()
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+        Case "D"
+            If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
+                Me!Übertrag_EXCEL.Visible = True
+            End If
         Case "SL"
             Me!FolieRunden.Visible = True
             Me!Rechteck47.Visible = True
+            Me!Übertrag_EXCEL.Visible = False
         Case "BY"
             Me!FolieRunden.Visible = True
             Me!Rechteck47.Visible = True
-            
+            Me!Übertrag_EXCEL.Visible = False
+        Case "BW"
+            Me!FolieRunden.Visible = True
+            Me!Rechteck47.Visible = True
+            Me!Übertrag_EXCEL.Visible = False
         Case Else
+            Me!FolieRunden.Visible = False
+            Me!Rechteck47.Visible = False
+            Me!Übertrag_EXCEL.Visible = False
     End Select
 
 End Sub
@@ -306,7 +318,7 @@ Private Sub Runde_suchen_AfterUpdate()
 End Sub
 
 Private Sub Auslosung_Click()
-    If Me!Feld52 = 1 Then
+    If Me!Feld52 = 1 Or Me!Feld52 = 5 Then
         zufallszahl
     Else
         umgekehrte_Reihenfolge
@@ -562,7 +574,7 @@ Private Sub zufallszahl()
     Anzahl = rstauslosung.RecordCount
     rstauslosung.MoveFirst
     Do While Not rstauslosung.EOF()
-        zufall = Int(Anzahl * Rnd + (rstauslosung!Anwesend_Status - 1) * (1000)) ' Zufallszahlen generieren.
+        zufall = Int(Anzahl * rnd + (rstauslosung!Anwesend_Status - 1) * (1000)) ' Zufallszahlen generieren.
         rstauslosung.Edit
         rstauslosung!Auslosung = zufall
         rstauslosung.Update
@@ -570,7 +582,13 @@ Private Sub zufallszahl()
     Loop
     rstauslosung.Close
     
-    sqlstr = "select * from Paare_Rundenqualifikation where RT_ID= " & Runde_suchen & " order by auslosung"
+    If Me!Feld52 = 1 Then
+        sqlstr = "SELECT * FROM Paare_Rundenqualifikation WHERE RT_ID= " & Runde_suchen & " ORDER BY auslosung;"
+    ElseIf Me!Feld52 = 5 Then
+    ' nach Starnummer
+        sqlstr = "SELECT *, Startnr FROM Paare p INNER JOIN Paare_Rundenqualifikation r ON p.TP_ID = r.TP_ID WHERE RT_ID= " & Runde_suchen & " ORDER BY Startnr;"
+    End If
+    
     Set rstauslosung = dbs.OpenRecordset(sqlstr)
     
     was = 1
@@ -597,7 +615,7 @@ Private Sub zufallszahl()
     '  Anfang
     '  verhindern, dass mehrere Paare aus dem gleichen Verein in der gleichen Runde tanzen
     '
-    Call Rundenauslosung(Runde_suchen, Anz_Paare)
+    If Me!Feld52 = 1 Then Call Rundenauslosung(Runde_suchen, Anz_Paare)
     ' getrennte Auslosung ?
     If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Then
     
@@ -643,3 +661,6 @@ Private Sub Runde_übertragen(Tanzrund, Startklasse)
     End If
 End Sub
 
+Private Sub Übertrag_EXCEL_Click()
+    schreibe_Auswerteunterlagen
+End Sub

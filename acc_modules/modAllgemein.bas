@@ -49,7 +49,7 @@ Public Function setzte_buttons(frm, btns, Land)
             Forms(frm)(re!btn).Visible = False
         Else
             Forms(frm)(re!btn).Visible = True
-            Forms(frm)(re!btn).Caption = re(Land & "_Caption")
+            If Not re!bef Then Forms(frm)(re!btn).Caption = re(Land & "_Caption")
         End If
         re.MoveNext
     Loop
@@ -133,7 +133,7 @@ Public Sub make_new_TDaten(T_Nr)
     Dim dbnew As Database
     Dim re As Recordset
     Dim cm As Recordset
-    Dim strSQL As String
+    Dim strsql As String
     Dim nTurnier As String
     Dim i As Integer
     
@@ -251,4 +251,3 @@ Public Function get_properties(PROP_KEY)
     Set re = db.OpenRecordset("SELECT PROP_VALUE FROM Properties WHERE Prop_Key ='" & PROP_KEY & "';")
     get_properties = Nz(re!PROP_VALUE)
 End Function
-

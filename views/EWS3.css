@@ -1,4 +1,4 @@
-﻿/*   Version 3.1.15   */
+﻿/*   Version 3.1.16   */
 .runden             { vertical-align:middle; text-align:center; background-color:#F0F080; height:40px; }
 .kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
 .rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
@@ -93,3 +93,6 @@
 .hr                 { width: 95%; height: 3px; }
 .bs_schmal          { height: 10px; }
 .bs_ersatz          { height: 50px; }
+/*   Mehrkampf  */
+.mk_inp             { height: 30px; }
+.mk_fld             { font-family: Arial; font-size: 24px; height: 30px; width: 120px; }

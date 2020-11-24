@@ -254,7 +254,7 @@ Function export_tabelle(tbl, FileToZip)
         fld_count = fld_count + 1
     Next
     line = left(line, Len(line) - 1) & vbCrLf
-    re.MoveFirst
+    If re.RecordCount > 0 Then re.MoveFirst
     
     Do Until re.EOF
         For i = 1 To fld_count - 1

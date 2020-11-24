@@ -48,47 +48,47 @@ Private Sub Befehl19_Click()
     End If
         
     '***** Mehrkampf ******
-    MehrkampfEndrunde = False
-    ' Prüfen bei erste Runde Endrunde der Klassen S1 / S2 / S / J / C und ob Turnierform mit Mehrkampf, dann MehrkampfEndrunde setzen
-    Set rs = dbs.OpenRecordset("select * from Turnier where turniernum = " & Me!T_Nr & ";")
-    If Me!nächste_Runde.Column(0) = "End_r" And (rs!MehrkampfStationen Like "*Boden*" Or rs!MehrkampfStationen Like "*Kondi*") Then
-        Set rs = dbs.OpenRecordset("select * from Startklasse where startklasse = '" & sk & "';")
-        If rs!Mehrkampf Then
-            MehrkampfEndrunde = True
-        End If
-    End If
-    If Me!nächste_Runde.Column(0) = "Mehrk_Tanz" Or MehrkampfEndrunde Then
-        'Heraussuchen welche Mehrkampfrunden es noch gibt "nächste Runden"
-        'Für jede der nächsten Runden die Paare, die noch nicht drin sind hinzufügen und eine Rundeneinteilung Startnummer aufsteigend eintragen
-        
-        Set rs = dbs.OpenRecordset("select * from Rundentab where startklasse = '" & sk & "' and turniernr = " & T_Nr & " and ((Runde) Like 'Mehrk*' And (Runde) Not Like 'Mehrk_Tanz');")
-        rs.MoveLast
-        MehrkampfrundenAnzahl = rs.RecordCount
-        rs.MoveFirst
-        If MehrkampfrundenAnzahl > 0 Then
-            Do Until rs.EOF
-                'MsgBox rs!Runde
-                sqlString = "select * from paare p1 where startkl='" & sk & "' and turniernr=" & T_Nr & " and (Anwesent_Status = 1 Or Anwesent_Status = 2)"
-                sqlString = sqlString & " and not exists (select 1 from paare_rundenqualifikation pr where pr.rt_id=" & rs!RT_ID & " AND pr.tp_id=p1.tp_id)"
-                Set rstpaare = dbs.OpenRecordset(sqlString)
-                fill_Paare_rundenquali rstErste, rstpaare, rs!RT_ID
-                'Rundeneinteilung für Mehrkampfrunden setzen, Startnummern absteigend
-                Set rstpaare = dbs.OpenRecordset("SELECT pr.Auslosung, pr.Rundennummer FROM Paare_rundenqualifikation AS pr INNER JOIN Paare ON pr.TP_ID = Paare.TP_ID WHERE (((pr.rt_id)= " & rs!RT_ID & " )) ORDER BY Paare.Startnr;")
-                If rstpaare.RecordCount > 0 Then
-                    rstpaare.MoveFirst
-                    Zaehler = 1
-                    Do Until rstpaare.EOF
-                        rstpaare.Edit
-                        rstpaare!Rundennummer = Zaehler
-                        rstpaare.Update
-                        Zaehler = Zaehler + 1
-                        rstpaare.MoveNext
-                    Loop
-                End If
-                rs.MoveNext
-            Loop
-        End If
-    End If
+'    MehrkampfEndrunde = False
+'    ' Prüfen bei erste Runde Endrunde der Klassen S1 / S2 / S / J / C und ob Turnierform mit Mehrkampf, dann MehrkampfEndrunde setzen
+'    Set rs = dbs.OpenRecordset("select * from Turnier where turniernum = " & Me!T_Nr & ";")
+'    If Me!nächste_Runde.Column(0) = "End_r" And (rs!MehrkampfStationen Like "*Boden*" Or rs!MehrkampfStationen Like "*Kondi*") Then
+'        Set rs = dbs.OpenRecordset("select * from Startklasse where startklasse = '" & sk & "';")
+'        If rs!Mehrkampf Then
+'            MehrkampfEndrunde = True
+'        End If
+'    End If
+'    If Me!nächste_Runde.Column(0) = "Mehrk_Tanz" Or MehrkampfEndrunde Then
+'        'Heraussuchen welche Mehrkampfrunden es noch gibt "nächste Runden"
+'        'Für jede der nächsten Runden die Paare, die noch nicht drin sind hinzufügen und eine Rundeneinteilung Startnummer aufsteigend eintragen
+'
+'        Set rs = dbs.OpenRecordset("select * from Rundentab where startklasse = '" & sk & "' and turniernr = " & T_Nr & " and ((Runde) Like 'Mehrk*' And (Runde) Not Like 'Mehrk_Tanz');")
+'        rs.MoveLast
+'        MehrkampfrundenAnzahl = rs.RecordCount
+'        rs.MoveFirst
+'        If MehrkampfrundenAnzahl > 0 Then
+'            Do Until rs.EOF
+'                'MsgBox rs!Runde
+'                sqlString = "select * from paare p1 where startkl='" & sk & "' and turniernr=" & T_Nr & " and (Anwesent_Status = 1 Or Anwesent_Status = 2)"
+'                sqlString = sqlString & " and not exists (select 1 from paare_rundenqualifikation pr where pr.rt_id=" & rs!RT_ID & " AND pr.tp_id=p1.tp_id)"
+'                Set rstpaare = dbs.OpenRecordset(sqlString)
+'                fill_Paare_rundenquali rstErste, rstpaare, rs!RT_ID
+'                'Rundeneinteilung für Mehrkampfrunden setzen, Startnummern absteigend
+'                Set rstpaare = dbs.OpenRecordset("SELECT pr.Auslosung, pr.Rundennummer FROM Paare_rundenqualifikation AS pr INNER JOIN Paare ON pr.TP_ID = Paare.TP_ID WHERE (((pr.rt_id)= " & rs!RT_ID & " )) ORDER BY Paare.Startnr;")
+'                If rstpaare.RecordCount > 0 Then
+'                    rstpaare.MoveFirst
+'                    Zaehler = 1
+'                    Do Until rstpaare.EOF
+'                        rstpaare.Edit
+'                        rstpaare!Rundennummer = Zaehler
+'                        rstpaare.Update
+'                        Zaehler = Zaehler + 1
+'                        rstpaare.MoveNext
+'                    Loop
+'                End If
+'                rs.MoveNext
+'            Loop
+'        End If
+'    End If
     
     '********* HM V14.03 check ob Anzahl der Tänzer bei Formationen richtig eingetragen sind
     If InStr(1, sk, "F_") > 0 And rstpaare.RecordCount > 0 Then

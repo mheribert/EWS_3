@@ -11,7 +11,7 @@ Sub build_html(pr, RT_nr, Runde)
     Dim out
     Dim line As String
     Dim db As Database
-    Dim wr, re As Recordset
+    Dim wr, re, rd_anz As Recordset
     Dim ht As Recordset
     Dim dNeu, dNext As String
     Dim tr_nr As String
@@ -64,10 +64,12 @@ Sub build_html(pr, RT_nr, Runde)
             dNeu = tr_nr & "R" & wr!WR_Lizenznr & "_K" & RT_nr & "_" & rd     ' aktuelle HTML-Seite
             dNext = tr_nr & "R" & wr!WR_Lizenznr & "_K" & RT_nr & "_" & rd + 1 'Nächste HTML Seite
             Set out = file_handle(ht_pfad & dNeu & ".html")
+            Set rd_anz = db.OpenRecordset("SELECT COUNT(*) AS anz FROM Paare_Rundenqualifikation WHERE RT_ID=" & RT_nr & " AND Rundennummer=" & rd & ";")
+            ppr = rd_anz!anz
             
-            ppr = (a_paare = 1) Or ((rd * 2) - 1 = re.RecordCount) Or (((rd - rmax) * 2) - 1 = re.RecordCount)
+'            ppr = (a_paare = 1) Or ((rd * 2) - 1 = re.RecordCount) Or (((rd - rmax) * 2) - 1 = re.RecordCount)
             
-            If re!Anz_Paare > 1 And (wr!WR_tausch = True And ppr = False) Then
+            If re!Anz_Paare > 1 And (wr!WR_tausch = True And ppr = 1) Then
                 sei_1 = 2
                 sei_2 = 1
             Else
@@ -190,7 +192,7 @@ Sub build_html(pr, RT_nr, Runde)
                         Case Else
                         
                     End Select
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x__st" & sei_2, re!Startnr)
                         line = Replace(line, "x__id" & sei_2, re!TP_ID)
@@ -224,7 +226,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__st" & sei_1, re!Startnr)
                     line = Replace(line, "x__id" & sei_1, re!TP_ID)
                     line = Replace(line, "x__rh" & sei_1, rd)
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x__st" & sei_2, re!Startnr)
                         line = Replace(line, "x__id" & sei_2, re!TP_ID)
@@ -236,7 +238,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x_st" & sei_1, re!Startnr)
                     line = Replace(line, "x_id" & sei_1, re!TP_ID)
                     line = Replace(line, "x_rh" & sei_1, rd)
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x_st" & sei_2, re!Startnr)
                         line = Replace(line, "x_id" & sei_2, re!TP_ID)
@@ -256,7 +258,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__st" & sei_1, re!Startnr)
                     line = Replace(line, "x__id" & sei_1, re!TP_ID)
                     line = Replace(line, "x__rh" & sei_1, rd)
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x__st" & sei_2, re!Startnr)
                         line = Replace(line, "x__id" & sei_2, re!TP_ID)
@@ -276,7 +278,7 @@ Sub build_html(pr, RT_nr, Runde)
                             line = Replace(line, "x_sd1", vorspan & vbCrLf & make_a_inp("sd1", 5))
                             line = Replace(line, "x_th1", vorspan & vbCrLf & make_a_inp("th1", 5))
                             line = Replace(line, "x_ck1", "")                   ' jetzt noch kein Check   a_check)
-                            If Not ppr Then
+                            If ppr = 2 Then
                                 a_check = ""
                                 re.MoveNext
                                 line = Replace(line, "x_st" & sei_2, re!Startnr)
@@ -306,7 +308,7 @@ Sub build_html(pr, RT_nr, Runde)
                             line = Replace(line, "x_st" & sei_1, re!Startnr)
                             line = Replace(line, "x_id" & sei_1, re!TP_ID)
                             line = Replace(line, "x_rh" & sei_1, rd)
-                            If Not ppr Then
+                            If ppr = 2 Then
                                 re.MoveNext
                                 line = Replace(line, "x_st" & sei_2, re!Startnr)
                                 line = Replace(line, "x_id" & sei_2, re!TP_ID)
@@ -320,7 +322,7 @@ Sub build_html(pr, RT_nr, Runde)
                     '----/BS Nord-------------------------------------------------------------------------------------
                 Case "BWBS_"
                     '----BS Baden-Württemberg-------------------------------------------------------------------------------------
-                    Select Case left(re!Startkl, 6)
+                    Select Case re!Startkl
                         Case "BS_RR_E1", "BS_RR_J2"
                             line = get_line("BS", "BW_RR_lang", ppr)
                         
@@ -337,7 +339,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__st" & sei_1, re!Startnr)
                     line = Replace(line, "x__id" & sei_1, re!TP_ID)
                     line = Replace(line, "x__rh" & sei_1, rd)
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x__st" & sei_2, re!Startnr)
                         line = Replace(line, "x__id" & sei_2, re!TP_ID)
@@ -360,7 +362,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__st" & sei_1, re!Startnr)
                     line = Replace(line, "x__id" & sei_1, re!TP_ID)
                     line = Replace(line, "x__rh" & sei_1, rd)
-                    If Not ppr Then
+                    If ppr = 2 Then
                         re.MoveNext
                         line = Replace(line, "x__st" & sei_2, re!Startnr)
                         line = Replace(line, "x__id" & sei_2, re!TP_ID)
@@ -376,8 +378,31 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__html", dNext & ".html")
                     line = Replace(line, "x__rt", RT_nr)
                     '----/BS Saarland----------------------------------------------------------------------------------
+                Case "BYBS_"
+                    '----BS Bayern-----------------------------------------------------------------------------------
+                    line = get_line("BS", "BS_BY", ppr)
+                        
+                    line = Replace(line, "x__st" & sei_1, re!Startnr)
+                    line = Replace(line, "x__id" & sei_1, re!TP_ID)
+                    line = Replace(line, "x__rh" & sei_1, rd)
+                    If ppr = 2 Then
+                        re.MoveNext
+                        line = Replace(line, "x__st" & sei_2, re!Startnr)
+                        line = Replace(line, "x__id" & sei_2, re!TP_ID)
+                        line = Replace(line, "x__rh" & sei_2, rd)
+                    End If
+                    line = Replace(line, "x__title", Forms![A-Programmübersicht]!Turnierbez)
+                    line = Replace(line, "x__vbs", "/cgi-bin/page.vbs")
+                    line = Replace(line, "x__nPg", dNext & ".html")
+                    line = Replace(line, "x__rnr", "Runde " & rd & " von " & rmax)
+                    line = Replace(line, "x__wr", wr!Ausdr1)
+                    line = Replace(line, "x__wid", wr!WR_ID)
+                    line = Replace(line, "x__rd", rd_klasse)
+                    line = Replace(line, "x__html", dNext & ".html")
+                    line = Replace(line, "x__rt", RT_nr)
+                    '----/BS bayern----------------------------------------------------------------------------------
                 Case Else
-                    MsgBox "Fehler bei der Selektion der Startklasse"
+                    MsgBox "build_html" & vbCrLf & "Fehler bei der Selektion der Startklasse"
             End Select
             line = Replace(line, "x_title", Forms![A-Programmübersicht]!Turnierbez)
             line = Replace(line, "x_rnr", "Runde " & rd & " von " & rmax)
@@ -685,7 +710,7 @@ Function get_line(cl, ber, ppr)
     Set db = CurrentDb
     
     Set ht = db.OpenRecordset("SELECT * FROM HTML_Block WHERE Seite='" & cl & "' AND Bereich='" & ber & "';", DB_OPEN_DYNASET)
-    If ppr Then
+    If ppr = 1 Then
         get_line = ht!f1
     Else
         get_line = ht!F2
@@ -1161,7 +1186,7 @@ Public Function make_wr_zeitplan()
     Set re = db.OpenRecordset("SELECT RT_ID, Startzeit, Startklasse_text, Rundentext FROM Tanz_Runden INNER JOIN (Rundentab LEFT JOIN Startklasse ON Rundentab.Startklasse = Startklasse.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde WHERE (Rundentab.Rundenreihenfolge<1000) ORDER BY Rundentab.Rundenreihenfolge;")
     If re.RecordCount = 0 Then Exit Function
         Open getBaseDir & "webserver\views\Zeitplan.html" For Output As #1
-        Print #1, "<!DOCTYPE html><head><title>beamer</title><meta http-equiv=""expires"" content=""0""><link rel=""stylesheet"" href=""EWS3.css"">"
+        Print #1, "<!DOCTYPE html><head><title>Zeitplan</title><meta http-equiv=""expires"" content=""0""><link rel=""stylesheet"" href=""EWS3.css"">"
         Print #1, "</head><body style=""height: 98%; font-family: Verdana;"" id=""beamer_seite"">"
         Print #1, "<table cellpadding=""0"" frame=""void"" class=""tb1""><tr height=""20%""><td><table width=""100%"">"
         Print #1, "<tr><td class=""kopf"" width=""300px""><img src=""Logo.jpg"" width=""290"" height=""180"" alt=""DRBV""></td>"

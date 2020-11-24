@@ -33,7 +33,7 @@ Private Sub Form_Load()
     End If
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "SL"
-            Me!Wertung_drucken.Visible = False
+            'Me!Wertung_drucken.Visible = False
         Case "D"
             Me!Wertung_drucken.Visible = False
             
@@ -108,7 +108,7 @@ Private Sub Form_AfterUpdate()
     Form_Paare_ohne_Punkte_UF.Requery
 End Sub
 
-Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String    'Beitensport Taktung
     If Me!Umschaltfläche147.Caption = "Runde starten" Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Runde_starten&text=")
@@ -120,7 +120,7 @@ Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, X As 
     Debug.Print st
 End Sub
 
-Private Sub Runde_starten_Click()
+Public Sub Runde_starten_Click()
     Dim re, target As Recordset
     Dim st As String
     Dim retl As Integer
@@ -207,6 +207,7 @@ Sub Tanzrunde_AfterUpdate()
     Dim Turniernr As Integer
     Dim Startklasse_einstellen As String
     Dim sqlstr As String
+    Dim where_part As String
     Dim re As Recordset
     Dim AnzahlWRVorgabe, t As Integer
     If Not IsNull(Tanzrunde) Then
@@ -219,14 +220,15 @@ Sub Tanzrunde_AfterUpdate()
             ' bei Fuß nur FT-Wr
             '*****AB***** V13.02 Fehler es wurde noch auf das alte Feld WR_func im Recordset zugegriffen - hier geänder in: WR_function
             If Right(Me!Tanzrunde.Column(6), 4) = "_Fuß" Then
-                Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak' ) ORDER BY Wert_Richter.WR_Kuerzel;")
+                where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
             Else
-'                If Left(Me!Tanzrunde.Column(3), 3) = "BW_" Then
-                    Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & ") ORDER BY Wert_Richter.WR_Kuerzel;")
-'                Else
-'                    Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ob' ) ORDER BY Wert_Richter.WR_Kuerzel;")
-'                End If
+                If left(Me!Tanzrunde.Column(6), 3) = "MK_" Then
+                    where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)='M' OR WR_function='Ob'))"
+                Else
+                    where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
+                End If
             End If
+            Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE " & where_part & " ORDER BY Wert_Richter.WR_Kuerzel;")
             Set ausw = dbs.OpenRecordset("Auswertung", DB_OPEN_DYNASET)
             If re.RecordCount = 0 Then
                 MsgBox "Es gibt keine eingteilten WR!"
@@ -279,7 +281,7 @@ Sub Tanzrunde_AfterUpdate()
                     Call UpdateRundenqualifikation(rt_id_endr, Tanzrunde, True)
                 End If
             End If
-            If left(Me!Tanzrunde.Column(3), 3) = "BS_" And get_properties("EWS") = "EWS3" Then
+            If (left(Me!Tanzrunde.Column(3), 3) = "BS_" Or left(Me!Tanzrunde.Column(5), 3) = "MK_") And get_properties("EWS") = "EWS3" Then
                 Me!Umschaltfläche147.Visible = True
                 Me!Umschaltfläche147.Caption = "Runde starten"
             Else
@@ -438,7 +440,6 @@ Private Sub Rundenmonitor_Click()
 End Sub
 
 Public Function Wertung_check(WR_ID, spalte)
-    
     Dim dbs As Database
     Dim rstauswertung As Recordset          ', rstweiter, rstanzahl
     Dim stmt As String
@@ -623,7 +624,7 @@ Private Sub wertungen_löschen_Click()
 '    Überflüssiges_löschen
 End Sub
 
-Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 1
@@ -631,7 +632,7 @@ Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, Y
     Beamer_generieren
 End Sub
 
-Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 2
@@ -639,7 +640,7 @@ Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As
     Beamer_generieren
 End Sub
 
-Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 3
@@ -648,14 +649,14 @@ Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As 
     Beamer_generieren
 End Sub
 
-Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 4
     Beamer_generieren
 End Sub
 
-Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 5
@@ -663,7 +664,7 @@ Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Sin
     Beamer_generieren
 End Sub
 
-Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String
     Dim Runde As String
     If no_runde_selected Then Exit Sub

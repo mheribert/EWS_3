@@ -1,4 +1,4 @@
-﻿var ver      = 'V3.1.15';
+﻿var ver      = 'V3.1.16';
 
 exports.wr_login = function (wertungsrichter, title) {
     var HTML_Seite = '<!DOCTYPE html>';
@@ -89,6 +89,55 @@ exports.BS_BY_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_'});
 };
 
+exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io, wr_func) {
+    var st_kl = runden_info[0].Startklasse;
+    var trunde = runden_info[0].Runde.substr(0, 4);
+    var html_ausw = "BS_";
+    var sei;
+
+    HTML_Seite = make_kopf(rd_ind, runden_info, "2", wr_name, tausch) + '\r\n';
+    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
+    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
+        sei = s;
+        if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
+        HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
+        if (wr_func === "MA") {
+            if (trunde === "MK_5") {
+                HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Figuren', st_kl) + '\r\n';
+                HTML_Seite += '<tr><td height="230"></td></tr>' + '\r\n';
+            } else {
+                if (trunde === "MK_3" || trunde === "MK_4") {
+                    HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Herr', st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="107"></td></tr>' + '\r\n';
+                    HTML_Seite += make_bs_inp('mk_td' + sei, 10, 'Dame', st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="60"></td></tr>' + '\r\n';
+                } else {
+                    HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMKText('mk_td' + sei, 0, "Dame", st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="100"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMKText('mk_th' + sei, 0, "Herr", st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="30"></td></tr>' + '\r\n';
+                    html_ausw = "MK_";
+               }
+            }
+        } else {
+            if (trunde === "MK_3" || trunde === "MK_4" || trunde === "MK_5") {
+                HTML_Seite += make_bs_inp('mk_th' + sei, 7, 'Herr Technik & Haltung', st_kl) + '\r\n';
+                HTML_Seite += make_bs_inp('mk_dh' + sei, 3, 'Herr Dynamik & Takt', st_kl) + '\r\n';
+                HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
+                HTML_Seite += make_bs_inp('mk_td' + sei, 7, 'Dame Technik & Haltung', st_kl) + '\r\n';
+                HTML_Seite += make_bs_inp('mk_dd' + sei, 3, 'Dame Dynamik & Takt', st_kl) + '\r\n';
+            } else {
+                HTML_Seite += '<tr><td height="270">Kein Einsatz</td></tr>' + '\r\n';
+            }
+        }
+        HTML_Seite += '<tr><td height="30"></td></tr ></table></td>' + '\r\n';
+    }
+    HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
+
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: html_ausw });
+};
+
 exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].RundeArt;
@@ -100,18 +149,22 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         sei = s;
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-        HTML_Seite += make_bs_inp('gs' + sei, 10, 'Technik Herr', st_kl) + '\r\n';
-        if (st_kl === "BS_BW_" || st_kl === "BS_F_B" || st_kl === "BS_F_R") {
-            HTML_Seite += make_bs_inp('bd' + sei, 10, 'Technik Dame', st_kl) + '\r\n';
+        if (st_kl.substr(0,6) === "BS_RR_") {
+            HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik Herr', st_kl) + '\r\n';
         } else {
-            HTML_Seite += '<tr><td class="bs_ersatz"><input name="wbd1" id="wbd1" type="hidden" value="0"></td></tr>';
+            HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik', st_kl) + '\r\n';
         }
-        HTML_Seite += make_bs_inp('tf' + sei, 10, 'Tanz', st_kl) + '\r\n';
-        HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
-        if (st_kl === "BS_RR_E" || st_kl === "BS_RR_E") {
-            HTML_Seite += make_bs_inp('in' + sei, 10, 'Akrobatik', st_kl) + '\r\n';
+        if (st_kl.substr(0, 6) === "BS_RR_") {
+            HTML_Seite += make_bs_inp('td' + sei, 10, 'Technik Dame', st_kl) + '\r\n';
         } else {
-            HTML_Seite += '<tr><td class="bs_ersatz"><input name="win1" id="win1" type="hidden" value="0"></td></tr>';
+            HTML_Seite += '<tr><td class="bs_ersatz"><input name="wtd' + sei + '" id="wtd' + sei + '" type="hidden" value="0"></td></tr>';
+        }
+        HTML_Seite += make_bs_inp('ta' + sei, 10, 'Tanz', st_kl) + '\r\n';
+        HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
+        if (st_kl === "BS_RR_E1" || st_kl === "BS_RR_J2") {
+            HTML_Seite += make_bs_inp('ak' + sei, 10, 'Akrobatik', st_kl) + '\r\n';
+        } else {
+            HTML_Seite += '<tr><td class="bs_ersatz"><input name="wak' + sei + '" id="wak' + sei + '" type="hidden" value="0"></td></tr>';
         }
         HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
         HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
@@ -166,20 +219,20 @@ exports.BW_NG_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io)
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td bgcolor = "#dddddd" style = "font-family: Arial; padding-left: 10px; padding-right: 10px; font-size: 16px;"><table align="center" border="0">';
         HTML_Seite += kriterium_text("Schritt Dame", "Schritt Herr");
-        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_sd' + sei, 5, '', st_kl, '') + '</td>';
-        HTML_Seite += '<td colspan="2">' + make_inpNG_BW('ng_sh' + sei, 5, '', st_kl, '') + '</td></tr>' + '\r\n';
+        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_ttd' + sei, 5, '', st_kl, '') + '</td>';
+        HTML_Seite += '<td colspan="2">' + make_inpNG_BW('ng_tth' + sei, 5, '', st_kl, '') + '</td></tr>' + '\r\n';
         HTML_Seite += kriterium_text("Basic Dancing,Lead & Follow,Harmonie,Dance Performance");
-        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_bd' + sei, 5, '', st_kl, '') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_dp' + sei, 4, '', st_kl, '0') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_db' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
+        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_bda' + sei, 5, '', st_kl, '') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_dap' + sei, 4, '', st_kl, '0') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_bdb' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
         HTML_Seite += kriterium_text("Tanzfiguren");
-        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_fa' + sei, 5, '', st_kl, '') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_fv' + sei, 4, '', st_kl, '0') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_fb' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
+        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_fta' + sei, 5, '', st_kl, '') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_fts' + sei, 4, '', st_kl, '0') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_ftb' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
         HTML_Seite += kriterium_text("Musik Interpretation");
-        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_in' + sei, 5, '', st_kl, '') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_is' + sei, 4, '', st_kl, '0') + '</td>';
-        HTML_Seite += '<td>' + make_inpNG_BW('ng_ib' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
+        HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_inf' + sei, 5, '', st_kl, '') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_ins' + sei, 4, '', st_kl, '0') + '</td>';
+        HTML_Seite += '<td>' + make_inpNG_BW('ng_inb' + sei, 1, '', st_kl, '0') + '</td></tr>' + '\r\n';
         HTML_Seite += '<tr><td height="30"></td></tr></table></td>';
     }
     HTML_Seite += '</tr>';
@@ -213,7 +266,7 @@ exports.BW_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'OB_' });
 };
 
-exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, wr_id, io) {
+exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, wr_id, io, new_guidelines) {
     var HTML_Arr = new Object();
     var HTML_Seite;
     var cgi_val;
@@ -225,7 +278,6 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
     if (runde <= runden_info.length) {
         HTML_Arr[0] = make_kopf(rd_ind, runden_info, "2", wr_name) + '\r\n';
 
-        rd_ind = (runde - 1) * runden_info[0].PpR;
         for (seite = 1; seite < runden_info[rd_ind].PpR + 1; seite++) {
             if (runden_info[rd_ind + seite - 1].Name_Team === null) {
                 HTML_Seite = '<tr id = "anzeige_body"><td>' + runden_info[rd_ind + seite - 1].Da_Nachname + ' & ' + runden_info[rd_ind + seite - 1].He_Nachname + '</td></tr>';
@@ -236,14 +288,14 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
             if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
                 HTML_Seite += '<td>Name</td><td>Tanztechnik</td><td>Tanzfiguren</td><td>Choreo</td><td>Synchro</td><td>Bilder</td><td>Formationsfig</td><td>Summe</td><td>&nbsp;</td></tr>';
             } else {
-                if (typeof wertungen[wr_id][runden_info[runde - 1].TP_ID].wng_sd1 === "undefined") {
+                if (new_guidelines) {
+                    HTML_Seite += '<td>WR</td><td style="width: 120px;">GS H</td><td style="width: 120px;">GS D</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
+                } else {
                     if (trunde === 'ER') {
                         HTML_Seite += '<td>Name</td><td>Grundschritt</td><td>Basic Dancing</td><td>Tanzfig</td><td>Interpret</td><td>Spontane Int</td><td>Dance Perf</td><td>Summe</td><td>&nbsp;</td></tr>';
                     } else {
                         HTML_Seite += '<td>Name</td><td>Grundschritt</td><td>Tanzfig</td><td>Interpret</td><td>Dance Perf</td><td>Summe</td><td>&nbsp;</td></tr>';
                     }
-                } else {
-                    HTML_Seite += '<td>WR</td><td>GS H</td><td>GS D</td><td>Basic Dance</td><td>Dance Perf</td><td>Bonus</td><td>Fig Ausf</td><td>Fig Schw</td><td>Bonus</td><td>Interpr</td><td>Spontan</td><td>Bonus</td><td>Summe</td><td>&nbsp;</td></tr>';
                 }
             }
             for (wr in wertungsrichter) {
@@ -261,16 +313,23 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["waw" + seite]) + '</td>';
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["waf" + seite]) + '</td>';
                             } else {
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
-                                if (trunde === 'ER') {
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wbd" + seite]) + '</td>';
+                                if (new_guidelines) {
+                                    var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+                                    for (var k = 0; k < wr_kr.length; k++) {
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                    }
+                                } else {
+                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
+                                    if (trunde === 'ER') {
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wbd" + seite]) + '</td>';
+                                    }
+                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
+                                    HTML_Seite += '<td>' + parseFloat(cgi_val["win" + seite]) + '</td>';
+                                    if (trunde === 'ER') {
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wsi" + seite]) + '</td>';
+                                    }
+                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wdp" + seite]) + '</td>'; 
                                 }
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["win" + seite]) + '</td>';
-                                if (trunde === 'ER') {
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wsi" + seite]) + '</td>';
-                                }
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wdp" + seite]) + '</td>';
                             }
                             if (runden_info[0].Runde.indexOf("r_schnell") > 0) {
                                 HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte / 1.1) + '</td>';
@@ -294,6 +353,9 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                             if (trunde === 'ER') {
                                 HTML_Seite += '<td' + iif('TanzZeit ', cgi_val["wtanzzeitvw" + seite]) + '</td>';
                                 HTML_Seite += '<td' + iif('Dis ', cgi_val["waufrufvw" + seite]) + '</td>';
+                            }
+                            if (new_guidelines) {
+                                HTML_Seite += '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>';
                             }
                             HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte) * -1 + '</td>';
                             HTML_Seite += '<td><input class="wr_nochmal" value="nochmal werten" type="button" onclick="senden(this.value, ' + wr + ')"></td ></tr>';
@@ -688,6 +750,14 @@ function make_inpNG_BW(fName, max, aName, st_kl, vorbelegung) {
     return inp;
 }
 
+function make_inpMKText(fName, max, aName, st_kl) {
+    var inp;
+    inp = '<tr><td colspan="20">' + aName + '</td></tr>';
+    inp += '<tr class="mk_inp" id="' + fName + '"><td><input class="mk_fld" id="w' + fName + '" name="w' + fName + '" onkeyup="wr_onclick(event)"></td></tr>';
+
+    return inp;
+}
+
 function kriterium_text(text1, text2) {
     var inp = '<tr>';
     if (typeof text2 !== "undefined") {
@@ -826,7 +896,7 @@ function make_bs_inp(fName, max, aName, st_kl) {
     inp  = '<tr><td class="bs_schmal"></td></tr>';
     inp += '<tr class="bs_head"><td colspan="20">' + aName + '</td></tr>';
     inp += '<tr class="bs_krit" id="' + fName + '" max="' + max + '">';
-    for (var t = 0; t < 21; t++) {
+    for (var t = 0; t < max * 2 + 1; t++) {
         inp += '<td class="bs_wert">';
         if (t % 2) {
             inp += '-' + '</td>';

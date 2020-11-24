@@ -26,7 +26,7 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
     fName = getBaseDir & get_TerNr & "_RT" & CInt(rt) & "_raw.txt"   ' Dateiname erstellen
     Set fs = CreateObject("Scripting.FileSystemObject")
     If get_properties("EWS") = "EWS3" And Len(Dir(fName)) > 0 Then  ' bei EWS3 die rawWerte einlesen
-        Set inp = fs.openTextFile(getBaseDir & get_TerNr & "_RT" & CInt(rt) & "_raw.txt", 1, 0)  'reading
+        Set inp = fs.OpenTextFile(getBaseDir & get_TerNr & "_RT" & CInt(rt) & "_raw.txt", 1, 0)  'reading
         Set ana = db.OpenRecordset("Analyse", DB_OPEN_DYNASET)
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
@@ -58,7 +58,7 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
     End If
 
     If Len(Dir(fName)) > 0 Then
-        Set inp = fs.openTextFile(fName, 1, 0)  'reading
+        Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
             Set pr = db.OpenRecordset("SELECT PR_ID FROM Paare_Rundenqualifikation WHERE TP_ID=" & cgivar(0) & " AND RT_ID=" & rt & ";")
@@ -114,7 +114,7 @@ End Function
 
 Private Function rechne_abzuege(PR_ID, inp)
     Dim vars
-    Dim i, rh, X As Integer
+    Dim i, rh, x As Integer
     Dim Punkte As Double
     Dim verst
     verst = Array("beobachter_zukurz", "beobachter_zulang", "beobachter_Makeup", "beobachter_schmuck", "beobachter_requsit")
@@ -123,9 +123,9 @@ Private Function rechne_abzuege(PR_ID, inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh" & i)
     
-    For X = 0 To UBound(verst)
-        If vars.Item(verst(X)) <> "" Then
-            Punkte = Punkte + CSng(vars.Item(verst(X)))
+    For x = 0 To UBound(verst)
+        If vars.Item(verst(x)) <> "" Then
+            Punkte = Punkte + CSng(vars.Item(verst(x)))
         End If
     
     Next
@@ -149,7 +149,8 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh1")
     
-    Select Case get_bs_erg(s_kl, 3)
+    Select Case left(s_kl, 3)
+    
         Case "F_B"
             If vars.Item("wtk1") <> "" Then
                 kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
@@ -202,18 +203,28 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
                         End If
                         Punkte = Punkte - Replace(vars.Item("wfl" & i), ".", ",")
                     End If
+                    If vars.Item("wmk_th" & i) <> "" Then
+                        Punkte = Punkte + CSng(vars.Item("wmk_th" & i))
+                        Punkte = Punkte + CSng(vars.Item("wmk_dh" & i))
+                        Punkte = Punkte + CSng(vars.Item("wmk_td" & i))
+                        Punkte = Punkte + CSng(vars.Item("wmk_dd" & i))
+                    End If
                 End If
             End If
         Case "BW_"
-            kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-            If ch_runde(rde) = "ER" Then
-                Punkte = Punkte + CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10 + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
-                Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10 + CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
-                Punkte = Punkte + CSng(vars.Item("wsi" & i)) * kl_punkte(5) / 10 + CSng(vars.Item("wdp" & i)) * kl_punkte(6) / 10
+            If vars.exists("wng_tth" & i) Then
+                Punkte = CSng(vars.Item("Punkte" & i))     ' newGuidelines ohne Kategorien-Streichverfahren
             Else
-                Punkte = Punkte + CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10 + CSng(vars.Item("wgs" & i)) * kl_punkte(1) / 10
-                Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10 + CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
-                Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(5) / 10 + CSng(vars.Item("wdp" & i)) * kl_punkte(6) / 10
+                kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
+                If ch_runde(rde) = "ER" Then
+                    Punkte = Punkte + CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10 + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
+                    Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10 + CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
+                    Punkte = Punkte + CSng(vars.Item("wsi" & i)) * kl_punkte(5) / 10 + CSng(vars.Item("wdp" & i)) * kl_punkte(6) / 10
+                Else
+                    Punkte = Punkte + CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10 + CSng(vars.Item("wgs" & i)) * kl_punkte(1) / 10
+                    Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10 + CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
+                    Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(5) / 10 + CSng(vars.Item("wdp" & i)) * kl_punkte(6) / 10
+                End If
             End If
             Punkte = Punkte + add_verstoesse(vars, i)
             If Punkte < 0 Then Punkte = 0
@@ -223,46 +234,47 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             Punkte = Punkte + CSng(vars.Item("wfg" & i)) - CSng(vars.Item("wfl" & i))
             If Punkte < 0 Then Punkte = 0
         
-        Case "BS_"
-            kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-            
-            Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
-            Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
-            Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
-            Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
-
-'            Punkte = CSng(vars.Item("wgs" & i))
-'            Punkte = CSng(vars.Item("Punkte" & i))
-            If Punkte < 0 Then Punkte = 0
-            
-        Case "NBS_"
-            Select Case left(s_kl, 6)
-                Case "BS_RR_"
-                    Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wsd" & i))
-                    Punkte = Punkte + CSng(vars.Item("wth" & i)) - Replace(vars.Item("wfl" & i), ".", ",")
-            
-                Case "BS_F_R"
-                    Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wth" & i))
-                    Punkte = Punkte + CSng(vars.Item("wch" & i)) - Val(Nz(Replace(vars.Item("wfl" & i), ".", ",")))
+        Case Else
+            Select Case DLookup("Land", "Startklasse", "Startklasse ='" & s_kl & "'")
+                Case "BY"
+                    kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
+                    Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
+                    Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
+                    Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
+                    Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
+                
+                Case "BW"
+                    Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
+                    Punkte = Punkte + CSng(vars.Item("wak" & i)) - Replace(vars.Item("wfe" & i), ".", ",")
+                
+                Case "SL"
+                    Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
+                
+                Case "D"
+                    Punkte = CSng(vars.Item("wgs" & i))
+'                    Punkte = CSng(vars.Item("Punkte" & i))
                     
-                Case "BS_"
-                    Punkte = CSng(vars.Item("wsh" & i))
-                    
+                Case "NBS_"
+                    Select Case left(s_kl, 6)
+                        Case "BS_RR_"
+                            Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wsd" & i))
+                            Punkte = Punkte + CSng(vars.Item("wth" & i)) - Replace(vars.Item("wfl" & i), ".", ",")
+                     
+                        Case "BS_F_R"
+                            Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wth" & i))
+                            Punkte = Punkte + CSng(vars.Item("wch" & i)) - Val(Nz(Replace(vars.Item("wfl" & i), ".", ",")))
+                              
+                        Case "BS_"
+                            Punkte = CSng(vars.Item("wsh" & i))
+                              
+                    End Select
+                    If Punkte < 0 Then Punkte = 0
+                
                 Case Else
-                    MsgBox "Fehler bei der Punkteberechnung Breitensport Nord"
-                    
+                    MsgBox "Fehler bei der Punkteberechnung" & vbCrLf & "Startklasse wurde nicht erkannt."
+
             End Select
             If Punkte < 0 Then Punkte = 0
-        Case "BWBS_"
-            Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
-            Punkte = Punkte + CSng(vars.Item("wak" & i)) - Replace(vars.Item("wfe" & i), ".", ",")
-            If Punkte < 0 Then Punkte = 0
-        Case "SLBS_"
-            Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
-            If Punkte < 0 Then Punkte = 0
-      
-        Case Else
-            MsgBox "Fehler bei der Punkteberechnung Startklasse wurde nicht erkannt."
     End Select
 '    If Punkte < 0 Then Punkte = 0
     rechne_punkte = FormatNumber(Punkte, 2)
@@ -279,7 +291,7 @@ Public Function get_platzierung(rt)
     fName = getBaseDir & get_TerNr & "_RT" & CLng(rt * 1000) & ".txt"
     If Len(Dir(fName)) > 0 Then
         Set fs = CreateObject("Scripting.FileSystemObject")
-        Set inp = fs.openTextFile(fName, 1, 0)  'reading
+        Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
             Set cgivar = zerlege(cgivar(2))
@@ -302,11 +314,11 @@ End Function
 ' neu newJudgingSystem
 Function add_verstoesse(vars, i)
     Dim verst
-    Dim X As Integer
+    Dim x As Integer
     verst = Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw")
-    For X = 0 To UBound(verst)
-        If vars.Item(verst(X) & i) <> "" Then
-            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(X) & i))
+    For x = 0 To UBound(verst)
+        If vars.Item(verst(x) & i) <> "" Then
+            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(x) & i))
         End If
     Next
 End Function
@@ -499,7 +511,7 @@ Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & 
     
     If Len(Dir(fName)) > 0 Then
         Set fs = CreateObject("Scripting.FileSystemObject")
-        Set inp = fs.openTextFile(fName, 1, 0)  'reading
+        Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
             Zeile = cgivar(2)
@@ -613,7 +625,7 @@ Public Sub ObserverHTML(trunde)
     Dim HTML_WR_Werte, sql, test, PaarLinks, PaarRechts As String
     Dim st_kl As String
     Dim AbgegebeneWertungen, Paar_Infos As Recordset
-    Dim WR_Zaehler, X, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim WR_Zaehler, x, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
     Dim i, t As Integer
     Dim T_WR_Reset, A_WR_Reset As Boolean
     Dim kl_punkte
@@ -661,7 +673,7 @@ Public Sub ObserverHTML(trunde)
     Paar_ID = AbgegebeneWertungen!Paar_ID
     st_kl = Paar_Infos!Startklasse
     
-    For X = 1 To WR_Zaehler
+    For x = 1 To WR_Zaehler
         HTML_WR_Werte = HTML_WR_Template
     
         Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
@@ -785,7 +797,7 @@ Public Sub ObserverHTML(trunde)
         
         AbgegebeneWertungen.MoveNext
     
-    Next X
+    Next x
         
     HTML_Website = "<H1>" & Paar_Infos!Startklasse_text & " " & Paar_Infos!Runde & "</H1><H2>" & PaarLinks & "</H2>" & HTML_Paar_links & "<br><br><H2>" & PaarRechts & "</H2>" & HTML_Paar_rechts & "<br><br>"
     

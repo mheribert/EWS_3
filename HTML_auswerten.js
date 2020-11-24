@@ -1,4 +1,4 @@
-﻿var ver = 'V3.1.15';
+﻿var ver = 'V3.1.16';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -31,32 +31,13 @@ function rechne_wertungen(body, seite, runden_info) {
                 if (runden_info[0].Runde.indexOf("r_schnell") > 0) {
                     Punkte = Punkte * 1.1;
                 }
-            } else {
-                if (typeof body["wng_sh" + seite] !== "undefined") {
-                    body["wgs" + seite]  = parseFloat(body["wng_sd" + seite]) * 7.5 / 5;     //schritt dame  \        15
-                    body["wgs" + seite] += parseFloat(body["wng_sh" + seite]) * 7.5 / 5;     //schritt herr  /
-
-                    body["wbd" + seite] = parseFloat(body["wng_bd" + seite]) * 7.5 / 5;      //basic dance   |        7,5
-
-                    body["wdp" + seite]  = parseFloat(body["wng_dp" + seite]) * 6.5 / 4;     //dance performance  \          7,5
-                    body["wdp" + seite] += parseFloat(body["wng_db" + seite]) * 1.0 / 1;     //dance bonus        /
-
-                    body["wtf" + seite]  = parseFloat(body["wng_fa" + seite]) * 5.0 / 5;     //Figuren ausführung + schwierigkeitsgrad  \
-                    body["wtf" + seite] += parseFloat(body["wng_fv" + seite]) * 4.0 / 4;     //Figuren vielfalt + originalität           >  10
-                    body["wtf" + seite] += parseFloat(body["wng_fb" + seite]) * 1.0 / 1;     //Figuren bonus                            /
-
-                    body["win" + seite] = parseFloat(body["wng_in" + seite]) * 15 / 5;       //interpretation            |     15
-
-                    body["wsi" + seite]  = parseFloat(body["wng_is" + seite]) * 8.0 / 4;     //interpretation spontan    \     10
-                    body["wsi" + seite] += parseFloat(body["wng_ib" + seite]) * 2.0 / 1;     //interpretation bonus      /                          
-
-                    Punkte  = parseFloat(body["wgs" + seite]);
-                    Punkte += parseFloat(body["wtf" + seite]);
-                    Punkte += parseFloat(body["win" + seite]);
-                    Punkte += parseFloat(body["wdp" + seite]);
-                    Punkte += parseFloat(body["wbd" + seite]);
-                    Punkte += parseFloat(body["wsi" + seite]);
- 
+            } else {        // Auswertung für NewGuidelines
+                if (typeof body["wng_tth" + seite] !== "undefined") {
+                    var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+                    kl_punkte = Punkteverteilung("BW_NG", "", "");
+                    for (var k = 0; k < wr_kr.length; k++) {
+                        Punkte += parseFloat(body["w" + wr_kr[k] + seite]) * kl_punkte[k];
+                    }
                     if (runden_info[0].Runde.indexOf("r_schnell") > 0) {
                         Punkte = Punkte * 1.1;
                     }
@@ -90,6 +71,13 @@ function rechne_wertungen(body, seite, runden_info) {
                     Punkte += parseFloat(body["wch" + seite]) * kl_punkte[5] / 10;
                     Punkte += parseFloat(body["wch" + seite]) * kl_punkte[6] / 10;
                 }
+            }
+            // Mehrkampf 
+            if (typeof body['wmk_th' + seite] !== "undefined") {
+                Punkte  = parseFloat(body["wmk_th" + seite]);
+                Punkte += parseFloat(body["wmk_dh" + seite] || 0);
+                Punkte += parseFloat(body["wmk_td" + seite] || 0);
+                Punkte += parseFloat(body["wmk_dd" + seite] || 0);
             }
             break;
         case "F_B":
@@ -125,7 +113,7 @@ function rechne_wertungen(body, seite, runden_info) {
             break;
         case "BS_":
             switch (st_kl) {
-                case "BS_BY_BJ":
+                case "BS_BY_BJ":        // BRBV
                 case "BS_BY_BE":
                 case "BS_BY_BS":
                     Punkte =  parseFloat(body["wgs" + seite]) * kl_punkte[0] / 10;  // Grundschritt
@@ -133,7 +121,24 @@ function rechne_wertungen(body, seite, runden_info) {
                     Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
                     Punkte += parseFloat(body["win" + seite]) * kl_punkte[3] / 10;  // Interpretation (Figuren, spontane Interpretation)
                     break;
-                default:
+                case "BS_BW_BW":        // BWRRV
+                case "BS_BW_SH":
+                case "BS_F_BW_FO":
+                case "BS_F_RR_EF":
+                case "BS_F_RR_JF":
+                case "BS_RR_BB":
+                case "BS_RR_E1":
+                case "BS_RR_J1":
+                case "BS_RR_J2":
+                case "BS_RR_S1":
+                case "BS_RR_S2":
+                    Punkte =  parseFloat(body["wth" + seite]);
+                    Punkte += parseFloat(body["wtd" + seite]);
+                    Punkte += parseFloat(body["wta" + seite]);   
+                    Punkte += parseFloat(body["wak" + seite]);
+                    Punkte -= parseFloat(body["wfe" + seite]);  
+                    break;
+                default:                //  DRBV
                     Punkte = parseFloat(body["wgs" + seite]);
                     break;
             }
@@ -172,7 +177,7 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                     if (parseInt(x) === runden_info[s].TP_ID) {
                         if (wertungsrichter[i].WR_func === 'Ob') {
                             seite = wertungen[i][x].Seite;         //eins_zwei(runden_info[s].TP_ID, wertungen[i][x].cgi)
-                            PunkteOb.push([i, x, 0, false]);    //  WR, TP_ID, Punkte, 
+                            PunkteOb.push([i, x, 0, false, wertungen[i][x].cgi]);    //  WR, TP_ID, Punkte, Wertungen
                             switch (runden_info[0].Startklasse.substring(0, 3)) {
                                 case "F_B":
                                 case "BW_":
@@ -206,10 +211,14 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                         switch (wertungsrichter[i].WR_func) {
                             case 'Ft':
                             case 'X':
-                                PunkteFt.push([i, x, wertungen[i][x].Punkte, false]);
+                            case 'MB':
+                                PunkteFt.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
+                                break;
+                            case 'MA':
+                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
                                 break;
                             case 'Ak':
-                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false]);
+                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
                                 break;
                         }
                     }
@@ -237,6 +246,9 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                     poststring += i + '=' + wertungen[w][pr].cgi[i] + '&';
                 }
                 poststring += "Punkte" + wertungen[w][pr].Seite + '=' + wertungen[w][pr].Punkte + '&';
+                if (typeof wertungen[w][pr].Punkte_err !== "undefined") {
+                    poststring += 'Punkte_err' + wertungen[w][pr].Seite + '=' + wertungen[w][pr].Punkte_err + '&';
+                } 
                 if (typeof wertungen[w][pr].in === "undefined") {
                     poststring = poststring.substring(0, poststring.length - 1);
                 } else {
@@ -258,7 +270,7 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                 if (wertungen[wr][pr].cgi.TP_ID1 === TP_ID || wertungen[wr][pr].cgi.TP_ID2 === TP_ID) {
                     for (p in PunkteAe) {
                         if (typeof wertungen[wr][pr].cgi[p] !== "undefined") {
-                            if (p.substr(0, 3) != "wak") {
+                            if (p.substr(0, 3) !== "wak") {
                                 wertungen[wr][pr].cgi[p] = wertungen[i][TP_ID][p];
                                 wertungen[wr][pr].cgi["w" + p.substr(1, 10)] = to_zahl(wertungen[i][TP_ID]["w" + p.substr(1, 10)]);
                             } else {
@@ -271,15 +283,6 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
             }
         }
 
-    }
-    function eins_zwei(tp_id, vars) {
-        if (tp_id == parseFloat(vars.TP_ID1)) {
-            return 1;
-        } else {
-             if (typeof vars.TP_ID2 != "undefined") {
-                return 2;
-             }
-        }
     }
 };
 
@@ -301,9 +304,15 @@ function get_mittel(avr, wertungen) {
         switch (avr.length) {
             case 1:
             case 2:
+                min = 1;
+                max = avr.length;
+                break;
             case 3:
                 min = 1;
                 max = avr.length;
+                if (avr[0][6] === "MK_") {
+                    max = 2;
+                } 
                 break;
             case 4:
                 min = 2;
@@ -328,11 +337,64 @@ function get_mittel(avr, wertungen) {
             default:
                 console.log("Fehler in der Anzahl der WR!");
         }
-        for (var x = min - 1; x < max; x++) {
-            pu = pu + parseFloat(avr[x][2]);
-            wertungen[avr[x][0]][avr[x][1]].in = true;
+        var x;
+        if (typeof avr[0][4]["wng_ttd" + avr[0][5]] === "undefined") {
+            for (x = min - 1; x < max; x++) {
+                pu = pu + parseFloat(avr[x][2]);
+                wertungen[avr[x][0]][avr[x][1]].in = true;
+            }
+            return pu / (max - min + 1);
+        } else {                     // ab hier Kategorien streichverfahren
+/*            var kl_punkte = Punkteverteilung("BW_NG", "", "");
+            var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+            for (var kat = 0; kat < 11; kat++) {
+                var kat_name = "w" + wr_kr[kat] + avr[0][5];
+                var all = 0;
+                for (x = min - 1; x < max; x++) {
+                    all += parseFloat(avr[x][4][kat_name]);
+                    wertungen[avr[x][0]][avr[x][1]].in = true;
+                }
+                var durchschnitt = all / (max - min + 1);
+                var max_abw = 0;               // höchste differenz absolut
+                var diff = [ 0, 0, 0, 0, 0, 0, 0];
+                for (x = min - 1; x < max; x++) {
+                    diff[x] = Math.abs(parseFloat(avr[x][4][kat_name]) - durchschnitt);
+                    if (max_abw < Math.abs(parseFloat(avr[x][4][kat_name]) - durchschnitt)) {
+                        max_abw = Math.abs(parseFloat(avr[x][4][kat_name]) - durchschnitt);
+                    }
+                } 
+                var allrest = 0;
+                var anzwrrest = 0;      // Reste addieren
+                for (x = min - 1; x < max; x++) {
+                    if (diff[x] !== max_abw) {
+                        allrest += parseFloat(avr[x][4][kat_name]);
+                        anzwrrest++;
+                    }
+                }
+                if (durchschnitt > 0 && max_abw === 0 ) {
+                    pu += durchschnitt * kl_punkte[kat];
+                }
+                if (anzwrrest !== 0) {              // daraus Mittelwert, keine division durch 0
+                    pu += allrest / anzwrrest * kl_punkte[kat];       
+                }
+
+            }
+            for (x in wertungen) {
+                wertungen[x][avr[0][1]]["Punkte_err"] = pu;
+            }
+            return pu ;*/
+            //______  New Guidelines ohne streichverfahren__________ weg wenn Streichverfahren
+            for (x = min - 1; x < max; x++) {
+                pu = pu + parseFloat(avr[x][2]);
+                wertungen[avr[x][0]][avr[x][1]].in = true;
+            }
+            pu = pu / (max - min + 1);
+            for (x in wertungen) {
+                wertungen[x][avr[0][1]]["Punkte_err"] = pu;
+            }
+            return pu;
+            //_______________________________________________________
         }
-        return pu / (max - min + 1);
     } else {
         return parseFloat(0);
     }
@@ -408,6 +470,9 @@ function Punkteverteilung(Startklasse, trunde, rd) {
         case "BW_SB":
             punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
             break;
+        case "BW_NG":
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3);
+            break;
         // Breitensport Bayern Boogie
         case "BS_BY_BJ":
         case "BS_BY_BE":
@@ -466,7 +531,7 @@ function Faktor_Formation_Abzuege(Startklasse) {
             Faktor_Formation_Abzuege.min = 8;
             Faktor_Formation_Abzuege.max = 12;
             break;
-        default:                // Falls Startklasse nicHt gefunden
+        default:                // Falls Startklasse nicht gefunden
             Faktor_Formation_Abzuege.faktor = 0;
             Faktor_Formation_Abzuege.min = 0;
             Faktor_Formation_Abzuege.max = 0;

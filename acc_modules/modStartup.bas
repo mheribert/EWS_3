@@ -11,12 +11,12 @@ Public Function bindTables()
     Dim dirTLP As String
     
     dirName = getBaseDir()
-    
-    
+       
     
     dirTLP = dirName & "Turnierleiterpaket\"
     ' Setzen des ICONs relativ zum Pfad
-    CurrentDb.Properties("AppIcon") = dirName & "DRBV.ico"
+
+    CurrentDb.Properties("AppIcon") = dirName & "drbv.ico"
     Application.RefreshTitleBar
     
     Application.SetOption ("Auto Compact"), 1
@@ -34,15 +34,15 @@ On Error Resume Next
     Dim db As DAO.Database
     Dim dbName As String
     Dim strDaten As String
-    Dim strSQL As String
+    Dim strsql As String
     Dim i As Integer
 
     strDaten = getBaseDir & "T" & mdb_Nr & "_TDaten.mdb"
     
 'Die Nächten 3 Zeilen dienen dem Schutz vor doppelten Feldname WR_func  als Bugfixing
     Set db = DBEngine.Workspaces(0).OpenDatabase(strDaten)
-    strSQL = "ALTER TABLE Startklasse_Wertungsrichter DROP COLUMN WR_func;"
-    db.Execute strSQL
+    strsql = "ALTER TABLE Startklasse_Wertungsrichter DROP COLUMN WR_func;"
+    db.Execute strsql
     
     Set db = CurrentDb()
     For i = 0 To db.TableDefs.Count - 1
