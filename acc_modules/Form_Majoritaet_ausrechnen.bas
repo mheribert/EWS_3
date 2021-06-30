@@ -34,8 +34,8 @@ End Sub
 Private Sub Form_Open(Cancel As Integer)
     setzte_buttons "Majoritaet_ausrechnen", "ausw", Forms![A-Programmübersicht]!Turnierausw.Column(8)
     If get_properties("EWS") = "EWS3" Then
-        Me!btn_ausw_2.Visible = True
-        Me!btn_ausw_1.Visible = True
+'        Me!btn_ausw_2.Visible = True
+'        Me!btn_ausw_1.Visible = True
     End If
 End Sub
 
@@ -285,15 +285,26 @@ Private Sub print_Giveaway_Click()
     Form_Ausdrucke.Print_Givaway Me.Startklasse.Column(0), Me.Startklasse.Column(5)
 End Sub
 
-Private Sub Siegerehrung_Click()
+Private Sub btn_ausw_1_Click()
     Dim st As String
     Dim Runde As String
     If no_runde_selected Then Exit Sub
     Runde = Me!Startklasse.Column(7)
-    If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Then
-        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2)
-        If st = "beamer_siegerehrung" & Startklasse And Me!btn_ausw_2 > 0 Then
-            Me!btn_ausw_2 = Me!btn_ausw_2 - 1
+    If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Or Runde = "MK_5_TNZ" Then
+        If Me!btn_ausw_2 = "Siegerehrung starten" Then
+            Me!btn_ausw_2 = Me.RecordsetClone.RecordCount
+            Me!btn_ausw_1.Caption = "Platz " & Me!btn_ausw_2 & " anzeigen"
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2 + 1)
+        Else
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2)
+            If st = "beamer_siegerehrung" & Startklasse And Me!btn_ausw_2 > 0 Then
+                Me!btn_ausw_2 = Me!btn_ausw_2 - 1
+                Me!btn_ausw_1.Caption = "Platz " & Me!btn_ausw_2 & " anzeigen"
+                If Me!btn_ausw_2 = 0 Then
+                    Me!Feld138.SetFocus
+                    Me!btn_ausw_1.Visible = False
+                End If
+            End If
         End If
     Else
         MsgBox "Es gibt keine Siegerehrung für diese Runde!"
@@ -331,13 +342,12 @@ Public Sub Startklasse_Change()
         Me!Feld112.Visible = False
     End If
     If (Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" Or Startklasse.Column(7) = "End_r_2") And get_properties("EWS") = "EWS3" Then
-        Me!btn_ausw_2.Visible = True
-        Me!btn_ausw_2.Visible = True
+        Me!btn_ausw_1.Visible = True
     Else
-        Me!btn_ausw_2.Visible = False
         Me!btn_ausw_1.Visible = False
     End If
     If anz_Wertungen = 0 Then
+        Me!btn_ausw_1.Visible = False
         MsgBox "Zu dieser Runde gibt es noch keine Wertungen!"
     Else
         Me!btnPaareWeiternehmen.Visible = Me!Startklasse.Column(13)
@@ -362,6 +372,9 @@ Public Sub Startklasse_Change()
         nächste_Runde.Requery
     End If
     Requery
-    Me!btn_ausw_2 = Me.RecordsetClone.RecordCount + 1
+    If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Or Runde = "MK_5_TNZ" Then
+        Me!btn_ausw_2 = "Siegerehrung starten"
+        Me!btn_ausw_1.Caption = "Siegerehrung starten"
+    End If
     Me!Feld138.SetFocus
 End Sub

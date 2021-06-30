@@ -114,7 +114,7 @@ End Function
 
 Private Function rechne_abzuege(PR_ID, inp)
     Dim vars
-    Dim i, rh, x As Integer
+    Dim i, rh, X As Integer
     Dim Punkte As Double
     Dim verst
     verst = Array("beobachter_zukurz", "beobachter_zulang", "beobachter_Makeup", "beobachter_schmuck", "beobachter_requsit")
@@ -123,9 +123,9 @@ Private Function rechne_abzuege(PR_ID, inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh" & i)
     
-    For x = 0 To UBound(verst)
-        If vars.Item(verst(x)) <> "" Then
-            Punkte = Punkte + CSng(vars.Item(verst(x)))
+    For X = 0 To UBound(verst)
+        If vars.Item(verst(X)) <> "" Then
+            Punkte = Punkte + CSng(vars.Item(verst(X)))
         End If
     
     Next
@@ -184,7 +184,11 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             If vars.Item("tfl" & i & "a20") <> "" Then
                 Punkte = Punkte + CSng(vars.Item("wfl" & i & "a20"))
             Else
-                If WR_func(vars.Item("WR_ID")) <> "Ob" Then
+                If WR_func(vars.Item("WR_ID")) = "Ob" Then
+                    If Not vars.exists("Obs_check1") Then
+                        Punkte = CSng(vars.Item("wmk_th" & i))
+                    End If
+                Else
                     Punkte = add_akro(vars, i, t)
                     If t = 0 Then t = 1     '  Wegen Runden in denen keine Akro ist
                     If InStr(1, rde, "_Fuß") > 0 Then Punkte = 0
@@ -238,15 +242,21 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             Select Case DLookup("Land", "Startklasse", "Startklasse ='" & s_kl & "'")
                 Case "BY"
                     kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-                    Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
-                    Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
-                    Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
-                    Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
-                
+                    If vars.exists("wgs" & i) Then
+                        Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
+                        Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
+                        Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
+                        Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
+                    Else
+                        Punkte = 0
+                    End If
                 Case "BW"
-                    Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
-                    Punkte = Punkte + CSng(vars.Item("wak" & i)) - Replace(vars.Item("wfe" & i), ".", ",")
-                
+                    If vars.exists("wth" & i) Then
+                        Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
+                        Punkte = Punkte + CSng(vars.Item("wak" & i)) - Replace(vars.Item("wfe" & i), ".", ",")
+                    Else
+                        Punkte = 0
+                    End If
                 Case "SL"
                     Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
                 
@@ -314,11 +324,11 @@ End Function
 ' neu newJudgingSystem
 Function add_verstoesse(vars, i)
     Dim verst
-    Dim x As Integer
+    Dim X As Integer
     verst = Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw")
-    For x = 0 To UBound(verst)
-        If vars.Item(verst(x) & i) <> "" Then
-            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(x) & i))
+    For X = 0 To UBound(verst)
+        If vars.Item(verst(X) & i) <> "" Then
+            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(X) & i))
         End If
     Next
 End Function
@@ -625,7 +635,7 @@ Public Sub ObserverHTML(trunde)
     Dim HTML_WR_Werte, sql, test, PaarLinks, PaarRechts As String
     Dim st_kl As String
     Dim AbgegebeneWertungen, Paar_Infos As Recordset
-    Dim WR_Zaehler, x, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim WR_Zaehler, X, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
     Dim i, t As Integer
     Dim T_WR_Reset, A_WR_Reset As Boolean
     Dim kl_punkte
@@ -673,7 +683,7 @@ Public Sub ObserverHTML(trunde)
     Paar_ID = AbgegebeneWertungen!Paar_ID
     st_kl = Paar_Infos!Startklasse
     
-    For x = 1 To WR_Zaehler
+    For X = 1 To WR_Zaehler
         HTML_WR_Werte = HTML_WR_Template
     
         Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
@@ -797,7 +807,7 @@ Public Sub ObserverHTML(trunde)
         
         AbgegebeneWertungen.MoveNext
     
-    Next x
+    Next X
         
     HTML_Website = "<H1>" & Paar_Infos!Startklasse_text & " " & Paar_Infos!Runde & "</H1><H2>" & PaarLinks & "</H2>" & HTML_Paar_links & "<br><br><H2>" & PaarRechts & "</H2>" & HTML_Paar_rechts & "<br><br>"
     

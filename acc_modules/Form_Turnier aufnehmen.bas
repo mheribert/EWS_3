@@ -57,9 +57,11 @@ End Sub
 Private Sub Form_Close()
     Dim re As Recordset
     Dim vars
+    Dim fehler As String
     Dim i, anzWR As Integer
     Set re = Forms![Turnier aufnehmen]![Startklasse_Turnier Unterformular].Form.RecordsetClone
     If re.RecordCount <> 0 Then re.MoveFirst
+    fehler = "Bei " & vbCrLf
     Do Until re.EOF
         anzWR = 0
         vars = Split(Nz(re!SelectWR), "+")
@@ -67,10 +69,13 @@ Private Sub Form_Close()
             anzWR = anzWR + vars(i)
         Next
         If anzWR <> re!AnzahlWR Then
-            MsgBox "Bei " & re!Startklasse_text & " stimmt die Anzahl der Wertungsrichter nicht!" & vbCrLf & "Bitte neu eingeben!"
+            fehler = fehler & re!Startklasse_text & vbCrLf
         End If
         re.MoveNext
     Loop
+    If Len(fehler) > 6 Then
+        MsgBox fehler & "stimmt die Anzahl der Wertungsrichter nicht!" & vbCrLf & "Bitte neu eingeben!", , "Achtung!"
+    End If
     
 End Sub
 

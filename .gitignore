@@ -3,6 +3,15 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Node.js Tools for Visual Studio
+.ntvs_analysis.dat
+node_modules/
+node.exe
+Zeitplan.html
+config.json
+restore.html
+wr_simulate.html
+
 # User-specific files
 *.rsuser
 *.suo
@@ -262,13 +271,6 @@ FakesAssemblies/
 
 # GhostDoc plugin setting file
 *.GhostDoc.xml
-
-# Node.js Tools for Visual Studio
-.ntvs_analysis.dat
-node_modules/
-node.exe
-Zeitplan.html
-config.json
 
 # Visual Studio 6 build log
 *.plg

@@ -251,3 +251,18 @@ Public Function get_properties(PROP_KEY)
     Set re = db.OpenRecordset("SELECT PROP_VALUE FROM Properties WHERE Prop_Key ='" & PROP_KEY & "';")
     get_properties = Nz(re!PROP_VALUE)
 End Function
+
+Public Function get_mk()
+    On Error Resume Next
+    Dim db As Database
+    Dim re As Recordset
+    Set db = CurrentDb
+    Set re = db.OpenRecordset("SELECT MehrkampfStationen FROM Turnier WHERE Turniernum=1;")
+    get_mk = Nz(re!MehrkampfStationen)
+End Function
+
+Function db_Ver()
+    db_Ver = get_properties("DB_VERSION") & "-" & get_properties("DB_SUBVERSION")
+End Function
+
+

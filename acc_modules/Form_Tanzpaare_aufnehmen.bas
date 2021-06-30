@@ -1,6 +1,6 @@
 Option Compare Database
 Option Explicit
-Public akt_st As String
+    Public akt_st As String
 
 Private Sub Akro_anzeigen_Click()
 
@@ -102,13 +102,13 @@ Private Sub Kombinationsfeld36_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
-Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dim st As String
-'    If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
-        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&text=0")
-'    Else
-'        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&text=" & Me!FilterStartklasse)
-'    End If
+    If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=0")
+    Else
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=" & Me!FilterStartklasse)
+    End If
 End Sub
 
 Private Sub Paar_Status_KeyDown(KeyCode As Integer, Shift As Integer)

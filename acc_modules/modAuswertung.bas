@@ -110,7 +110,13 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             maj!WR2 = Format(ft_pu, "##0.00")
             maj!WR3 = Format(ak_pu, "##0.00")
             maj!WR5 = Format(bw_pu, "##0.00")
-            maj!WR6 = Format(bw_verst, "-##0.00")
+            If st_kl = "RR_S1" Or st_kl = "RR_S2" Then
+                maj!WR6 = Format(bw_verst, "##0.00")
+                bw_verst = bw_verst * -1
+            Else
+                bw_verst = bw_verst * -1
+                maj!WR6 = Format(bw_verst, "-##0.00")
+            End If
             
             ges_Punkte = ftft_pu + IIf(ft_pu + ak_pu < 0, 0, ft_pu + ak_pu) + bw_pu - bw_verst - maj!PA_ID * get_verstoss(st_kl)
             If ges_Punkte < 0 Then ges_Punkte = 0
@@ -132,7 +138,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             Do Until pr.EOF
                 db.Execute "DELETE * FROM Majoritaet WHERE rt_id=" & 9000 + i & " AND TP_ID=" & pr!PR_ID & ";"
                 rnd = "MK_" & i & "*"
-                If i = 5 And (st_kl <> "RR_S1" And st_kl <> "RR_S2") Then rnd = "End_r"
+'                If i = 5 And (st_kl <> "RR_S1" And st_kl <> "RR_S2") Then rnd = "End_r"
                 Set maj = db.OpenRecordset("SELECT * FROM Majoritaet INNER JOIN Rundentab ON Majoritaet.RT_ID = Rundentab.RT_ID WHERE Runde Like '" & rnd & "' And TP_ID=" & pr!TP_ID & ";")
                 sum = 0
                 Do Until maj.EOF
@@ -148,6 +154,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
         pr.MoveFirst
         Do Until pr.EOF
             Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " AND tp_id=" & pr!TP_ID & ";")
+            If maj.RecordCount = 0 Then Exit Sub
             maj.Edit
             Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE RT_ID=9005 AND TP_ID=" & pr!PR_ID & ";")
             maj!WR1 = ft_ak!MK_Sum
@@ -284,11 +291,11 @@ Function get_mittel(avr, Runde)
     Dim i(8) As Double
     Dim min As Integer
     Dim max As Integer
-    Dim x As Integer
+    Dim X As Integer
     
     avr.MoveLast
-    For x = 1 To avr.RecordCount
-        i(x) = Nz(avr!Punkte)
+    For X = 1 To avr.RecordCount
+        i(X) = Nz(avr!Punkte)
         avr.MovePrevious
     Next
     
@@ -328,8 +335,8 @@ Function get_mittel(avr, Runde)
         min = 1
         max = avr.RecordCount
     End If
-    For x = min To max
-        i(0) = i(0) + i(x)
+    For X = min To max
+        i(0) = i(0) + i(X)
     Next
     get_mittel = i(0) / (max - min + 1)
 

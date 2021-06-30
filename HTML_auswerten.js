@@ -1,4 +1,4 @@
-﻿var ver = 'V3.1.16';
+﻿var ver = 'V3.2.00';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -116,6 +116,7 @@ function rechne_wertungen(body, seite, runden_info) {
                 case "BS_BY_BJ":        // BRBV
                 case "BS_BY_BE":
                 case "BS_BY_BS":
+                case "BS_BY_S1":
                     Punkte =  parseFloat(body["wgs" + seite]) * kl_punkte[0] / 10;  // Grundschritt
                     Punkte += parseFloat(body["wbd" + seite]) * kl_punkte[1] / 10;  // Basic Dancing, Lead & Follow, Harmonie
                     Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
@@ -185,17 +186,22 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                                     break;
                                 case "F_R":
                                 case "RR_":
-                                    for (var aewr in wertungen[i][x]) {
-                                        if ((aewr.substr(0, 4) === "tfl" + seite || aewr.substr(0, 6) === "tflak" + seite) && wertungen[i][x][aewr] != "") {
-                                            PunkteAe[aewr] = wertungen[i][x][aewr];
-                                            PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x]["w" + aewr.substr(1, 8)]);
-                                            if (wertungen[i][x][aewr].indexOf("P0") != -1) {
-                                                PunkteAe["w" + aewr.substr(3, 4)] = 0;
-                                                wertungen[i][x]["w" + aewr.substr(3, 4)] = 0;
+                                    if (runden_info[0].Startklasse ==="RR_S1" || runden_info[0].Startklasse === "RR_S2") {
+                                        PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x].Punkte) * -1
+                                    } else {
+                                        for (var aewr in wertungen[i][x]) {
+                                            if ((aewr.substr(0, 4) === "tfl" + seite || aewr.substr(0, 6) === "tflak" + seite) && wertungen[i][x][aewr] != "") {
+                                                PunkteAe[aewr] = wertungen[i][x][aewr];
+                                                PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x]["w" + aewr.substr(1, 8)]);
+                                                if (wertungen[i][x][aewr].indexOf("P0") != -1) {
+                                                    PunkteAe["w" + aewr.substr(3, 4)] = 0;
+                                                    wertungen[i][x]["w" + aewr.substr(3, 4)] = 0;
+                                                }
                                             }
                                         }
+                                            
                                     }
-                                    break;
+                                break;
                                 default:
                             }
                             write_back(wertungen, PunkteAe, x, i);  //  wertungen, PunkteAe, TP_ID, WR, filename
@@ -402,7 +408,7 @@ function get_mittel(avr, wertungen) {
 }
 
 function to_zahl(wert) {
-    if (isNaN(wert) || wert == "") {
+    if (isNaN(wert) || wert === "") {
         return 0;
     } else {
         return parseFloat(wert);
@@ -477,7 +483,8 @@ function Punkteverteilung(Startklasse, trunde, rd) {
         case "BS_BY_BJ":
         case "BS_BY_BE":
         case "BS_BY_BS":
-            punkte_verteilung = Array(15, 10, 10, 30, 0, 0, 0);
+        case "BS_BY_S1":
+            punkte_verteilung = Array(15, 15, 10, 25, 0, 0, 0);
             break;
         // Default
         default:

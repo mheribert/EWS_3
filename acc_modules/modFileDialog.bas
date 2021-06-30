@@ -1,6 +1,85 @@
 Option Compare Database
 Option Explicit
 
+    #If Win64 And VBA7 Then
+        Declare PtrSafe Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
+        Declare PtrSafe Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderA" (lpBrowseInfo As BROWSEINFO) As Long
+        Declare PtrSafe Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListA" (ByVal pidl As Long, ByVal pszPath As String) As Long
+        Declare PtrSafe Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
+    
+        Private Type BROWSEINFO
+             hOwner As LongPtr
+             pidlRoot As Long
+             pszDisplayName As String
+             lpszTitle As String
+             ulFlags As Long
+             lpFn As LongPtr
+             lParam As LongPtr
+             iImage As Long
+         End Type
+        Public Type OPENFILENAME
+            lStructSize As Long
+            hwndOwner As LongPtr
+            hInstance As LongPtr
+            lpstrFilter As String
+            lpstrCustomFilter As String
+            nMaxCustFilter As Long
+            nFilterIndex As Long
+            lpstrFile As String
+            nMaxFile As Long
+            lpstrFileTitle As String
+            nMaxFileTitle As Long
+            lpstrInitialDir As String
+            lpstrTitle As String
+            flags As Long
+            nFileOffset As Integer
+            nFileExtension As Integer
+            lpstrDefExt As String
+            lCustData As LongPtr
+            lpfnHook As LongPtr
+            lpTemplateName As String
+        End Type
+    #Else
+        Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
+        Public Declare Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderA" (lpBrowseInfo As BROWSEINFO) As Long
+        Public Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListA" (ByVal pidl As Long, ByVal pszPath As String) As Long
+        Declare Function GetSaveFileName Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
+        
+        Public Type BROWSEINFO
+           hOwner As Long
+           pidlRoot As Long
+           pszDisplayName As String
+           lpszTitle As String
+           ulFlags As Long
+           lpFn As Long
+           lParam As Long
+           iImage As Long
+        End Type
+        Public Type OPENFILENAME
+            lStructSize As Long
+            hwndOwner As Long
+            hInstance As Long
+            lpstrFilter As String
+            lpstrCustomFilter As String
+            nMaxCustFilter As Long
+            nFilterIndex As Long
+            lpstrFile As String
+            nMaxFile As Long
+            lpstrFileTitle As String
+            nMaxFileTitle As Long
+            lpstrInitialDir As String
+            lpstrTitle As String
+            flags As Long
+            nFileOffset As Integer
+            nFileExtension As Integer
+            lpstrDefExt As String
+            lCustData As Long
+            lpfnHook As Long
+            lpTemplateName As String
+        End Type
+    
+    #End If
+
     Const OFN_READONLY           As Long = &H1
     Const OFN_EXPLORER           As Long = &H80000
     Const OFN_LONGNAMES          As Long = &H200000
@@ -17,46 +96,7 @@ Option Explicit
                                         Or OFN_OVERWRITEPROMPT _
                                         Or OFN_HIDEREADONLY
     Const BIF_RETURNONLYFSDIRS = &H1
-    
-    Declare Function GetActiveWindow Lib "user32.dll" () As Long
-    Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
-    Declare Function GetSaveFilename Lib "comdlg32.dll" Alias "GetSaveFileNameA" (pOpenfilename As OPENFILENAME) As Long
-    Public Declare Function SHBrowseForFolder Lib "shell32.dll" Alias "SHBrowseForFolderA" (lpBrowseInfo As BROWSEINFO) As Long
-    Public Declare Function SHGetPathFromIDList Lib "shell32.dll" Alias "SHGetPathFromIDListA" (ByVal pidl As Long, ByVal pszPath As String) As Long
-    
-    Public Type OPENFILENAME
-        lStructSize As Long
-        hwndOwner As Long
-        hInstance As Long
-        lpstrFilter As String
-        lpstrCustomFilter As String
-        nMaxCustFilter As Long
-        nFilterIndex As Long
-        lpstrFile As String
-        nMaxFile As Long
-        lpstrFileTitle As String
-        nMaxFileTitle As Long
-        lpstrInitialDir As String
-        lpstrTitle As String
-        flags As Long
-        nFileOffset As Integer
-        nFileExtension As Integer
-        lpstrDefExt As String
-        lCustData As Long
-        lpfnHook As Long
-        lpTemplateName As String
-    End Type
-      
-    Public Type BROWSEINFO
-        hOwner As Long
-        pidlRoot As Long
-        pszDisplayName As String
-        lpszTitle As String
-        ulFlags As Long
-        lpfn As Long
-        lParam As Long
-        iImage As Long
-    End Type
+    Public OpenFile As OPENFILENAME
 
 Public Function GetFolder(szDialogTitle As String, XHwnd As Long) As String
   Dim retl As Long, bi As BROWSEINFO, dwIList As Long
@@ -126,7 +166,7 @@ Function FileSaveAs(sModul, sType, sFilters As String) As String
         .flags = OFN_LONGNAMES Or OFN_OVERWRITEPROMPT
     End With
     ' API aufrufen und evtl. Fehler abfangen
-    intError = GetSaveFilename(OFName)
+    intError = GetSaveFileName(OFName)
     If intError <> 0 Then
         FileSaveAs = left(OFName.lpstrFile, InStr(1, OFName.lpstrFile, Chr(0)) - 1)
     ElseIf intError = 0 Then
@@ -177,7 +217,7 @@ On Error Resume Next
             Dateigroesse = Nz(LenB(ht!f3), 0)
         
             ReDim Buffer(Dateigroesse)
-            Open base & Trim(ht!f1) For Binary Access Write As BilddateiID
+            Open base & Trim(ht!F1) For Binary Access Write As BilddateiID
             Buffer = ht!f3.GetChunk(0, Dateigroesse)
             Put BilddateiID, , Buffer
             Close BilddateiID
@@ -188,7 +228,7 @@ On Error Resume Next
         Set ht = open_re("All", "Zahl")
         For t = 1 To 7
             Set out = file_handle(base & tr_nr & "_" & t & ".html")
-            out.writeline Replace(ht!f1, "x__zahl", t)
+            out.writeline Replace(ht!F1, "x__zahl", t)
         Next t
     End If
 

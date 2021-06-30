@@ -85,16 +85,16 @@ Private Sub Platzierung_freigeben_Click()
     Dim db As Database
     Dim re As Recordset
     Dim t As Integer
-    Dim fName, fPfad As String
+    Dim fname, fPfad As String
     Set db = CurrentDb
        
     fPfad = getBaseDir & "Apache2\htdocs\"
-    fName = Dir(fPfad & "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "R*" & "_K" & Me!Tanzrunde & "_2000.html")
+    fname = Dir(fPfad & "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "R*" & "_K" & Me!Tanzrunde & "_2000.html")
     
-    Do Until fName = ""
-        FileCopy fPfad & fName, fPfad & Replace(fName, "_2000", "_1000")
-        Kill fPfad & fName
-        fName = Dir
+    Do Until fname = ""
+        FileCopy fPfad & fname, fPfad & Replace(fname, "_2000", "_1000")
+        Kill fPfad & fname
+        fname = Dir
     Loop
 End Sub
 
@@ -108,7 +108,7 @@ Private Sub Form_AfterUpdate()
     Form_Paare_ohne_Punkte_UF.Requery
 End Sub
 
-Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dim st As String    'Beitensport Taktung
     If Me!Umschaltfläche147.Caption = "Runde starten" Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Runde_starten&text=")
@@ -141,9 +141,9 @@ Public Sub Runde_starten_Click()
         Else
             retl = MsgBox("Es läuft gerade die " & re!Rundentext & " in der " & re!Startklasse_text & " Klasse!" & _
                     vbCrLf & vbCrLf & "Soll die " & Me!Feld138 & " wirklich gestartet werden!", vbYesNo + vbCritical)
-            re.Edit
-            re!getanzt = True
-            re.Update
+            If retl = vbYes Then
+                db.Execute "UPDATE rundentab SET getanzt = true WHERE (gestartet=True AND getanzt=False);"
+            End If
         End If
     Else
         Set re = db.OpenRecordset("SELECT r.RT_ID, [gestartet] And [getanzt] AS Ausdr1 FROM rundentab AS r WHERE r.RT_ID=" & Me!RT_ID & ";")
@@ -207,10 +207,12 @@ Sub Tanzrunde_AfterUpdate()
     Dim Turniernr As Integer
     Dim Startklasse_einstellen As String
     Dim sqlstr As String
+    Dim wr_tr As String
     Dim where_part As String
     Dim re As Recordset
     Dim AnzahlWRVorgabe, t As Integer
     If Not IsNull(Tanzrunde) Then
+        Me.Status_Wertungen_Einlesen.Visible = False
         Me!Wertungen_einlesen.ControlTipText = Tanzrunde
         sqlstr = "SELECT Paare_Rundenqualifikation.RT_ID, Paare.Startkl, Paare_Rundenqualifikation.Rundennummer, Paare.Startnr, Paare_Rundenqualifikation.PR_ID, Paare_Rundenqualifikation.nochmal FROM (Paare INNER JOIN Paare_Rundenqualifikation ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID= " & Me!Tanzrunde & " AND Paare_Rundenqualifikation.Anwesend_Status=1) ORDER BY Paare_Rundenqualifikation.Rundennummer, Paare.Startnr;"
         Set dbs = CurrentDb
@@ -219,10 +221,11 @@ Sub Tanzrunde_AfterUpdate()
             Me.RecordSource = sqlstr
             ' bei Fuß nur FT-Wr
             '*****AB***** V13.02 Fehler es wurde noch auf das alte Feld WR_func im Recordset zugegriffen - hier geänder in: WR_function
+            wr_tr = left(Me!Tanzrunde.Column(6), 4)
             If Right(Me!Tanzrunde.Column(6), 4) = "_Fuß" Then
                 where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
             Else
-                If left(Me!Tanzrunde.Column(6), 3) = "MK_" Then
+                If wr_tr = "MK_1" Or wr_tr = "MK_2" Or wr_tr = "MK_3" Or wr_tr = "MK_4" Then
                     where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)='M' OR WR_function='Ob'))"
                 Else
                     where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
@@ -340,6 +343,7 @@ Private Sub Wertungen_einlesen_Click()
         Set db = CurrentDb
         If get_wertungen(Me!Tanzrunde, Me!Tanzrunde.Column(3), Me!Tanzrunde.Column(6)) = True Then
             'MsgBox "Für diese Runde existiert (noch) kein Datenfile!"
+            
             Me.Status_Wertungen_Einlesen.Visible = True
         Else
             Me.Status_Wertungen_Einlesen.Visible = False
@@ -624,7 +628,7 @@ Private Sub wertungen_löschen_Click()
 '    Überflüssiges_löschen
 End Sub
 
-Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 1
@@ -632,7 +636,7 @@ Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y
     Beamer_generieren
 End Sub
 
-Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 2
@@ -640,7 +644,7 @@ Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
     Beamer_generieren
 End Sub
 
-Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 3
@@ -649,14 +653,14 @@ Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As 
     Beamer_generieren
 End Sub
 
-Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 4
     Beamer_generieren
 End Sub
 
-Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 5
@@ -664,7 +668,7 @@ Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Sin
     Beamer_generieren
 End Sub
 
-Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
     Dim st As String
     Dim Runde As String
     If no_runde_selected Then Exit Sub

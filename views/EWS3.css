@@ -1,4 +1,4 @@
-﻿/*   Version 3.1.16   */
+﻿/*   Version 3.2.00   */
 .runden             { vertical-align:middle; text-align:center; background-color:#F0F080; height:40px; }
 .kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
 .rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
@@ -82,8 +82,9 @@
 .mod_verein         { font-family: Arial; font-size:4vw; vertical-align:middle; text-align:left; background-color:#F0F080; height:50px; }
 .mod_paar           { font-family: Arial; font-size:3vw; }
 /*   Breitensport  */
-.bs_krit            { font-family:Arial; width:18px; height:25px}
-.bs_head            { font-family:Arial; width:18px; height:25px; font-size:14px}
+.bs_krit            { font-family:Arial; width:18px; height:25px; }
+.bs_head            { font-family:Arial; width:18px; height:25px; font-size:14px; }
+.bs_text            { font-family:Arial; width:450px; text-align:center; }
 .bs_wert            { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; border: 1px solid #000; border-radius: 5px; }
 .bs_sel             { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; background-color:#0d0; border: 1px solid #000; border-radius: 5px;}
 .bs_mist            { width:18px; height:18px; text-align:center; color:#000000; font-size:13px; border: 1px solid #000; border-radius: 5px; }
@@ -96,3 +97,5 @@
 /*   Mehrkampf  */
 .mk_inp             { height: 30px; }
 .mk_fld             { font-family: Arial; font-size: 24px; height: 30px; width: 120px; }
+.select             { font-size: 1.5em; width: 350px; margin: 10px;}
+.sel_paare          { font-size: 1.5em; width: 650px; margin: 10px; margin-left: 19px }

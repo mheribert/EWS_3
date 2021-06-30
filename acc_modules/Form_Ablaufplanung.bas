@@ -31,6 +31,13 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
 End Sub
 
 Private Sub Feld81_AfterUpdate()
+    Const stklassen = "RR_C, RR_J, RR_S, RR_S1, RR_S2"
+    If InStr(stklassen, Me!Feld81) > 0 Then
+        Me!Mehrkampf_eintragen.Visible = True
+    Else
+        Me!Mehrkampf_eintragen.Visible = False
+    End If
+
     If Me!Feld81 = "*" Then
         Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr() & ")) ORDER BY Rundentab.Rundenreihenfolge;"
     Else
@@ -44,15 +51,59 @@ Private Sub Feld81_DblClick(Cancel As Integer)
     Feld81_AfterUpdate
 End Sub
 
+Private Sub Form_Close()
+    If get_properties("EWS") = "EWS3" Then
+        make_wr_zeitplan
+    End If
+End Sub
+
 Private Sub Form_Open(Cancel As Integer)
+    Dim re As Recordset
     If Not Forms![A-Programmübersicht]!Turnierausw.Column(8) = "D" Then
         Me.hochladen.Visible = False
         Me.Zeitplan.Visible = False
     End If
+    Set dbs = CurrentDb
+    Set re = dbs.OpenRecordset("Startklasse_Turnier")
+    If re.RecordCount = 0 Then _
+        MsgBox "Es wurden noch keine Startklassen definiert!"
+    Set re = Nothing
 End Sub
 
 Private Sub hochladen_Click()
     send_zeitplan Forms![A-Programmübersicht]!Turnier_Nummer
+End Sub
+
+Private Sub Mehrkampf_eintragen_Click()
+    Dim re, neu As Recordset
+    Dim i, j As Integer
+    Dim max_reihe As Integer
+    Dim Runde
+    Dim TNR As Integer
+    
+        TNR = get_aktTNr
+        Set dbs = CurrentDb
+        Set re = dbs.OpenRecordset("SELECT Max([Rundenreihenfolge]) AS Max_Reihe FROM Rundentab;")
+        max_reihe = Int((Nz(re!max_reihe / 10) + 1)) * 10
+        
+        Set re = dbs.OpenRecordset("SELECT * FROM Turnier WHERE Turniernum=" & TNR & ";")
+        Set neu = Me.RecordsetClone
+        If Not re.EOF() Then
+            If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") = "Kondition und Koordination" Then
+                For i = 1 To 2
+                    For j = 1 To 3
+                        If re("MK_" & i & j) <> "" And Not IsNull(re("MK_" & i & j)) Then _
+                            Runde = Runde & re("MK_" & i & j) & ", "
+                    Next
+                Next
+                Runde = Runde & "MK_5_TNZ, End_r, Sieger"
+            Else
+                Runde = "MK_3_BOT, MK_4_TRA, MK_5_TNZ, End_r, Sieger"
+            End If
+            Runde = Split(Runde, ", ")
+            make_rde Me!Feld81, Runde, ""
+        End If
+    DoCmd.Requery
 End Sub
 
 Private Sub Kombinationsfeld51_AfterUpdate()
@@ -227,7 +278,7 @@ Function make_rde(klasse, rde, Startklasse_text) As Boolean
             If rst.EOF Then
                 Reihenfolge = 1
             Else
-                Reihenfolge = rst!Reihenfolge + IIf(rst!Reihenfolge > 998, 0, 1)
+                Reihenfolge = Nz(rst!Reihenfolge) + IIf(rst!Reihenfolge > 998, 0, 1)
             End If
 
             Set rst = dbs.OpenRecordset("Rundentab")
@@ -334,7 +385,7 @@ Public Function get_mk(rnd)        ' Mehrkampfstationen sammeln
     Set re = db.OpenRecordset("SELECT * FROM Turnier;")
     Select Case re!MehrkampfStationen
         Case "Bodenturnen und Trampolin"
-            rnd = rnd & ", MK_3_BOT, MK_4_TRA"
+            rnd = rnd & ", MK_3_BOT, MK_4_TRA, MK_5_TNZ"
         Case "Kondition und Koordination"
             Set re = db.OpenRecordset("SELECT * FROM (SELECT MK_11 FROM Turnier UNION  SELECT MK_12 FROM Turnier UNION SELECT MK_13 FROM Turnier UNION SELECT MK_21 FROM Turnier UNION SELECT MK_22 FROM Turnier UNION SELECT MK_23 FROM Turnier) WHERE NOT ISNULL([MK_11]) and [MK_11] <>'' ORDER BY MK_11;")
             re.MoveFirst

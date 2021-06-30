@@ -1,41 +1,6 @@
 Option Compare Database
 Option Explicit
-    Public Declare Function GetOpenFileName Lib "comdlg32.dll" Alias "GetOpenFileNameA" (pOpenfilename As OPENFILENAME) As Long
-
-
-'    Public Const OFN_ALLOWMULTISELECT = &H200
-'    Public Const OFN_EXPLORER = &H80000
     
-    Public Type OPENFILENAME
-      lStructSize As Long
-      hwndOwner As Long
-      hInstance As Long
-      lpstrFilter As String
-      lpstrCustomFilter As String
-      nMaxCustFilter As Long
-      nFilterIndex As Long
-      lpstrFile As String
-      nMaxFile As Long
-      lpstrFileTitle As String
-      nMaxFileTitle As Long
-      lpstrInitialDir As String
-      lpstrTitle As String
-      flags As Long
-      nFileOffset As Integer
-      nFileExtension As Integer
-      lpstrDefExt As String
-      lCustData As Long
-      lpfnHook As Long
-      lpTemplateName As String
-    End Type
-    
-'    Type suffix
-'        suffix As String
-'    End Type
-'
-    Public OpenFile As OPENFILENAME
-'    Private Const BIF_RETURNONLYFSDIRS = &H1
-
 Public Function get_Filename(fenst)
     OpenFile.lStructSize = Len(OpenFile)
     OpenFile.hwndOwner = fenst
@@ -137,7 +102,7 @@ Function make_beamer_runde(RT_ID As Integer)
     Dim HTML_Turnier As String
     Dim HTML_StNr As String
     Dim HTML_paar As String
-    Dim anz_WR As Integer
+    Dim Anz_WR As Integer
     Dim HTML_Runde As String
     Dim line As String
     Dim i As Integer
@@ -145,7 +110,7 @@ Function make_beamer_runde(RT_ID As Integer)
     
     Set db = CurrentDb
     Set re = db.OpenRecordset("SELECT AnzahlWR FROM Rundentab INNER JOIN Startklasse_Turnier ON (Rundentab.Turniernr = Startklasse_Turnier.Turniernr) AND (Rundentab.Startklasse = Startklasse_Turnier.Startklasse) WHERE (Rundentab.RT_ID=" & RT_ID & ");")
-    anz_WR = re!AnzahlWR
+    Anz_WR = re!AnzahlWR
     Set re = db.OpenRecordset("SELECT RT.Turniernr, S.Startklasse_text, TR.R_NAME_ABLAUF, RT.Rundenreihenfolge, RT.RT_ID, P.TP_ID, RT.Anz_Paare, PRQ.Auslosung, PRQ.Rundennummer, P.Startnr, PRQ.Anwesend_Status, PRQ.nochmal, P.Da_Vorname, P.Da_Nachname, P.He_Vorname, P.He_Nachname, P.Verein_Name, P.Name_Team, RT.Anz_Paare FROM (((Paare_Rundenqualifikation AS PRQ INNER JOIN Rundentab AS RT ON PRQ.RT_ID = RT.RT_ID) INNER JOIN Paare AS P ON PRQ.TP_ID = P.TP_ID) INNER JOIN Startklasse AS S ON RT.Startklasse = S.Startklasse) INNER JOIN Tanz_Runden_fix AS TR ON RT.Runde = TR.Runde WHERE (((RT.RT_ID)=" & RT_ID & ") AND ((P.TP_ID) Not In (SELECT AW.Paar_ID FROM Abgegebene_Wertungen AS AW GROUP BY AW.Paar_ID, AW.RundenTab_ID HAVING (((AW.RundenTab_ID)=" & RT_ID & "));)) AND (PRQ.Anwesend_Status=1)) ORDER BY PRQ.Rundennummer, P.Startnr;", DB_OPEN_DYNASET)
     
     If re.RecordCount <> 0 Then

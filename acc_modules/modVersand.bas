@@ -1,7 +1,12 @@
 Option Compare Database
 Option Explicit
     
-    Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+    #If Win64 And VBA7 Then
+         Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+    #Else
+        Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+    #End If
+
     
 Sub send_zeitplan(Turniernr)
     Dim re As Recordset
@@ -124,10 +129,10 @@ Sub Gen_Mail()
                 DoCmd.TransferText acExportDelim, "Auswertung Exportspezifikation", "Auswertung", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
         
-                FileToZip = DefPath & "_Mehrkampfplatzierungen.csv"
-                DoCmd.TransferText acExportDelim, "Mehrkampfauswertung", "view_Mehrkampfauswertung", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
+'                FileToZip = DefPath & "_Mehrkampfplatzierungen.csv"
+'                DoCmd.TransferText acExportDelim, "Mehrkampfauswertung", "view_Mehrkampfauswertung", FileToZip, True
+'                zip_file ZipFileName, FileToZip, i
+'
         End Select
         
         
@@ -137,7 +142,7 @@ Sub Gen_Mail()
             
             'Turnierunterlagen an die Turnierüberwachung
             betreff = Forms![A-Programmübersicht]!Turnierbez & " _ " & Forms![A-Programmübersicht]!Turnierveranstalter & " _ " & Forms![A-Programmübersicht]!Tur_Datum
-            text = "Hallo," & vbCrLf & vbCrLf & "es wurde " & Forms![A-Programmübersicht]![btn_Dokumentation_17].Caption & " verwendet." & _
+            text = "Hallo," & vbCrLf & vbCrLf & "es wurde " & db_Ver() & " verwendet." & _
                     vbCrLf & vbCrLf & "Gruß "
                                    
             send_outlook empf, "", betreff, text, ZipFileName

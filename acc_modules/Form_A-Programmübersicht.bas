@@ -4,7 +4,6 @@ Option Explicit
     Public gReportStartklasse As String
     Dim stDocName As String
     Private Const VK_SHIFT = &H10
-    Private Declare Function GetAsyncKeyState Lib "user32.dll" (ByVal vKey As Long) As Integer
 
 Private Sub Befehl107_Click()   'Export des Turnierberichts
     Dim TBerichtName As String
@@ -52,12 +51,7 @@ End Sub
 Private Sub Befehl14_Click()
     If turnier_selected Then Exit Sub
     
-    If CBool(GetAsyncKeyState(VK_SHIFT) And &H8000) Then
-        DoCmd.OpenForm "Tanzpaare_aufnehmen Heri"
-    Else
-        DoCmd.OpenForm "Tanzpaare_aufnehmen"
-    End If
-
+    DoCmd.OpenForm "Tanzpaare_aufnehmen"
 End Sub
 
 Private Sub Befehl23_Click()
@@ -202,8 +196,8 @@ Private Sub Form_Open(Cancel As Integer)
         re.MoveFirst
         s_row = s_row & re!Turniernum & ";""" & re!Turnier_Name & """;""" & re!T_Datum & """;" & Nz(re!Turnier_Nummer) & ";""" & re!Veranst_Name & """;" & re!Getrennte_Auslosung & ";""" & re!Veranst_Ort & """;"""";""" & re!BS_Erg & """;"
         t_sel = re!Turnier_Name
-        re.Close
-        db.Close
+        re.close
+        db.close
         T_Name = Dir(t_Pfad & "T*_TDaten*.mdb")
         Do Until T_Name = t_spei
             T_Name = Dir

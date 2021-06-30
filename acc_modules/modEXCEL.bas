@@ -5,7 +5,7 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     Dim oXLSApp As Object
     Dim oXLSWKB As Object
     Dim db As Database
-    Dim wr, re, tu As Recordset
+    Dim wr, re, rt As Recordset
     Dim WR_ID
     Dim wr_anz As Integer
     Dim spalte
@@ -16,21 +16,20 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     Dim cgi As String
     Dim Runde As String
     Set db = CurrentDb()
-    Set tu = db.OpenRecordset("Turnier")
 
 '    startklassen = Array("RR_S1", "Schüler 1", "RR_S2", "Schüler 2", "RR_S", "Schüler", "RR_J", "Junioren", "RR_C", "C-Klasse")
     
     Set oXLSApp = CreateObject("Excel.Application")
-'    oXLSApp.Visible = True
+    oXLSApp.Visible = True
     oXLSApp.DisplayAlerts = False
-    If tu!MehrkampfStationen = "Kondition und Koordination" Then
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 0)
+    If get_mk() = "Kondition und Koordination" Then
+        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 3)
     Else
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 0)
+        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 3)
     End If
 
     
-    Set wr = db.OpenRecordset("SELECT Startklasse_Wertungsrichter.*, WR_Kuerzel FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE Startklasse='" & st_kl & "' ORDER BY WR_Kuerzel;")
+    Set wr = db.OpenRecordset("SELECT Startklasse_Wertungsrichter.*, WR_Kuerzel FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE WR_func Like 'M*' AND Startklasse='" & st_kl & "' ORDER BY WR_Kuerzel;")
     i = 1
     If wr.RecordCount = 0 Then
         MsgBox "Für " & Startklasse & " sind keine WR eingeteilt!"
@@ -52,7 +51,7 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
         csp = 0
         For s_rd = 1 To 7
             Set re = db.OpenRecordset("SELECT * FROM Auswertung;")
-            If DLookup("MehrkampfStationen", "Turnier", "Turniernum=1") = "Kondition und Koordination" Then
+            If get_mk() = "Kondition und Koordination" Then
                 spalte = Array(4, "", 13, "", 16, "", 19, "", 24, "", 27, "", 30, "", 100, "")
                 x_off = spalte(csp)
                 Runde = ""
@@ -66,7 +65,9 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
                     End If
                 End If
             Else
-                If st_kl <> "RR_S1" And st_kl <> "RR_S2" And csp = 0 Then csp = 2
+                If csp = 0 Then         '  And st_kl <> "RR_S1" And st_kl <> "RR_S2" Then
+                    csp = 2
+                End If
                 spalte = Array(4, "MK_5_TNZ", 13, "MK_3_BOT", 24, "MK_4_TRA", 100, "")
                 x_off = spalte(csp)
                 wr_anz = UBound(WR_ID)
@@ -74,23 +75,24 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
             End If
             If spalte(csp) = 100 Then Exit For
             csp = csp + 2
-            Set tu = db.OpenRecordset("SELECT rt_id FROM  Rundentab WHERE Startklasse='" & st_kl & "' AND Runde='" & Runde & "';")
-            If tu.RecordCount > 0 Then
+            Set rt = db.OpenRecordset("SELECT rt_id FROM  Rundentab WHERE Startklasse='" & st_kl & "' AND Runde='" & Runde & "';")
+            If rt.RecordCount > 0 Then
                 For y_off = 14 To 73 Step 2
-                    cgi = lese_4(re, 0, oXLSWKB.Worksheets(Startklasse), y_off, x_off, WR_ID(0), tu!RT_ID)
+                    cgi = lese_4(re, 0, oXLSWKB.Worksheets(Startklasse), y_off, x_off, WR_ID(0), rt!RT_ID)
                     If cgi = False Then Exit For
-                    If wr_anz > 0 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 1, WR_ID(1), tu!RT_ID)
-                    If wr_anz > 1 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 3, WR_ID(2), tu!RT_ID)
-                    If wr_anz > 2 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 5, WR_ID(3), tu!RT_ID)
+                    If wr_anz > 0 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 1, WR_ID(1), rt!RT_ID)
+                    If wr_anz > 1 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 3, WR_ID(2), rt!RT_ID)
+                    If wr_anz > 2 Then cgi = lese_4(re, 4, oXLSWKB.Worksheets(Startklasse), y_off, x_off + 5, WR_ID(3), rt!RT_ID)
                 Next
                 For i = 0 To wr_anz
-                    sort_rnd tu!RT_ID, WR_ID(i)
+                    sort_rnd rt!RT_ID, WR_ID(i)
                 Next
             End If
         Next
     End If
      
     oXLSApp.DisplayAlerts = True
+    oXLSWKB.Save
     oXLSWKB.Close
     oXLSApp.Quit
     Set oXLSWKB = Nothing
@@ -98,7 +100,7 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     
 End Sub
 
-Function lese_4(re, MA, xsheet, y, x, WR_ID, RT_ID)
+Function lese_4(re, MA, xsheet, y, X, WR_ID, RT_ID)
     Dim pu As String
     Dim pr
     Dim TP_ID As Integer
@@ -106,14 +108,14 @@ Function lese_4(re, MA, xsheet, y, x, WR_ID, RT_ID)
         lese_4 = True
         TP_ID = xsheet.cells(y, 1)
         pu = "PR_ID1=" & TP_ID & "&"
-        pu = pu & "wmk_td1=" & xsheet.cells(y, x) & "&"
-        pu = pu & IIf(xsheet.cells(y + 1, x) = "", "", "wmk_th1=" & xsheet.cells(y + 1, x) & "&")
+        pu = pu & "wmk_td1=" & xsheet.cells(y, X) & "&"
+        pu = pu & IIf(xsheet.cells(y + 1, X) = "", "", "wmk_th1=" & xsheet.cells(y + 1, X) & "&")
         If MA > 0 Then
-            pu = pu & "wmk_dd1=" & xsheet.cells(y, x + 1) & "&"
-            pu = pu & "wmk_dh1=" & xsheet.cells(y + 1, x + 1) & "&"
+            pu = pu & "wmk_dd1=" & xsheet.cells(y, X + 1) & "&"
+            pu = pu & "wmk_dh1=" & xsheet.cells(y + 1, X + 1) & "&"
         End If
         pu = pu & "WR_ID=" & WR_ID & "&"
-        pu = pu & "Punkte1=" & xsheet.cells(y, x) + IIf(xsheet.cells(y + 1, x) = "", 0, xsheet.cells(y + 1, x)) + IIf(MA = 0, 0, xsheet.cells(y, x + 1) + xsheet.cells(y + 1, x + 1))
+        pu = pu & "Punkte1=" & xsheet.cells(y, X) + IIf(xsheet.cells(y + 1, X) = "", 0, xsheet.cells(y + 1, X)) + IIf(MA = 0, 0, xsheet.cells(y, X + 1) + xsheet.cells(y + 1, X + 1))
         pr = DLookup("PR_ID", "Paare_Rundenqualifikation", "TP_ID=" & TP_ID & " AND RT_ID=" & RT_ID & "")
         re.FindFirst ("pr_id=" & pr & " AND WR_ID=" & WR_ID & "")
         If re.NoMatch Then   'Abfrage vorhanden, wenn nicht neu
@@ -123,9 +125,9 @@ Function lese_4(re, MA, xsheet, y, x, WR_ID, RT_ID)
         Else            ' oder edit
             re.Edit
         End If
-        re!Punkte = xsheet.cells(y, x) + IIf(xsheet.cells(y + 1, x) = "", 0, xsheet.cells(y + 1, x))
+        re!Punkte = xsheet.cells(y, X) + IIf(xsheet.cells(y + 1, X) = "", 0, xsheet.cells(y + 1, X))
         If MA > 0 Then
-            re!Punkte = re!Punkte + xsheet.cells(y, x + 1) + xsheet.cells(y + 1, x + 1)
+            re!Punkte = re!Punkte + xsheet.cells(y, X + 1) + xsheet.cells(y + 1, X + 1)
         End If
     '    re!Reihenfolge = rh
         re!Cgi_Input = pu
@@ -197,7 +199,7 @@ Sub schreibe_Auswerteunterlagen()
     Set db = CurrentDb
     Set tu = db.OpenRecordset("Turnier")
     
-    If Nz(tu!MehrkampfStationen, "") = "" Then Exit Sub
+    If get_mk = "" Then Exit Sub
     Set oXLSApp = CreateObject("Excel.Application")
     oXLSApp.Visible = True
     oXLSApp.DisplayAlerts = False
@@ -236,17 +238,17 @@ Sub schreibe_Auswerteunterlagen()
         
             If left(re!Startkl, 4) = "RR_S" Or re!Startkl = "RR_J" Or re!Startkl = "RR_C" Then
                 Set xsheet = oXLSWKB.Worksheets("Teilnehmer")
-                xsheet.Range("B" & t).value = re!Startkl
-                xsheet.Range("C" & t).value = re!Startnr
-                xsheet.Range("D" & t).value = re!Da_Vorname
-                xsheet.Range("E" & t).value = re!Da_NAchname
-                xsheet.Range("F" & t).value = re!He_Vorname
-                xsheet.Range("G" & t).value = re!He_Nachname
-                xsheet.Range("H" & t).value = re!Verein_nr
-                xsheet.Range("I" & t).value = re!Verein_Name
-                xsheet.Range("J" & t).value = re!Name_Team
-                xsheet.Range("K" & t).value = re!Startbuch
-                xsheet.Range("L" & t).value = re!TP_ID
+                xsheet.Range("B" & t).Value = re!Startkl
+                xsheet.Range("C" & t).Value = re!Startnr
+                xsheet.Range("D" & t).Value = re!Da_Vorname
+                xsheet.Range("E" & t).Value = re!Da_NAchname
+                xsheet.Range("F" & t).Value = re!He_Vorname
+                xsheet.Range("G" & t).Value = re!He_Nachname
+                xsheet.Range("H" & t).Value = re!Verein_nr
+                xsheet.Range("I" & t).Value = re!Verein_Name
+                xsheet.Range("J" & t).Value = re!Name_Team
+                xsheet.Range("K" & t).Value = re!Startbuch
+                xsheet.Range("L" & t).Value = re!TP_ID
                 Set wr = db.OpenRecordset("SELECT Count(*) AS Ausdr1 FROM Startklasse_Wertungsrichter WHERE Startklasse='" & re!Startkl & "' AND WR_function='MB';")
     
                 Select Case re!Startkl
@@ -271,11 +273,13 @@ Sub schreibe_Auswerteunterlagen()
                         y_off = c * 2 + 14
                         c = c + 1
                 End Select
-                oXLSWKB.Worksheets(st_kl).cells(y_off, 1) = re!TP_ID
+                'oXLSWKB.Worksheets(st_kl).cells(y_off, 1) = re!TP_ID
                 oXLSWKB.Worksheets(st_kl).cells(y_off, 2) = re!Startnr
                 If re!Startkl = "RR_S1" Or re!Startkl = "RR_S2" Then oXLSWKB.Worksheets(st_kl).cells(10, 6) = wr!Ausdr1
-                oXLSWKB.Worksheets(st_kl).cells(10, 15) = wr!Ausdr1
-                oXLSWKB.Worksheets(st_kl).cells(10, 26) = wr!Ausdr1
+                If get_mk <> "Kondition und Koordination" Then
+                    oXLSWKB.Worksheets(st_kl).cells(10, 15) = wr!Ausdr1
+                    oXLSWKB.Worksheets(st_kl).cells(10, 26) = wr!Ausdr1
+                End If
                 t = t + 1
             End If
             re.MoveNext
@@ -290,4 +294,3 @@ Sub schreibe_Auswerteunterlagen()
     Set oXLSApp = Nothing
  
 End Sub
-

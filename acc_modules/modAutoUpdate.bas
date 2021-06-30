@@ -1,11 +1,12 @@
 Option Compare Database
 
-Private Declare Function URLDownloadToFile Lib "urlmon" Alias "URLDownloadToFileA" _
-    (ByVal pCaller As Long, ByVal szURL As String, ByVal szFileName As String, _
-    ByVal dwReserved As Long, ByVal lpfnCB As Long) As Long
-Private Declare Function DeleteUrlCacheEntry Lib "wininet.dll" _
-  Alias "DeleteUrlCacheEntryA" ( _
-  ByVal lpszUrlName As String) As Long
+    #If Win64 And VBA7 Then
+        Private Declare PtrSafe Function URLDownloadToFile Lib "urlmon" Alias "URLDownloadToFileA" (ByVal pCaller As LongPtr, ByVal szURL As String, ByVal szFileName As String, ByVal dwReserved As LongPtr, ByVal lpfnCB As LongPtr) As Long
+        Private Declare PtrSafe Function DeleteUrlCacheEntry Lib "Wininet.dll" Alias "DeleteUrlCacheEntryA" (ByVal lpszUrlName As String) As Long
+    #Else
+        Private Declare Function URLDownloadToFile Lib "urlmon" Alias "URLDownloadToFileA" (ByVal pCaller As Long, ByVal szURL As String, ByVal szFileName As String, ByVal dwReserved As Long, ByVal lpfnCB As Long) As Long
+        Private Declare Function DeleteUrlCacheEntry Lib "Wininet.dll" Alias "DeleteUrlCacheEntryA" (ByVal lpszUrlName As String) As Long
+    #End If
 
 Function DirExists(fileName As String) As Boolean
     DirExists = (Len(Dir(fileName, vbDirectory)) <> 0)
@@ -192,79 +193,6 @@ Function del_kochkomma(str)
     del_kochkomma = str
 End Function
 
-Function del_table(tbl)
-    On Error GoTo prep_out
-    DoCmd.DeleteObject acTable, tbl
-    
-    del_table = True
-
-prep_out:
-End Function
-
-Function getFileLastModified(fileName As String) As Date
-    Dim fso, gf
-    Dim result As Date
-    
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set gf = fso.GetFile(fileName)
-    With gf
-        result = .DateLastModified        ' Änderungsdatum
-    End With
-    getFileLastModified = result
-End Function
-
-Sub copyUnpackedFile(unpackedDir As String, fileName As String)
-
-    Dim dirName As String
-    dirName = getBaseDir()
-
-End Sub
-
-Function DelTree(ByVal strDir As String) As Long
-    Dim X As Long
-    Dim intAttr As Integer
-    Dim strAllDirs As String
-    Dim strFile As String
-    DelTree = -1
-    On Error Resume Next
-    strDir = Trim$(strDir)
-    If Len(strDir) = 0 Then Exit Function
-    If Right$(strDir, 1) = "\" Then strDir = left$(strDir, Len(strDir) - 1)
-    If InStr(strDir, "\") = 0 Then Exit Function
-    intAttr = GetAttr(strDir)
-    If (intAttr And vbDirectory) = 0 Then Exit Function
-    strFile = Dir$(strDir & "\*.*", vbSystem Or vbDirectory Or vbHidden)
-    Do While Len(strFile)
-    If strFile <> "." And strFile <> ".." Then
-        intAttr = GetAttr(strDir & "\" & strFile)
-        If (intAttr And vbDirectory) Then
-            strAllDirs = strAllDirs & strFile & Chr$(0)
-        Else
-            If intAttr <> vbNormal Then
-                SetAttr strDir & "\" & strFile, vbNormal
-                If err Then DelTree = err: Exit Function
-            End If
-            Kill strDir & "\" & strFile
-            If err Then DelTree = err: Exit Function
-        End If
-    End If
-    strFile = Dir$
-    Loop
-    Do While Len(strAllDirs)
-        X = InStr(strAllDirs, Chr$(0))
-        strFile = left$(strAllDirs, X - 1)
-        strAllDirs = Mid$(strAllDirs, X + 1)
-        X = DelTree(strDir & "\" & strFile)
-        If X Then DelTree = X: Exit Function
-    Loop
-    RmDir strDir
-    If err Then
-        DelTree = err
-    Else
-        DelTree = 0
-    End If
-End Function
-
 Private Sub Endrunden_Musik_herunterladen()
     Dim db As Database
     Dim re As Recordset
@@ -356,25 +284,3 @@ Private Sub Musik_prüfen()
     Loop
 
 End Sub
-
-Function get_klasse_runde(pfad)
-    Dim cla, back As String
-    pfad = Replace(pfad, "_", " ")
-    If InStr(1, pfad, "Senior A") > 0 Then cla = "SA "
-    If InStr(1, pfad, "Senior B") > 0 Then cla = "SB "
-    If InStr(1, pfad, "Main A") > 0 Then cla = "MA "
-    If InStr(1, pfad, "Main B") > 0 Then cla = "MB "
-    If InStr(1, pfad, "Juniors") > 0 Then cla = "JA "
-    If InStr(1, pfad, "Jugend") > 0 Then cla = "JA "
-    
-    If InStr(1, pfad, "Vorrunde") > 0 Then back = "VR"
-    If InStr(1, pfad, "schnelle Vorrunde") > 0 Then back = "SV"
-    If InStr(1, pfad, "langsame Vorrunde") > 0 Then back = "LV"
-    If InStr(1, pfad, "Hoffnungsrunde") > 0 Then back = "HR"
-    If InStr(1, pfad, "Endrunde") > 0 Then back = "ER"
-    If InStr(1, pfad, "schnelle Endrunde") > 0 Then back = "SE"
-    If InStr(1, pfad, "langsame Endrunde") > 0 Then back = "LE"
-    get_klasse_runde = cla & back
-    
-End Function
-

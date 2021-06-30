@@ -1,4 +1,4 @@
-var ver              = 'V3.1.16';
+var ver              = 'V3.2.00';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -126,13 +126,13 @@ exports.wr = function (io, wertungsrichter) {
     io.emit('chat', { msg: 'mod_inhalt', text: HTML_Inhalt });
 };
 
-exports.vorstellung = function (io, connection, rt_id) {
+exports.vorstellung = function (io, connection, st_kl) {
     var HTML_Inhalt = '';
     var filter;
-    if (rt_id === "0") {
-        filter = 'SELECT Verein_Name, Startnr, [Da_Vorname] & " " & [Da_Nachname] AS DName, [He_Vorname] & " " & [He_Nachname] AS HName, Name_Team, Verein_nr, Startkl FROM Paare WHERE(Paare.Turniernr = 1 AND Paare.Anwesent_Status = 1) ORDER BY Paare.Verein_Name, Paare.Startnr;';
+    if (st_kl === "0") {
+        filter = 'SELECT Verein_Name, Startnr, [Da_Vorname] & " " & [Da_Nachname] AS DName, [He_Vorname] & " " & [He_Nachname] AS HName, Name_Team, Verein_nr, Paare.Startkl, Startklasse.Startklasse_text FROM Paare INNER JOIN Startklasse ON Paare.Startkl = Startklasse.Startklasse WHERE (Turniernr = 1 AND Anwesent_Status = 1) ORDER BY Paare.Verein_Name, Paare.Startnr;'
     } else {
-        filter = 'SELECT Paare_Rundenqualifikation.RT_ID, Paare.Verein_Name, Paare.Startnr, [Da_Vorname] & " " & [Da_Nachname] AS DName, [He_Vorname] & " " & [He_Nachname] AS HName, Paare.Name_Team, Paare.Verein_nr, Paare.Startkl FROM Paare INNER JOIN Paare_Rundenqualifikation ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID WHERE (Paare.Turniernr=1 AND Paare.Anwesent_Status=1 AND Paare_Rundenqualifikation.RT_ID = ' + rt_id + ') ORDER BY Paare.Verein_Name, Paare.Startnr;';
+        filter = 'SELECT Verein_Name, Startnr, [Da_Vorname] & " " & [Da_Nachname] AS DName, [He_Vorname] & " " & [He_Nachname] AS HName, Name_Team, Verein_nr, Paare.Startkl, Startklasse.Startklasse_text FROM Paare INNER JOIN Startklasse ON Paare.Startkl = Startklasse.Startklasse WHERE (Paare.Startkl ="' + st_kl + '" AND Paare.Turniernr = 1 AND Paare.Anwesent_Status = 1) ORDER BY Verein_Name, Startnr;'
     }
     connection
         .query(filter)
@@ -151,7 +151,7 @@ exports.vorstellung = function (io, connection, rt_id) {
                 } else {
                     HTML_Inhalt += data[v].Name_Team + '</td>';
                 }
-                HTML_Inhalt += '<td width=20%>' + data[v].Startkl + '</td></tr>' + '\r\n';
+                HTML_Inhalt += '<td width=20%>' + data[v].Startklasse_text + '</td></tr>' + '\r\n';
             }
             moderator_inhalt = HTML_Inhalt;
             io.emit('chat', { msg: 'mod_inhalt', text: HTML_Inhalt });

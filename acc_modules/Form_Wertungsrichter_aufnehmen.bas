@@ -40,7 +40,7 @@ Public Sub btnAddOffiziellen_Click()
     Else
         Set rsCheck = dbs.OpenRecordset("Select MAX(WR_Lizenznr) AS maxLiz FROM wert_richter;")
         i = 9000
-        If rsCheck!maxLiz > i Then i = rsCheck!maxLiz + 1
+        If Nz(rsCheck!maxLiz) >= i Then i = rsCheck!maxLiz + 1
         Me!Lizenznr = i
         Me!Club = 0
     End If
@@ -167,7 +167,7 @@ Private Sub RegisterStr65_Change()
     Dim lo As Integer
     If Me!Offizielle.Form.RecordsetClone.RecordCount > 0 Then
         If Me!UForm_wr_liste.Form.RecordsetClone.RecordCount > 0 Then
-            If Me!RegisterStr65.value = 1 Then
+            If Me!RegisterStr65.Value = 1 Then
                 Me!UForm_wr_liste.Form.CTRL01.SetFocus
                 For lo = 2 To 16
                     Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).Visible = False
@@ -178,12 +178,12 @@ Private Sub RegisterStr65_Change()
                 Call Form_Open(1)
             End If
         Else
-            If Me!RegisterStr65.value = 1 Then
+            If Me!RegisterStr65.Value = 1 Then
                 MsgBox "Es wurden noch keine Startklassen definiert!", vbOKOnly
             End If
         End If
     Else
-        If Me!RegisterStr65.value = 1 Then
+        If Me!RegisterStr65.Value = 1 Then
             MsgBox "Es wurden noch keine Wertungsrichter eingegeben!", vbOKOnly
         End If
     End If

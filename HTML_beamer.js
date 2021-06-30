@@ -1,4 +1,4 @@
-var ver           = 'V3.1.16';
+var ver = 'V3.2.00';
 var beamer_inhalt = new Object();
 
 exports.inhalt = function () {

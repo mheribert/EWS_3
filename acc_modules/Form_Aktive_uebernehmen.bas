@@ -4,7 +4,6 @@ Option Explicit
 Private Sub AuswahlBW_AfterUpdate()
     gewvnr = Me!AuswahlBW.Column(0)
     BDame_auswählen.Requery
-    BHerr_auswählen.Requery
     bw_startliste.Requery
 
 End Sub
@@ -34,17 +33,13 @@ Private Sub AuswahlRR_Click()
 
 End Sub
 
-Private Sub Befehl114_Click()
+Public Sub Befehl114_Click()
     If Nz(gewvnr) < 0 Then
         MsgBox "Bitte wählen Sie einen Verein aus!"
         Exit Sub
     End If
     If Nz(BSTkarteD) = "" Then
-        MsgBox "Bitte wählen Sie eine Dame aus!"
-        Exit Sub
-    End If
-    If Nz(BSTkarteH) = "" Then
-        MsgBox "Bitte wählen Sie einen Herrn aus!"
+        MsgBox "Bitte wählen Sie ein Paar aus!"
         Exit Sub
     End If
     Dim dbs As Database
@@ -264,7 +259,7 @@ Private Sub btn_aktive_2_Click()    'gemeldete paare vom Server laden
     End If
     Set dbs = CurrentDb
     
-    'FName = "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "_TPaare.txt"
+    'fName = "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "_TPaare.txt"
     '*****AB***** V14.02 neuer Dateiname für den Paarimport vom Server ab Version 14.02
     cnt = updateTLP(True, False)
     If cnt > 0 Then
@@ -381,7 +376,7 @@ End Sub
 
 Private Sub btnDeletePaar_Click()
     Dim res As Integer
-    Dim strSQL As String
+    Dim strsql As String
     If (IsNull(Me!STBuchnum)) Then
         Exit Sub
     End If
@@ -392,9 +387,9 @@ Private Sub btnDeletePaar_Click()
         Dim dbs As Database
         ' Bezug auf aktuelle Datenbank zurückgeben.
         Set dbs = CurrentDb
-        strSQL = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
+        strsql = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strSQL)
+        dbs.Execute (strsql)
         Me!STBuchnum = ""
         Me!VName_Dame = ""
         Me!NName_Dame = ""
@@ -410,7 +405,7 @@ End Sub
 
 Private Sub btnFormationDelete_Click()
     Dim res As Integer
-    Dim strSQL As String
+    Dim strsql As String
     If (IsNull(Me!FBuch)) Then
         Exit Sub
     End If
@@ -421,9 +416,9 @@ Private Sub btnFormationDelete_Click()
     If (res = vbYes) Then
         Dim dbs As Database
         Set dbs = CurrentDb
-        strSQL = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
+        strsql = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strSQL)
+        dbs.Execute (strsql)
         Me!formationsname = ""
         Me!Clubname_kurz = ""
         Me!FBuch = ""
@@ -440,16 +435,6 @@ End Sub
 Private Sub Klassen_Click()
     gewkl = [Klassen]
     [Dame_auswählen].Requery
-End Sub
-
-Private Sub SearchDame_Change()
-    SearchDameValue = SearchDame.text
-    BDame_auswählen.Requery
-End Sub
-
-Private Sub SearchHerr_Change()
-    SearchHerrValue = SearchHerr.text
-    BHerr_auswählen.Requery
 End Sub
 
 Private Sub SearchName_Change()
@@ -489,7 +474,7 @@ Private Sub Form_Current()
 End Sub
 
 Private Sub RegisterStr82_Change()
-    If Me!RegisterStr82.value = 0 Then
+    If Me!RegisterStr82.Value = 0 Then
         Me.SearchName.Visible = False
     Else
         Me.SearchName.Visible = True

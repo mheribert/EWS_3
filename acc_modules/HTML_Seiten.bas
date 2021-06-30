@@ -1,12 +1,18 @@
 Option Compare Database
 Option Explicit
 
+    #If Win64 And VBA7 Then
+        Private Declare PtrSafe Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As LongPtr, ByVal bOrder As LongPtr) As Long
+    #Else
+        Private Declare Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As Long, ByVal bOrder As Long) As Long
+    #End If
+
     Public Const tr = "                   <tr>"
     Public Const trn = "                   </tr>"
     Dim a_check As String
 
-    Private Declare Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As Long, ByVal bOrder As Long) As Long
     
+
 Sub build_html(pr, RT_nr, Runde)
     Dim out
     Dim line As String
@@ -465,7 +471,7 @@ Sub build_html(pr, RT_nr, Runde)
     'Schreibe vbs zur Seite
     Set out = file_handle(vb_pfad & "page.vbs")
     Set ht = open_re("All", "Script")
-    line = Replace(ht!f1, "x_url", IpAddrs)
+    line = Replace(ht!F1, "x_url", IpAddrs)
     line = Replace(line, "x_pfad", vb_pfad)
     out.writeline (line)
     out.Close
@@ -484,7 +490,7 @@ Function make_beobachter(pr, stkl_rde, tr_nr, RT_ID)
     Set re = pr.OpenRecordset
     Set out = file_handle(getBaseDir & "Apache2\htdocs\" & tr_nr & "B99.html")
     Set ht = open_re("All", "Beobachter")
-    line = ht!f1
+    line = ht!F1
     re.MoveFirst
     opt = Space(25) & "<option value=""0"">&nbsp;&nbsp;</option>" & vbCrLf
     Do Until re.EOF
@@ -711,7 +717,7 @@ Function get_line(cl, ber, ppr)
     
     Set ht = db.OpenRecordset("SELECT * FROM HTML_Block WHERE Seite='" & cl & "' AND Bereich='" & ber & "';", DB_OPEN_DYNASET)
     If ppr = 1 Then
-        get_line = ht!f1
+        get_line = ht!F1
     Else
         get_line = ht!F2
     End If
@@ -822,7 +828,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Set out = file_handle(ht_pfad & "index.html")
     wr.MoveFirst
     Set ht = open_re("All", "WR_Select")
-    line = Replace(ht!f1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
+    line = Replace(ht!F1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
     
     i = 1
     kw = "'0'"
@@ -852,7 +858,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Do Until wr.EOF
         Set out = file_handle(ht_pfad & tr_nr & "S" & wr!WR_Lizenznr & ".html")
         re.MoveFirst
-        line = Replace(ht!f1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+        line = Replace(ht!F1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
         line = Replace(line, "wr_k", wr!WR_Kuerzel)
         line = Replace(line, "wr_n", wr!Ausdr1)
         out.writeline (line)
@@ -893,8 +899,12 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
 End Sub
 
 Public Function GetIpAddrTable()  'IP-Adresse aus Regestry
+    #If Win64 And VBA7 Then
+        Dim BufSize As LongLong
+    #Else
+        Dim BufSize As Long
+    #End If
     Dim Buf(0 To 511) As Byte
-    Dim BufSize As Long
     Dim rc As Long
     Dim j As Integer, s As String
     Dim i As Integer
@@ -1016,7 +1026,7 @@ Public Sub pg_platzieren(RT_ID, WR_ID, mehrfach, pg_id, s_kl)
             fld = Array("x_wth", "x_wak")
             
     End Select
-    html_page = fill_platzieren(ht_t!f1, re, mehrfach, fld)
+    html_page = fill_platzieren(ht_t!F1, re, mehrfach, fld)
     html_page = Replace(html_page, "x_ck1", Mid(a_check, 3))
     re.MoveFirst
     html_page = Replace(html_page, "x_title", Forms![A-Programmübersicht]!Turnierbez)

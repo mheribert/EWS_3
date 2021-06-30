@@ -1,4 +1,5 @@
 Option Explicit                       ' alle Variablen muessen deklariert werden
+
 Const max_anzahl As Double = 150
 Public sklasse As TextBox
 ' Deklarationen

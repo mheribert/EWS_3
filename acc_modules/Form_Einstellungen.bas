@@ -1,9 +1,6 @@
 Option Compare Database
 Option Explicit
 
-Private Sub Akrobatiken_Click()
-End Sub
-
 Private Sub Beenden_Click()
     If check_valid_ip = True Then
         DoCmd.Close

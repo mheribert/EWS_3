@@ -148,7 +148,7 @@ On Error GoTo Fehlerout
             Exit For
         End If
     Next
-    If KeyCode = 32 Then
+    If KeyCode = 32 Or KeyCode = 46 Then
         dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
     End If
     If i <= UBound(wr_art) Then

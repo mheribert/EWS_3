@@ -1,5 +1,24 @@
 Option Compare Database
 Option Explicit
+
+    #If Win64 And VBA7 Then
+        Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+        Declare Sub wlib_AccChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As LongPtr, rgb As Long)
+    
+        Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As LongPtr, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As LongPtr) As Long
+        Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As LongPtr, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, lpReserved As Long, lpType As Long, lpData As Byte, lpcbData As Long) As Long
+'        Declare PtrSafe Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As LongPtr) As Long
+    
+    #Else
+        Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+        Public Declare Sub wlib_AccChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Long, rgb As Long)
+        
+        Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
+        Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
+        Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
+    #End If
+    
+    
     Dim v_Font As String
     Dim v_Size As Integer
     Dim v_Color As Long
@@ -8,12 +27,6 @@ Option Explicit
     Dim v_Pfad As String
     Public FolienMaster As String
     
-    Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
-    Public Declare Sub wlib_AccChooseColor Lib "msaccess.exe" Alias "#53" (ByVal hwnd As Long, rgb As Long)
-    
-    Declare Function RegOpenKeyEx Lib "advapi32.dll" Alias "RegOpenKeyExA" (ByVal hKey As Long, ByVal lpSubKey As String, ByVal ulOptions As Long, ByVal samDesired As Long, phkResult As Long) As Long
-    Declare Function RegEnumValue Lib "advapi32.dll" Alias "RegEnumValueA" (ByVal hKey As Long, ByVal dwIndex As Long, ByVal lpValueName As String, lpcbValueName As Long, ByVal lpReserved As Long, lpType As Long, lpData As Any, lpcbData As Long) As Long
-    Declare Function RegCloseKey Lib "advapi32.dll" (ByVal hKey As Long) As Long
     Const KEY_READ = &H20019
     Const ERROR_MORE_DATA = 234
 
@@ -69,7 +82,7 @@ Public Sub gen_Folien(re As Recordset, st_klasse As String, Runde As String, run
     Dim oPPTTBox As Object
     Dim yPos As Single
     Dim tex As String
-    Dim max_Runde As Integer
+    Dim max_runde As Integer
     Dim Runden_anz As Integer
     
     re.MoveFirst
@@ -82,7 +95,7 @@ Public Sub gen_Folien(re As Recordset, st_klasse As String, Runde As String, run
         Set oPPTPres = open_Pres(tex)
     
         Call erste_Folie(oPPTPres.Slides(1), st_klasse & Chr(13) & Runde)
-        max_Runde = Int(re.RecordCount / re!Anz_Paare) + re.RecordCount Mod re!Anz_Paare
+        max_runde = Int(re.RecordCount / re!Anz_Paare) + re.RecordCount Mod re!Anz_Paare
         re.MoveFirst
         Do Until re.EOF
             If Nz(re!Rundennummer) <> Runden_anz Then
@@ -92,7 +105,7 @@ Public Sub gen_Folien(re As Recordset, st_klasse As String, Runde As String, run
                     schrZeile oPPTTBox, 1, st_klasse & " " & Runde, 30, False, 1
                     yPos = IIf(oPPTTBox.Height > 70, 270, 240)
                 Set oPPTTBox = oPPTsli.Shapes.AddTextbox(1, 520, 180, 170, 130)
-                    schrZeile oPPTTBox, 1, Runden_anz & "/" & max_Runde, 30, False, 3
+                    schrZeile oPPTTBox, 1, Runden_anz & "/" & max_runde, 30, False, 3
             End If
             Set oPPTTBox = oPPTsli.Shapes.AddTextbox(1, 30, yPos, 630, 130)
                 oPPTTBox.TextFrame.WordWrap = False
@@ -330,8 +343,13 @@ Public Function open_Pres(f_Pres As String)
     Set oPPTApp = Nothing
 End Function
 
-Public Function EnumRegistryValues(ByVal hKey As Long, ByVal keyname As String) 'As Collection
+#If Win64 And VBA7 Then
+    Public Function EnumRegistryValues(ByVal hKey As LongPtr, ByVal keyname As String) 'As Collection
+    Dim handle As LongPtr
+#Else
+    Public Function EnumRegistryValues(ByVal hKey As Long, ByVal keyname As String) 'As Collection
     Dim handle As Long
+#End If
     Dim index As Long
     Dim valueType As Long
     Dim Name As String
