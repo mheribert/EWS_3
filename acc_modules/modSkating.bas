@@ -809,25 +809,26 @@ Public Sub PaarePlatzierenMitHoffnungsrunde(RT_ID As Integer, vonPlatz As Intege
         
         Do While Not rstmajoritaet1.EOF()
             rstpaare1.FindFirst ("TP_ID=" & rstmajoritaet1!TP_ID)
-            
-            If Not rstpaare1.NoMatch Then
-                 rstpaare1.Edit
-                 
-                 rstpaare1!Platz = rstmajoritaet1!Platz + offsetPlatz
-                
-                '*****AB***** V14.10 Startklassen ohne Aufstiegspunkte auf NULL setzen
-                 If HatAufstiegspunkte!HatAufstiegspunkte Then
-                    rstpaare1!Punkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False) + IIf(left(rstpaare1!Startkl, 3) = "RR_", 10, 0)
-                 Else
-                    rstpaare1!Punkte = Null
-                 End If
-                 rstpaare1!Ranglistenpunkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False)
-                                                                          
-                 rstpaare1!RT_ID_Ausgeschieden = RT_ID
-                 
-                 rstpaare1.Update
-            Else
-                MsgBox ("Paar nicht gefunden: " & rstmajoritaet1!Startnr)
+            If rstmajoritaet1!DQ_ID = 0 Then
+                If Not rstpaare1.NoMatch Then
+                     rstpaare1.Edit
+                     
+                     rstpaare1!Platz = rstmajoritaet1!Platz + offsetPlatz
+                    
+                    '*****AB***** V14.10 Startklassen ohne Aufstiegspunkte auf NULL setzen
+                     If HatAufstiegspunkte!HatAufstiegspunkte Then
+                        rstpaare1!Punkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False) + IIf(left(rstpaare1!Startkl, 3) = "RR_", 10, 0)
+                     Else
+                        rstpaare1!Punkte = Null
+                     End If
+                     rstpaare1!Ranglistenpunkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False)
+                                                                              
+                     rstpaare1!RT_ID_Ausgeschieden = RT_ID
+                     
+                     rstpaare1.Update
+                Else
+                    MsgBox ("Paar nicht gefunden: " & rstpaare1!Startnr)
+                End If
             End If
             rstmajoritaet1.MoveNext
         Loop
@@ -977,7 +978,7 @@ Public Sub UpdateAnzahl_Paare(RT_ID As Integer)
     If (Runde = "Vor_r" Or Runde = "Vor_r_Akro" Or Runde = "Vor_r_schnell") Then
         rstAnzahlPaare!VR = Anzahl
     ElseIf (Runde = "Hoff_r") Then
-        rstAnzahlPaare!hr = Anzahl
+        rstAnzahlPaare!Hr = Anzahl
     ElseIf (Runde = "1_Zw_r") Then
         rstAnzahlPaare!erstzr = Anzahl
     ElseIf (Runde = "2_Zw_r") Then

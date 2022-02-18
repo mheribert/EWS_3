@@ -6,13 +6,13 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
     Dim re  As Recordset
     Dim res As Recordset
     Dim paa As Recordset
-    Dim strsql As String
+    Dim strSQL As String
     Dim anz As Integer
     Me.Requery
     Set dbs = CurrentDb
     Set re = Me.RecordsetClone
-    strsql = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
-    Set res = dbs.OpenRecordset(strsql)
+    strSQL = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
+    Set res = dbs.OpenRecordset(strSQL)
     re.MoveFirst
     Do Until re.EOF
         
@@ -322,6 +322,9 @@ Private Sub Dauer_DblClick(Cancel As Integer)   ' berechnet  alle Zeiten neu
         End If
         re.MoveNext
     Loop
+    If get_properties("EWS") = "EWS3" Then _
+        make_wr_zeitplan
+        
 End Sub
 
 Private Sub schliesssen_Click()

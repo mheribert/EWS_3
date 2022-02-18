@@ -1,4 +1,4 @@
-﻿/*   Version 3.2.00   */
+﻿/*   Version 3.20.0   */
 .runden             { vertical-align:middle; text-align:center; background-color:#F0F080; height:40px; }
 .kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
 .rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
@@ -44,17 +44,17 @@
 .wr_status div      { display: inline-block; padding: 0.7em; }
 .wr_nochmal         { border-radius:5px; background-color:#f00; color:#fff; }
 /* Observer */
-.verw               { width:60px; border: thin solid black; background-color:white;     color:black; vertical-align: middle; text-align: center; border-radius: 5px; height:40px }
-.verwbutton         { width:90px; border: thin solid black; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
-.verwpunkte         { width:40px; border: thin solid black; background-color:#ffffff;   vertical-align: middle; text-align: center; border-radius: 5px; }
+.verw               { font-family: Arial; font-size:14px; width:60px; border: thin solid black; background-color:white; color:black; vertical-align: middle; text-align: center; border-radius: 5px; height:40px }
+.verwbutton         { font-family: Arial; font-size:14px; width:90px; border: thin solid black; vertical-align: middle; text-align: center; border-radius: 5px; height:50px }
+.verwpunkte         { font-family: Arial; font-size:14px; width:40px; border: thin solid black; background-color:#ffffff; vertical-align: middle; text-align: center; border-radius: 5px; }
 .leer               { background-color:white;     color:black; }
 .gray               { background-color:lightgray; color:black; }
 .yell               { background-color:#ffff50;   color:black; }
 .red                { background-color:red;       color:white; }
 .black              { background-color:black;     color:white; }
-.spalte             { width:40px; border: thin solid black; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
+.spalte             { font-family: Arial; font-size:14px; width:40px; border: thin solid black; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:50px }
 .spalte:hover       { background-color:#ff7143; color:#ffffff; }
-.spalte_br          { width:90px; border: thin solid red; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:65px }
+.spalte_br          { font-family: Arial; font-size:14px; width:90px; border: thin solid red; background-color:#dddddd; vertical-align: middle; text-align: center; border-radius: 5px; height:50px }
 /* für Beamer */
 .tb1                { font-family: Verdana; width: 100%; }
 .kopf               { height: 20%; vertical-align: middle; font-size: 3.5vw; background-color: #CCCCCC; padding: 15px; }
@@ -72,9 +72,10 @@
 .wr_l               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left; background-color:#F0F080; height: 50px; width: 600px}
 .wr_m               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; background-color:#F0F080; height: 50px;  width: 200px; }
 /* moderator */
-.mod_kopf           { font-family: Arial; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#ff8; height:6vw; border:1px solid #000; border-radius: 10px; margin:1em; }
+.mod_kopf           { font-family: Arial; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#ff8; height:6vw; border:1px solid #000; border-radius: 10px; width: 33%; }
 .mod_n              { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
 .mod_nb             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
+.mod_ns             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #fa6; background-color: #FFFFFF; height: 25px; }
 .mod_m              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
 .mod_s              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:100px; }
 .mod_mk             { font-family: Arial; font-size: 3vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
@@ -97,5 +98,6 @@
 /*   Mehrkampf  */
 .mk_inp             { height: 30px; }
 .mk_fld             { font-family: Arial; font-size: 24px; height: 30px; width: 120px; }
+.mk_sel             { font-family: Arial; font-size: 15px; height: 70px }
 .select             { font-size: 1.5em; width: 350px; margin: 10px;}
-.sel_paare          { font-size: 1.5em; width: 650px; margin: 10px; margin-left: 19px }
+.sel_paare          { font-family: Arial; font-size: 1.5em; width: 780px; padding: 5px; background:#ff8}

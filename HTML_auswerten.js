@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2.00';
+﻿var ver = 'V3.20.0';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -230,9 +230,10 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                     }
                 }
             }
-            runden_info[s].PunkteFt = get_mittel(PunkteFt, wertungen);
-            runden_info[s].PunkteAk = get_mittel(PunkteAk, wertungen);
-            runden_info[s].PunkteOb = get_mittel(PunkteOb, wertungen);
+            var st_kl = runden_info[0].Startklasse.substring(0, 3);
+            runden_info[s].PunkteFt = get_mittel(PunkteFt, wertungen, st_kl);
+            runden_info[s].PunkteAk = get_mittel(PunkteAk, wertungen, st_kl);
+            runden_info[s].PunkteOb = get_mittel(PunkteOb, wertungen, st_kl);
             runden_info[s].Punkte = runden_info[s].PunkteFt + runden_info[s].PunkteAk - runden_info[s].PunkteOb;
             if (runden_info[s].Punkte < 0) { runden_info[s].Punkte = 0; }
             if (runden_info[s].Rundennummer === runde) {
@@ -292,7 +293,7 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
     }
 };
 
-function get_mittel(avr, wertungen) {
+function get_mittel(avr, wertungen, st_kl) {
     var min;
     var max;
     var pu = 0;
@@ -327,14 +328,22 @@ function get_mittel(avr, wertungen) {
             case 5:
                 min = 2;
                 max = 4;
-                break;
+                if (st_kl === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
+                    if (avr[0][2] === avr[1][2]) { min--; }
+                    if (avr[max][2] === avr[max - 1][2]) { max++; }
+                }
+                 break;
             case 6:
                 min = 2;
                 max = 5;
-                break;
+               break;
             case 7:
                 min = 2;
                 max = 6;
+                if (st_kl === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
+                    if (avr[0][2] === avr[1][2]) { min--; }
+                    if (avr[max][2] === avr[max - 1][2]) { max++; }
+                }
                 break;
             case 8:
                 min = 3;
@@ -351,7 +360,7 @@ function get_mittel(avr, wertungen) {
             }
             return pu / (max - min + 1);
         } else {                     // ab hier Kategorien streichverfahren
-/*            var kl_punkte = Punkteverteilung("BW_NG", "", "");
+            var kl_punkte = Punkteverteilung("BW_NG", "", "");
             var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
             for (var kat = 0; kat < 11; kat++) {
                 var kat_name = "w" + wr_kr[kat] + avr[0][5];
@@ -377,7 +386,7 @@ function get_mittel(avr, wertungen) {
                         anzwrrest++;
                     }
                 }
-                if (durchschnitt > 0 && max_abw === 0 ) {
+                if ((durchschnitt > 0 && max_abw === 0) || anzwrrest === 0 ) {
                     pu += durchschnitt * kl_punkte[kat];
                 }
                 if (anzwrrest !== 0) {              // daraus Mittelwert, keine division durch 0
@@ -388,18 +397,7 @@ function get_mittel(avr, wertungen) {
             for (x in wertungen) {
                 wertungen[x][avr[0][1]]["Punkte_err"] = pu;
             }
-            return pu ;*/
-            //______  New Guidelines ohne streichverfahren__________ weg wenn Streichverfahren
-            for (x = min - 1; x < max; x++) {
-                pu = pu + parseFloat(avr[x][2]);
-                wertungen[avr[x][0]][avr[x][1]].in = true;
-            }
-            pu = pu / (max - min + 1);
-            for (x in wertungen) {
-                wertungen[x][avr[0][1]]["Punkte_err"] = pu;
-            }
-            return pu;
-            //_______________________________________________________
+            return pu ;
         }
     } else {
         return parseFloat(0);
@@ -431,6 +429,9 @@ function Punkteverteilung(Startklasse, trunde, rd) {
         case "F_RR_J":         // Jugend
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20);
             break;
+        case "F_RR_Q":         //  Quattro RR
+            punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20);
+            break;
         case "F_RR_M":         //  Master RR
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20);
             break;
@@ -442,7 +443,7 @@ function Punkteverteilung(Startklasse, trunde, rd) {
             punkte_verteilung = Array(4.5, 4.5, 4.5, 4.5, 6.3, 6.3, 5.4);
             break;
         case "RR_J":
-            punkte_verteilung = Array(4.5, 4.5, 4.5, 4.5, 6.3, 6.3, 5.4);
+            punkte_verteilung = Array(6, 6, 6, 6, 8.4, 8.4, 7.2);
             break;
         case "RR_C":
             punkte_verteilung = Array(6, 6, 6, 6, 8.4, 8.4, 7.2);
@@ -457,8 +458,8 @@ function Punkteverteilung(Startklasse, trunde, rd) {
                 case "ER":
                     punkte_verteilung = Array(4.375, 4.375, 4.375, 4.375, 6.125, 6.125, 5.25);
                     break;
-            }
-            if (rd === "Semi") { punkte_verteilung = Array(7.25, 7.25, 7.25, 7.25, 10.15, 10.15, 8.7); }
+            }                                                               //      35%    35%    30%
+            if (rd === "Semi") { punkte_verteilung = Array(8.75, 8.75, 8.75, 8.75, 12.25, 12.25, 10.5); }
             break;
         // Boogie
         case "BW_MA":
@@ -527,6 +528,11 @@ function Faktor_Formation_Abzuege(Startklasse) {
             Faktor_Formation_Abzuege.faktor = 1.25;
             Faktor_Formation_Abzuege.min = 8;
             Faktor_Formation_Abzuege.max = 12;
+            break;
+        case "F_RR_Q":           // Quattro RR
+            Faktor_Formation_Abzuege.faktor = 0;
+            Faktor_Formation_Abzuege.min = 8;
+            Faktor_Formation_Abzuege.max = 8;
             break;
         case "F_RR_M":           // Master RR
             Faktor_Formation_Abzuege.faktor = 1.25;

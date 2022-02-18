@@ -133,7 +133,7 @@ Public Sub make_new_TDaten(T_Nr)
     Dim dbnew As Database
     Dim re As Recordset
     Dim cm As Recordset
-    Dim strsql As String
+    Dim strSQL As String
     Dim nTurnier As String
     Dim i As Integer
     
@@ -265,4 +265,25 @@ Function db_Ver()
     db_Ver = get_properties("DB_VERSION") & "-" & get_properties("DB_SUBVERSION")
 End Function
 
+Public Sub Print_Givaway(RundenTab_ID, Runde)
+    Dim re As Recordset
+    Dim fil As String
+    Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null AND Runde_Report=1;")
+'*****AB***** V13.05 - falls es sich um eine Endrunde handelt andere Abfrage ohne Runde_Report
+'*****HM 14.07 ***** - auf geteilte Endrunden erweitert
+    If Runde = "Endrunde" Or Runde = "Endrunde Akrobatik" Or Runde = "Schnelle Endrunde" Then
+        Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null;")
+    End If
+    If re.RecordCount = 0 Then
+        MsgBox "Es gibt für diese Runde keine platzierten Paare"
+    Else
+        re.MoveFirst
+        Do Until re.EOF
+            fil = fil & IIf(Len(fil) = 0, "TP_ID=", " OR TP_ID=") & re!TP_ID
+            re.MoveNext
+        Loop
+        stDocName = "Giveaway"
+        DoCmd.OpenReport stDocName, acPreview, , fil
+    End If
+End Sub
 

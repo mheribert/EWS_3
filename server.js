@@ -1,4 +1,4 @@
-var ver            = 'V3.2.00';
+var ver            = 'V3.20.0';
 var express        = require('express');
 var app		       = express();
 var server         = require('http').createServer(app);
@@ -44,7 +44,7 @@ var turnier_nr;
 var runde = 1;          // welche Tanzrunde gerade läuft
 var rundenende = false; // test on alle wertungen da sind
 var last_rt_id;
-var new_guidelines = false;
+var new_guidelines = true;
 
 server.listen(conf.port);
 
@@ -56,6 +56,7 @@ app.post('/login',function(req,res){
             if (req.body.passwort === data[0].WR_kenn) {
                 sess = req.session;
                 sess.user_id = req.body.wr_id;
+                sess.user_func = data[0].WR_func;
                 res.redirect('/judge');
             } else {
                 res.redirect('/');
@@ -67,7 +68,11 @@ app.get('/judge', function (req, res) {
     sess = req.session;
     if (sess.user_id) {
         var wr_name = wertungsrichter[sess.user_id].WR_Nachname.substr(0, 1) + wertungsrichter[sess.user_id].WR_Vorname || "";
-        HTML_erstellen.blankPage(0, wr_name, sess.user_id, runden_info, res);
+        if (sess.user_func === "MA" || sess.user_func === "MB") {
+            HTML_erstellen.mkPage(0, wr_name, sess.user_id, runden_info, res, sess.user_func);
+        } else {
+            HTML_erstellen.blankPage(0, wr_name, sess.user_id, runden_info, res);
+        }
     } else { // kein angemeldeter User
         res.redirect('/');
     }
@@ -173,29 +178,13 @@ app.get('/hand', function (req, res) {
                                             wr_func = "";
                                             wertungsrichter[data[i].WR_ID].WR_status = "";
                                         }
-                                        // Mehrkampf Stationen
-                                        if (v_mk === "MK_1" || v_mk === "MK_2" || v_mk === "MK_3" || v_mk === "MK_4") {
-                                            // alle normalen WR raus
-                                            if (rd.substr(0, 3) === "MK_" && wr_func !== "MA" && wr_func !== "MB" && wr_func !== "Ob") {
-                                                wertungsrichter[data[i].WR_ID].WR_func = "";
-                                                wr_func = "";
-                                                wertungsrichter[data[i].WR_ID].WR_status = "";
-                                            }
-                                            // bei MK 1 und 2 alle B-WR raus
-                                            if ((v_mk === "MK_1" || v_mk === "MK_2") && wr_func === "MB") {
-                                                wertungsrichter[data[i].WR_ID].WR_func = "";
-                                                wr_func = "";
-                                                wertungsrichter[data[i].WR_ID].WR_status = "";
-                                            }
-                                        } else {
-                                            // Mehrkampf Tanz und allgemein Tanz alle mk_WR raus
-                                            if (wr_func === "MA" || wr_func === "MB") {
-                                                wertungsrichter[data[i].WR_ID].WR_func = "";
-                                                wr_func = "";
-                                                wertungsrichter[data[i].WR_ID].WR_status = "";
-                                            }   
-                                        }
-                                        // zähle WR
+                                        // Mehrkampf Tanz und allgemein Tanz alle mk_WR raus
+                                        if (wr_func === "MA" || wr_func === "MB") {
+                                            wertungsrichter[data[i].WR_ID].WR_func = "";
+                                            wr_func = "";
+                                            wertungsrichter[data[i].WR_ID].WR_status = "";
+                                        }   
+                                        // zähle WR und Observer
                                         if (wr_func !== "") {
                                             anz_wr++;
                                         }
@@ -236,37 +225,9 @@ app.get('/hand', function (req, res) {
             io.sockets.emit('chat', { msg: 'mehrkampf', storage_clear : ' ' });
             res.send(req.query.msg + req.query.text);
             break;
-        case "storage_send":
-            connection
-                .query('SELECT * FROM View_Rundenablauf WHERE Runde LIKE "MK_%" ORDER BY Startklasse, Startnr;')
-                //        .query('SELECT * FROM View_Rundenablauf WHERE Runde = "MK_3_BOT" ORDER BY Startklasse, Rundennummer, Startnr;')
-                .on('done', function (data) {
-                    var s;
-                    io.sockets.emit('chat', { msg: 'mehrkampf', turnier: data[0].RT_file.substr(0, 8) });
-                    for (var i in data) {
-                        var mehrkampf = new Object;
-                        if (data[i].Runde.substring(0, 4) !== "MK_5") {
-                            mehrkampf.RT_ID = data[i].RT_ID;
-                            mehrkampf.TP_ID = data[i].TP_ID;
-                            mehrkampf.st_kl = data[i].Startklasse;
-                            s = data[i].Tanzrunde_Text.indexOf(" - ");
-                            mehrkampf.T_Text = data[i].Tanzrunde_Text.substring(0, s);
-                            mehrkampf.startkl = data[i].Tanzrunde_Text.substring(s + 3);
-                            mehrkampf.Startnr = data[i].Startnr;
-                            mehrkampf.Runde = data[i].Runde;
-                            mehrkampf.Herr = data[i].Herr;
-                            mehrkampf.Dame = data[i].Dame;
-                            io.sockets.emit('chat', { msg: 'mehrkampf', WR: '4', couple: mehrkampf });
-                        }
-                    }
-                    console.log("daten geschrieben");
-                    runden_info = data;		// Rundeninfo laden
-                });
-            res.send(req.query.msg + req.query.text);
-            break;
-        case "storage_load":
-            io.sockets.emit('chat', { msg: 'mehrkampf', storage_load: ' ' });
-            res.send(req.query.msg + req.query.text);
+        case "storage_send_mk":
+            io.sockets.emit('chat', { msg: 'mehrkampf', send_mk: req.query.WR_ID });
+            res.send(req.query.msg + req.query.WR_ID);
             break;
         case "eingriff":
             if (req.query.text === 'runde_mi') {
@@ -296,7 +257,7 @@ app.get('/hand', function (req, res) {
                 }
             }
             io.sockets.emit('chat', { zeit: new Date(), msg: 'judgetool', text: 'toRoot' });
-            HTML_beamer.beamer_runde(io, runden_info, runde);
+            HTML_beamer.beamer_runde(io, runden_info, runde, 0);
             HTML_moderator.runde(io, runden_info, runde);
             res.send("Runde auswerten");
             break;
@@ -398,7 +359,7 @@ app.get('/hand', function (req, res) {
             break;
         case "beamer_runde":
             res.send(req.query.msg + req.query.text);
-            HTML_beamer.beamer_runde(io, runden_info, runde);
+            HTML_beamer.beamer_runde(io, runden_info, runde, 0);
             break;
         case "beamer_siegerehrung":
             res.send(req.query.msg + req.query.text);
@@ -540,6 +501,10 @@ io.sockets.on('connection', function (socket) {
                     case "Sieger":
                         HTML_beamer.beamer_siegerehrung(io, connection, data.rnd, data.Platz);
                         break;
+                    case "start_Sieger":
+                        HTML_beamer.beamer_siegerehrung(io, connection, data.rtid, 200);
+                        HTML_moderator.siegerehrung(io, connection, data.rtid);
+                        break;
                 }
                 break;
             case "nochmal werten":
@@ -556,6 +521,9 @@ io.sockets.on('connection', function (socket) {
                 break;
             case "get_wr_status":
                 verteilen(data.text);
+                break;
+            case "get_mk_paare":
+                storage_send(data.text);
                 break;
           default:
                 io.sockets.emit('chat', { zeit: new Date(), msg: data.msg, text: data.text });		// dieser Text wird an alle anderen WR gesendet
@@ -673,7 +641,7 @@ function verteilen(WR_ID) {
                         case "F_R":
                             if (runden_info[rd_ind].PpR === 1 && observer[WR_ID] > 0) {
                                 HTML_erstellen.wait(rd_ind, runden_info, '<div class="wertung_offen" onclick="return p_logout()">kein Einsatz in dieser Runde</div>', wr_name, WR_ID, io);
-                                io.sockets.emit('chat', { text: 'toRoot', WR: WR_ID });
+                                io.sockets.emit('chat', { msg: 'toRoot', WR: WR_ID });
                             } else {
                                 HTML_erstellen.RR_Observer(rd_ind, runden_info, observer[WR_ID], wr_name, WR_ID, akrobatiken, anz_obs, io);
                             }
@@ -696,7 +664,7 @@ function verteilen(WR_ID) {
                             }
                             break;
                     }
-                    HTML_beamer.beamer_runde(io, runden_info, runde);
+                    HTML_beamer.beamer_runde(io, runden_info, runde, rd_ind);
                     HTML_moderator.runde(io, runden_info, runde);
                     break;
 
@@ -735,7 +703,7 @@ function verteilen(WR_ID) {
                 case "MA":
                 case "MB":
                     st_kl = runden_info[0].Startklasse;
-                     HTML_Seite = HTML_erstellen.MK_WB_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io, wertungsrichter[WR_ID].WR_func);
+                    HTML_Seite = HTML_erstellen.MK_WB_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io, wertungsrichter[WR_ID].WR_func);
                     break;
 
                 default:
@@ -778,8 +746,36 @@ function verteilen(WR_ID) {
             setTimeout(abmelden, 3000, WR_ID);
     }
     function abmelden(WR_ID) {
-        io.sockets.emit('chat', { text: 'toRoot', WR: WR_ID });
+        io.sockets.emit('chat', { msg: 'toRoot', WR: WR_ID });
     }
+}
+
+function storage_send(WR_ID) {
+    connection
+        .query('SELECT * FROM View_Rundenablauf WHERE Runde LIKE "MK_%" ORDER BY Startklasse, Startnr;')
+        //        .query('SELECT * FROM View_Rundenablauf WHERE Runde = "MK_3_BOT" ORDER BY Startklasse, Rundennummer, Startnr;')
+        .on('done', function (data) {
+            var s;
+            io.sockets.emit('chat', { msg: 'mehrkampf', turnier: data[0].RT_file.substr(0, 8) });
+            for (var i in data) {
+                var mehrkampf = new Object;
+                if (data[i].Runde.substring(0, 4) !== "MK_5") {
+                    mehrkampf.RT_ID = data[i].RT_ID;
+                    mehrkampf.TP_ID = data[i].TP_ID;
+                    mehrkampf.st_kl = data[i].Startklasse;
+                    s = data[i].Tanzrunde_Text.indexOf(" - ");
+                    mehrkampf.T_Text = data[i].Tanzrunde_Text.substring(0, s);
+                    mehrkampf.startkl = data[i].Tanzrunde_Text.substring(s + 3);
+                    mehrkampf.Startnr = data[i].Startnr;
+                    mehrkampf.Runde = data[i].Runde;
+                    mehrkampf.Herr = data[i].Herr;
+                    mehrkampf.Dame = data[i].Dame;
+                    io.sockets.emit('chat', { msg: 'mehrkampf', WR: WR_ID, couple: mehrkampf });
+                }
+            }
+            io.sockets.emit('chat', { msg: 'mehrkampf', storage_load: WR_ID });
+            console.log("MK-Daten geschrieben " + wertungsrichter[WR_ID].WR_Nachname.substr(0, 1) + wertungsrichter[WR_ID].WR_Vorname);
+        });
 }
 
 function auswerten(cgivar) {
@@ -793,121 +789,133 @@ function auswerten(cgivar) {
         wr_name = wertungsrichter[body.WR_ID].WR_Nachname.substr(0, 1) + wertungsrichter[body.WR_ID].WR_Vorname || "";
         console.log('Tablett von ' + wr_name + ' liefert falsche Werte!' + '\r\n' + '\r\n' + '\r\n');
     } else {
-        if (body.Obs_check1 === "Ok") {
-            for (i = 1; i < runde; i++) {
-                rd_ind += parseInt(runden_info[i].PpR);
-            }
-            if (body.korr1 === "true" || body.korr2 === "true") {
-                insert_differences(body, wertungen);
-            }
-            wtext = "";
-            if (typeof body.TP_ID1 !== "undefined") {
-                wtext += body.TP_ID1 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
-            }
-            if (typeof body.TP_ID2 !== "undefined") {
-                wtext += body.TP_ID2 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
-            }
+        if (body.MK_check === "1") {
+            wtext = body.TP_ID1 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
             wtext = wtext.replace(/TP_ID/g, "PR_ID");
             //        wtext = wtext.replace(/-/g, "");
             fs.appendFileSync(conf.pfad + turnier_nr + body.rt_ID + '_raw.txt', wtext, encoding = 'utf8');
             fs.appendFileSync(conf.pfad + turnier_nr + body.rt_ID + '.txt', wtext, encoding = 'utf8');
-            if (runden_info[rd_ind].PpR === 2) {
-                wertungsrichter[body.WR_ID].WR_status = "checked";
-                for (i in observer) {
-                    if (wertungsrichter[i].WR_status !== "checked") {
-                        verteilen(body.WR_ID);
-                        refresh_wait();
-                        return;
-                    }
-                }
-            }
-            HTML_auswerten.berechne_punkte(wertungen, runden_info, runde, wertungsrichter, conf.pfad + turnier_nr + body.rt_ID + '.txt');
-            HTML_beamer.beamer_ranking(io, runden_info, runde);
-            HTML_moderator.runde(io, runden_info, runde);
-
-            runde++;
-            WR_Info1 = new Object();
-            WR_Info2 = new Object();
-            for (i in wertungsrichter) {
-                if (runden_info[0].Tanzrunde_MAX >= runde) {
-                    if (wertungsrichter[i].WR_func === "Ob") {
-                        wertungsrichter[i].WR_status = "runde";
-                    }
-                } else {
-                    wertungsrichter[i].WR_status = "ende";
-                }
-                verteilen(i);
-            }
-            refresh_wait();
         } else {
-            if (typeof body.TP_ID1 !== "undefined" || typeof body.TP_ID2 !== "undefined") {
-                wertungsrichter[body.WR_ID].WR_status = "wait";
-                if (typeof wertungen[body.WR_ID] === "undefined") {
-                    temp = new Object();
-                } else {
-                    temp = wertungen[body.WR_ID];
+            if (body.Obs_check1 === "Ok") {
+                for (i = 0; i < runden_info.length; i++) {
+                    if (runden_info[i].Rundennummer < runde) {
+                        rd_ind++;
+                    }
                 }
-                var Punkte = 0;
-                wtext = '';
+                if (body.korr1 === "true" || body.korr2 === "true") {
+                    insert_differences(body, wertungen);
+                }
+                wtext = "";
                 if (typeof body.TP_ID1 !== "undefined") {
-                    Punkte = HTML_auswerten.rechne_wertungen(body, "1", runden_info);       // Punkte berechnen#
-                    temp[body.TP_ID1] = { cgi: body, Punkte: Punkte, Runde: runde, Seite: 1 };
-
                     wtext += body.TP_ID1 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
                 }
                 if (typeof body.TP_ID2 !== "undefined") {
-                    Punkte = 0;
-                    Punkte = HTML_auswerten.rechne_wertungen(body, "2", runden_info);       // Punkte berechnen
-                    temp[body.TP_ID2] = { cgi: body, Punkte: Punkte, Runde: runde, Seite: 2 };
-
                     wtext += body.TP_ID2 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
                 }
                 wtext = wtext.replace(/TP_ID/g, "PR_ID");
+                //        wtext = wtext.replace(/-/g, "");
                 fs.appendFileSync(conf.pfad + turnier_nr + body.rt_ID + '_raw.txt', wtext, encoding = 'utf8');
-                //  WR Azubis nachfolgend nicht durchlaufen 
-                wertungen[body.WR_ID] = temp;
-                var count = 0;
-                rundenende = false;
-                for (var x in wertungen) {
-                    for (i in wertungen[x]) {
-                        if (parseInt(wertungen[x][i].cgi.rh1) === runde) {
-                            count++;
+                fs.appendFileSync(conf.pfad + turnier_nr + body.rt_ID + '.txt', wtext, encoding = 'utf8');
+                if (runden_info[rd_ind].PpR === 2) {
+                    wertungsrichter[body.WR_ID].WR_status = "checked";
+                    for (i in observer) {
+                        if (wertungsrichter[i].WR_status !== "checked") {
+                            verteilen(body.WR_ID);
+                            refresh_wait();
+                            return;
                         }
                     }
                 }
-                for (i = 1; i < runde; i++) {
-                    rd_ind += parseInt(runden_info[i].PpR);
-                }
-                if (Object.keys(observer).length === 2) {
-                    if (anz_wr * runden_info[rd_ind].PpR === count + runden_info[rd_ind].PpR) {
-                        rundenende = true;
-                    }
-                } else {
-                    if (anz_wr * runden_info[rd_ind].PpR === count) {
-                        rundenende = true;
-                    }
-                }
+                HTML_auswerten.berechne_punkte(wertungen, runden_info, runde, wertungsrichter, conf.pfad + turnier_nr + body.rt_ID + '.txt');
+                HTML_beamer.beamer_ranking(io, runden_info, runde);
+                HTML_moderator.runde(io, runden_info, runde);
 
-                if (rundenende === true) { 
+                runde++;
+                WR_Info1 = new Object();
+                WR_Info2 = new Object();
+                for (i in wertungsrichter) {
                     if (runden_info[0].Tanzrunde_MAX >= runde) {
-                        for (i in wertungsrichter) {
-                            if (wertungsrichter[i].WR_func === "Ob") {
-                                wertungsrichter[i].WR_status = "checken";
-                                verteilen(i);
-                            }
+                        if (wertungsrichter[i].WR_func === "Ob") {
+                            wertungsrichter[i].WR_status = "runde";
                         }
                     } else {
-                        for (i in wertungsrichter) {
-                            if (wertungsrichter[i].WR_func !== "") {
-                                wertungsrichter[i].WR_status = "start";
+                        wertungsrichter[i].WR_status = "ende";
+                    }
+                    verteilen(i);
+                }
+                refresh_wait();
+            } else {
+                if (typeof body.TP_ID1 !== "undefined" || typeof body.TP_ID2 !== "undefined") {
+                    wertungsrichter[body.WR_ID].WR_status = "wait";
+                    if (typeof wertungen[body.WR_ID] === "undefined") {
+                        temp = new Object();
+                    } else {
+                        temp = wertungen[body.WR_ID];
+                    }
+                    var Punkte = 0;
+                    wtext = '';
+                    if (typeof body.TP_ID1 !== "undefined") {
+                        Punkte = HTML_auswerten.rechne_wertungen(body, "1", runden_info);       // Punkte berechnen#
+                        temp[body.TP_ID1] = { cgi: body, Punkte: Punkte, Runde: runde, Seite: 1 };
+
+                        wtext += body.TP_ID1 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
+                    }
+                    if (typeof body.TP_ID2 !== "undefined") {
+                        Punkte = 0;
+                        Punkte = HTML_auswerten.rechne_wertungen(body, "2", runden_info);       // Punkte berechnen
+                        temp[body.TP_ID2] = { cgi: body, Punkte: Punkte, Runde: runde, Seite: 2 };
+
+                        wtext += body.TP_ID2 + ';' + body.WR_ID + ';' + cgivar + '\r\n';
+                    }
+                    wtext = wtext.replace(/TP_ID/g, "PR_ID");
+                    fs.appendFileSync(conf.pfad + turnier_nr + body.rt_ID + '_raw.txt', wtext, encoding = 'utf8');
+                    //  WR Azubis nachfolgend nicht durchlaufen 
+                    wertungen[body.WR_ID] = temp;
+                    var count = 0;
+                    rundenende = false;
+                    for (var x in wertungen) {
+                        for (i in wertungen[x]) {
+                            if (parseInt(wertungen[x][i].cgi.rh1) === runde) {
+                                count++;
                             }
                         }
-                        WR_Info1 = new Object();
-                        WR_Info2 = new Object();
                     }
+                    for (i = 0; i < runden_info.length; i++) {
+                        if (runden_info[i].Rundennummer < runde) {
+                            rd_ind++;
+                        }
+                    }
+                    if (Object.keys(observer).length === 2) {
+                        if (anz_wr * runden_info[rd_ind].PpR === count + runden_info[rd_ind].PpR) {
+                            rundenende = true;
+                        }
+                    } else {
+                        if (anz_wr * runden_info[rd_ind].PpR === count) {
+                            rundenende = true;
+                        }
+                    }
+
+                    if (rundenende === true) {
+                        if (runden_info[0].Tanzrunde_MAX >= runde) {
+                            for (i in wertungsrichter) {
+                                if (wertungsrichter[i].WR_func === "Ob") {
+                                    wertungsrichter[i].WR_status = "checken";
+                                    verteilen(i);
+                                }
+                            }
+                        } else {
+                            for (i in wertungsrichter) {
+                                if (wertungsrichter[i].WR_func !== "") {
+                                    wertungsrichter[i].WR_status = "start";
+                                }
+                            }
+                            WR_Info1 = new Object();
+                            WR_Info2 = new Object();
+                        }
+                    }
+                    //  WR Azubis ab hier weiterlaufen 
+                    refresh_wait();
                 }
-                //  WR Azubis ab hier weiterlaufen 
-                refresh_wait();
             }
         }
     }
@@ -992,7 +1000,7 @@ function wr_lesen() {
             var trunde;
             var st_kl;
             if (typeof runden_info[0] === "undefined") {
-                st_kl = "RR_A";
+                st_kl = "RR_S";
                 trunde = "VR";
                 rd = "Vor_r";
             } else {
@@ -1033,26 +1041,3 @@ console.log('App Started on PORT ' + conf.port + '.');
 console.log('Version ' + ver);
 to_Root();
 
-function mk_verteilen() {
-    connection
-        .query('SELECT * FROM View_Rundenablauf WHERE Runde LIKE "MK_%" ORDER BY Startklasse, Startnr;')
-//        .query('SELECT * FROM View_Rundenablauf WHERE Runde = "MK_3_BOT" ORDER BY Startklasse, Rundennummer, Startnr;')
-        .on('done', function (data) {
-            io.sockets.emit('chat', { msg: 'mk_fill', turnier: data[0].RT_file.substr(0, 8) });
-            for (var i in data) {
-                var mehrkampf = new Object;
-                if (data[i].Runde.substring(0, 4) !== "MK_5") {
-                    mehrkampf.RT_ID = data[i].RT_ID;
-                    mehrkampf.TP_ID = data[i].TP_ID;
-                    mehrkampf.Startklasse = data[i].Startklasse;
-                    mehrkampf.Tanzrunde_Text = data[i].Tanzrunde_Text;
-                    mehrkampf.Startnr = data[i].Startnr;
-                    mehrkampf.Runde = data[i].Runde;
-                    mehrkampf.Herr = data[i].Herr;
-                    mehrkampf.Dame = data[i].Dame;
-                    io.sockets.emit('chat', { msg: 'mk_fill', WR: '4', couple: mehrkampf });
-                }
-            }
-            runden_info = data;		// Rundeninfo laden
-        });
-}

@@ -27,6 +27,7 @@ Private Sub Form_Open(Cancel As Integer)
         Case "D"
             If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
                 Me!mehrkampf_einlesen.Visible = True
+                Me!mehrkampf_von_tablett.Visible = True
             End If
         Case "SL"
             Me!mehrkampf_einlesen.Visible = False
@@ -145,7 +146,25 @@ Private Sub mehrkampf_einlesen_Click()
     End If
     lese_Auswerteunterlagen tr, Tanzrunde.Column(3)
         
-    Debug.Print tr
+'    Debug.Print tr
+End Sub
+
+Private Sub mehrkampf_von_tablett_Click()
+    Dim db As Database
+    Dim re As Recordset
+    Dim st As String
+    Dim wa As Double
+    Set db = CurrentDb
+    Set re = db.OpenRecordset("SELECT DISTINCT WR_ID FROM Startklasse_Wertungsrichter WHERE WR_function = 'MA' OR wr_function = 'MB';")
+    re.MoveFirst
+    Do Until re.EOF()
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=storage_send_mk&WR_ID=" & re!WR_ID)
+        wa = Time
+        Do Until CDbl(Time) - wa > 0.000005787
+        Loop
+     
+        re.MoveNext
+    Loop
 End Sub
 
 Private Sub Wertung_aufnehmen1_Unterformular_Enter()

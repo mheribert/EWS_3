@@ -617,7 +617,7 @@ Private Sub zufallszahl()
     '
     If Me!Feld52 = 1 Then Call Rundenauslosung(Runde_suchen, Anz_Paare)
     ' getrennte Auslosung ?
-    If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Then
+    If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Or Tanzrund = "MK_5_TNZ" Then
     
         Runde_übertragen Tanzrund, Startklasse
     End If
@@ -633,8 +633,9 @@ End Sub
 
 Private Sub Runde_übertragen(Tanzrund, Startklasse)
     Dim dbs As Database
-    Dim rst As Recordset
+    Dim rst, re As Recordset
     Dim stmt As String
+    Dim rhe As Integer
     Set dbs = CurrentDb
     ' Wenn Vor/Endrunde der BW-Hauptklasse oder BW-Oldieklasse dann die Rundeneinteilung in die schnelle und langsame übernehmen
     If (InStr(1, Tanzrund, "_r_schnell") And (Startklasse = "BW_MA" Or Startklasse = "BW_SA")) Then
@@ -659,6 +660,27 @@ Private Sub Runde_übertragen(Tanzrund, Startklasse)
             Call UpdateRundenqualifikation(Runde_suchen, rst!RT_ID, True)
         End If
     End If
+    If Tanzrund = "MK_5_TNZ" Then
+        stmt = "SELECT * FROM rundentab WHERE Startklasse='" & Startklasse & "' AND Runde LIKE 'MK_*' AND runde<>'MK_5_TNZ'"
+        Set rst = dbs.OpenRecordset(stmt)
+        If Not rst.EOF Then rst.MoveFirst
+        Do Until rst.EOF()
+            stmt = "SELECT r.*, Startnr FROM Paare p INNER JOIN Paare_Rundenqualifikation r ON p.TP_ID = r.TP_ID WHERE RT_ID= " & rst!RT_ID & " ORDER BY Startnr;"
+            Set re = dbs.OpenRecordset(stmt)
+            rhe = 1
+            re.MoveFirst
+            Do Until re.EOF()
+                re.Edit
+                re!Auslosung = rhe
+                re!Rundennummer = rhe
+                re.Update
+                re.MoveNext
+                rhe = rhe + 1
+            Loop
+            rst.MoveNext
+         Loop
+    End If
+
 End Sub
 
 Private Sub Übertrag_EXCEL_Click()

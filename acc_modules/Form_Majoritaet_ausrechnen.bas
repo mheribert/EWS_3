@@ -10,13 +10,6 @@ Private Sub Befehl18_Click()
     DoCmd.OpenQuery stDocName, acNormal, acEdit
 End Sub
 
-Private Sub Befehl100_Click()
-    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
-    
-    stDocName = "Ergebnisliste_Runden_TL"
-    DoCmd.OpenReport stDocName, acPreview
-End Sub
-
 Private Sub Befehl19_Click()
 
     [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
@@ -31,15 +24,45 @@ Private Sub Befehl20_Click()
     
 End Sub
 
-Private Sub Form_Open(Cancel As Integer)
-    setzte_buttons "Majoritaet_ausrechnen", "ausw", Forms![A-Programmübersicht]!Turnierausw.Column(8)
-    If get_properties("EWS") = "EWS3" Then
-'        Me!btn_ausw_2.Visible = True
-'        Me!btn_ausw_1.Visible = True
-    End If
+Private Sub btn_ausw_11_Click()
+    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
+    
+    stDocName = "Ergebnisliste_Runden_TL"
+    DoCmd.OpenReport stDocName, acPreview
 End Sub
 
-Private Sub NJS_Tanzpaare_Feedback_Click()
+Private Sub btn_ausw_12_Click()
+    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
+    
+    stDocName = "Platzierungsliste"
+    DoCmd.OpenReport stDocName, acPreview
+End Sub
+
+Private Sub btn_ausw_13_Click()
+    [Form_A-Programmübersicht]![Report_RT_ID] = nächste_Runde
+    
+    stDocName = "Startliste_startende_Paare"
+    DoCmd.OpenReport stDocName, acPreview
+End Sub
+
+Private Sub btn_ausw_14_Click()
+    If (IsNull(Startklasse) Or Startklasse = "") Then
+        MsgBox "Bitte wählen Sie erst eine Runde aus."
+        Exit Sub
+    End If
+    '*****HM***** V13.05D Sperre für RR raus, RR-WR-Sperre bei showReport_Platzierte_Paare
+    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
+    Call showReport_Platzierte_Paare
+
+    stDocName = "Platzierungsliste_WR"
+    DoCmd.OpenReport stDocName, acPreview
+End Sub
+
+Private Sub btn_ausw_15_Click()
+    Print_Givaway Me.Startklasse.Column(0), Me.Startklasse.Column(5)
+End Sub
+
+Private Sub btn_ausw_16_Click()
     Dim db As Database
     Dim re As Recordset
     Dim fil As String
@@ -61,24 +84,28 @@ Private Sub NJS_Tanzpaare_Feedback_Click()
     End If
 End Sub
 
-Private Sub Befehl26_Click()
-    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
-    
-    stDocName = "Platzierungsliste"
-    DoCmd.OpenReport stDocName, acPreview
+Private Sub btn_ausw_17_Click()
+    If left(Me!Startklasse.Column(7), 5) = "End_r" Then
+        gen_Ergebnisliste Me.RecordsetClone, Me!Startklasse.Column(4), Me!Startklasse.Column(4)
+    Else
+        MsgBox "Dies ist keine Endrunde"
+    End If
 End Sub
 
-Private Sub Befehl27_Click()
-    If (IsNull(Startklasse) Or Startklasse = "") Then
-        MsgBox "Bitte wählen Sie erst eine Runde aus."
-        Exit Sub
+Private Sub btn_ausw_18_Click()
+    If IsNull(Me!nächste_Runde.Column(1)) Then
+        MsgBox "Keine weitere Runde gewählt"
+    Else
+        gen_NächsteRunde Me!Paare_Rundenqualifikation_Unterformular.Form.RecordsetClone, Me!nächste_Runde.Column(3), Me!nächste_Runde.Column(2), Me!nächste_Runde.Column(11)
     End If
-    '*****HM***** V13.05D Sperre für RR raus, RR-WR-Sperre bei showReport_Platzierte_Paare
-    [Form_A-Programmübersicht]![Report_RT_ID] = Startklasse
-    Call showReport_Platzierte_Paare
+End Sub
 
-    stDocName = "Platzierungsliste_WR"
-    DoCmd.OpenReport stDocName, acPreview
+Private Sub Form_Open(Cancel As Integer)
+    setzte_buttons "Majoritaet_ausrechnen", "ausw", Forms![A-Programmübersicht]!Turnierausw.Column(8)
+    If get_properties("EWS") = "EWS3" Then
+'        Me!btn_ausw_2.Visible = True
+'        Me!btn_ausw_1.Visible = True
+    End If
 End Sub
 
 Private Sub btnPaareWeiternehmen_Click()
@@ -91,15 +118,6 @@ Private Sub btnPaareWeiternehmen_Click()
     DoCmd.OpenForm stDocName, , , , , acDialog
 
     Me.Requery
-End Sub
-
-Private Sub Befehl89_Click()
-    
-    [Form_A-Programmübersicht]![Report_RT_ID] = nächste_Runde
-    
-    stDocName = "Startliste_startende_Paare"
-    DoCmd.OpenReport stDocName, acPreview
-
 End Sub
 
 Private Sub btnMajoritaetLoeschen_Click()
@@ -125,22 +143,6 @@ End Sub
 
 Private Sub DQ_ID_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
-End Sub
-
-Private Sub FolieQualifikation_Click()
-    If IsNull(Me!nächste_Runde.Column(1)) Then
-        MsgBox "Keine weitere Runde gewählt"
-    Else
-        gen_NächsteRunde Me!Paare_Rundenqualifikation_Unterformular.Form.RecordsetClone, Me!nächste_Runde.Column(3), Me!nächste_Runde.Column(2), Me!nächste_Runde.Column(11)
-    End If
-End Sub
-
-Private Sub FolieSieger_Click()
-    If left(Me!Startklasse.Column(7), 5) = "End_r" Then
-        gen_Ergebnisliste Me.RecordsetClone, Me!Startklasse.Column(4), Me!Startklasse.Column(4)
-    Else
-        MsgBox "Dies ist keine Endrunde"
-    End If
 End Sub
 
 Private Sub DQ_ID_AfterUpdate()
@@ -279,10 +281,6 @@ End Function
 Private Sub Runde_AfterUpdate()
     DoCmd.RepaintObject acForm, "Majoritaet_ausrechnen"
     DoCmd.RunCommand acCmdRefresh
-End Sub
-
-Private Sub print_Giveaway_Click()
-    Form_Ausdrucke.Print_Givaway Me.Startklasse.Column(0), Me.Startklasse.Column(5)
 End Sub
 
 Private Sub btn_ausw_1_Click()

@@ -1024,8 +1024,6 @@
     <Content Include="views\EWS3.css" />
     <Content Include="views\EWS3.js" />
     <Content Include="views\logo.jpg" />
-    <Content Include="views\wr_simulate.html" />
-    <Content Include="views\Zeitplan.html" />
     <Content Include="views\zeitplan.jpg" />
   </ItemGroup>
   <ItemGroup>
