@@ -1,0 +1,1 @@
+SELECT Disqualifikationsgrund.DQ_ID, Disqualifikationsgrund.DQ_Grund, Disqualifikationsgrund.DQ_Reihenfolge FROM Disqualifikationsgrund ORDER BY Disqualifikationsgrund.DQ_Reihenfolge;

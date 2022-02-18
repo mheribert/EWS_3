@@ -203,11 +203,7 @@ End Function
 
 Private Sub btn_Ausdrucke_213_Click()
     If Not Forms![Ausdrucke]![Runde_einstellen] = " " Then
-        If Forms![Ausdrucke]![Runde_einstellen] = "End_r" Or Forms![Ausdrucke]![Runde_einstellen] = "End_r_Akro" Then
-            stDocName = "ObserverWertungsbogenEndrunde"
-        Else
-            stDocName = "ObserverWertungsbogen"
-        End If
+        stDocName = "ObserverWertungsbogen"
         DoCmd.OpenReport stDocName, acPreview, , "Startkl = '" & Me.Startklasse_einstellen & "' AND RT_ID = " & Me.Runde_auswaehlen.Column(2) & ""
     Else
         MsgBox ("Bitte Runde auswählen")

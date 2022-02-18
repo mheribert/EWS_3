@@ -1,0 +1,1 @@
+SELECT -1 as TP_ID, "Pause" as Name_Team , "" as verein, "1" as Anwesend FROM paare UNION SELECT Paare.TP_ID, Paare.Name_Team, Paare.Verein_Name, Paare.Anwesent_Status FROM Paare WHERE (((Paare.Anwesent_Status)=1) AND ((Paare.Da_Nachname) Is Null)) ORDER BY Verein, Name_Team;

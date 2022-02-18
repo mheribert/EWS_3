@@ -1,0 +1,1 @@
+SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_erg ORDER BY Rundenreihenfolge;

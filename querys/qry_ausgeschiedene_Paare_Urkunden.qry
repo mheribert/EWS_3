@@ -1,0 +1,4 @@
+SELECT ausgeschiedene_Paare.Startklasse_text, ausgeschiedene_Paare.Platz, ausgeschiedene_Paare.Startnr, ausgeschiedene_Paare.Name, ausgeschiedene_Paare.Verein_Name, ausgeschiedene_Paare.Da_Vorname, ausgeschiedene_Paare.Da_NAchname, ausgeschiedene_Paare.He_Vorname, ausgeschiedene_Paare.He_Nachname, ausgeschiedene_Paare.Name_Team, ausgeschiedene_Paare.Turnier_Name
+FROM ausgeschiedene_Paare
+ORDER BY ausgeschiedene_Paare.Platz;
+

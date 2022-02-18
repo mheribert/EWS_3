@@ -1,4 +1,4 @@
-var ver = 'V3.2.00';
+var ver = 'V3.2004';
 var beamer_inhalt = new Object();
 
 exports.inhalt = function () {
@@ -30,13 +30,15 @@ exports.beamer_seite = function () {
 
 };
 
-exports.beamer_runde = function (io, runden_info, runde) {
+exports.beamer_runde = function (io, runden_info, runde, rd_ind) {
     // Kopf Text
-    var rd_ind = 0;
+    // var rd_ind = 0;
     if (runde <= runden_info[0].Tanzrunde_MAX) {
-        for (i = 1; i < runde; i++) {
-            rd_ind += parseInt(runden_info[i].PpR);
-        }
+        /*for (i = 0; i < runden_info.length; i++) {
+            if (runden_info[i].Rundennummer < runde) {
+                rd_ind++;
+            }
+        }*/
         if (runde > runden_info[0].Tanzrunde_MAX) { return; }
 
         var HTML_Kopf = runden_info[rd_ind].Turnier_Name + '<br>' + runden_info[rd_ind].Tanzrunde_Text;
@@ -75,7 +77,7 @@ exports.beamer_zeitplan = function (io, connection, ab_rtid) {
             var HTML_Kopf = 'Zeitplan';
             // Rundeninfo
             var HTML_Inhalt = '<tr height="100%"><td><table style="width: 100%; float: left; ">';
-            HTML_Inhalt += '<thead><tr class="runden" role="row"><th style="width: 250px; padding-left:80px; " colspan="1" rowspan="1" class="sorting">Beginn</th><th style="width: auto;" colspan="1" rowspan="1" class="sorting">Runde</th></tr></thead>';
+            HTML_Inhalt += '<thead><tr class="runden" role="row"><th style="width: 200px; padding-left:60px; " colspan="1" rowspan="1" class="sorting">Beginn</th><th style="width: auto;" colspan="1" rowspan="1" class="sorting">Runde</th></tr></thead>';
             HTML_Inhalt += '<tbody style="font-size: 2.5vw;">';
             for (var i in data) {
                 if (typeof ab_rtid === undefined || ab_rtid === "") {
@@ -86,7 +88,7 @@ exports.beamer_zeitplan = function (io, connection, ab_rtid) {
                     }
                 }
                 if (beginn === true && data[i].Rundentext !== "Letzte Startkartenabgabe" && data[i].Rundentext !== "Wertungsrichterbesprechung") {
-                    HTML_Inhalt += '<tr class="odd" ><td style="padding-left:100px;" >' + data[i].Zeit + '</td><td>' + data[i].Rundentext + ' ' + (data[i].Startklasse_text || "") + '</td></tr>';
+                    HTML_Inhalt += '<tr class="odd" ><td style="padding-left:60px;" >' + data[i].Zeit + '</td><td>' + data[i].Rundentext + ' ' + (data[i].Startklasse_text || "") + '</td></tr>';
                 }
             }
             beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };

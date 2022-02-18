@@ -1,11 +1,11 @@
 Option Compare Database
 Option Explicit
 
-    #If Win64 And VBA7 Then
+'    #If Win64 And VBA7 Then
         Private Declare PtrSafe Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As LongPtr, ByVal bOrder As LongPtr) As Long
-    #Else
-        Private Declare Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As Long, ByVal bOrder As Long) As Long
-    #End If
+'    #Else
+'        Private Declare Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As Long, ByVal bOrder As Long) As Long
+'    #End If
 
     Public Const tr = "                   <tr>"
     Public Const trn = "                   </tr>"
@@ -776,7 +776,7 @@ Function akro_ber(s_kl, rde)        ' für Berechnung in HTML-Seite
         Case "F_RR_ST", "F_RR_GF", "F_RR_LF", "F_RR_J"
             akro_ber = "an"
                             
-        Case "F_RR_M"
+        Case "F_RR_M", "F_RR_Q"
             akro_ber = "f_Iif(an < 7, 6, an) "
         
         Case Else
@@ -1193,7 +1193,7 @@ Public Function make_wr_zeitplan()
     Dim wr_zeitplan As String
 
     Set db = CurrentDb
-    Set re = db.OpenRecordset("SELECT RT_ID, Startzeit, Startklasse_text, Rundentext FROM Tanz_Runden INNER JOIN (Rundentab LEFT JOIN Startklasse ON Rundentab.Startklasse = Startklasse.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde WHERE (Rundentab.Rundenreihenfolge<1000) ORDER BY Rundentab.Rundenreihenfolge;")
+    Set re = db.OpenRecordset("SELECT RT_ID, Startzeit, Startklasse_text, Rundentext FROM Tanz_Runden INNER JOIN (Rundentab LEFT JOIN Startklasse ON Rundentab.Startklasse = Startklasse.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde WHERE (Rundentab.Rundenreihenfolge<999) ORDER BY Rundentab.Rundenreihenfolge;")
     If re.RecordCount = 0 Then Exit Function
         Open getBaseDir & "webserver\views\Zeitplan.html" For Output As #1
         Print #1, "<!DOCTYPE html><head><title>Zeitplan</title><meta http-equiv=""expires"" content=""0""><link rel=""stylesheet"" href=""EWS3.css"">"

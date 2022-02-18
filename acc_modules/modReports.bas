@@ -87,6 +87,31 @@ Public Function rep_fill_fields(beName, fld, PR_ID, Cgi_Input, rde)
     rep_fill_fields = Trim(str)
 End Function
 
+Function Boogie_auswertung_neu(beName, cgivar, fld, aIndex, rde)
+    Dim kl_punkte
+    kl_punkte = Punkteverteilung(beName!Startklasse, ch_runde(rde), rde)
+    Select Case fld
+        Case "Ber1"     'ttd
+            Boogie_auswertung = cgivar.Item("wng_ttd" & aIndex) * (kl_punkte(0))
+        Case "Ber2"     'tth
+            Boogie_auswertung = cgivar.Item("wng_tth" & aIndex) * (kl_punkte(1))
+        Case "Ber3"     ' Basic Dancing,Lead
+            Boogie_auswertung = cgivar.Item("wng_bda" & aIndex) * (kl_punkte(2)) & "/" & cgivar.Item("wng_dap" & aIndex) * (kl_punkte(3))
+        Case "Ber4"     ' Basic Dancing,Lead Bonus
+            Boogie_auswertung = cgivar.Item("wng_bdb" & aIndex) * (kl_punkte(4))
+        Case "Ber5"     ' Tanzfiguren
+            Boogie_auswertung = cgivar.Item("wng_fta" & aIndex) * (kl_punkte(5)) & "/" & cgivar.Item("wng_fts" & aIndex) * (kl_punkte(6))
+        Case "Ber6"     ' Tanzfiguren Bonus
+            Boogie_auswertung = cgivar.Item("wng_ftb" & aIndex) * (kl_punkte(7))
+        Case "Ber10" 'interpretation
+            Boogie_auswertung = cgivar.Item("wng_inf" & aIndex) * (kl_punkte(8)) & "/" & cgivar.Item("wng_ins" & aIndex) * (kl_punkte(9))
+        Case "Ber7" ' interpretation Bonus
+            Boogie_auswertung = cgivar.Item("wng_inb" & aIndex) * (kl_punkte(10))
+        Case Else
+            Boogie_auswertung = ""
+    End Select
+End Function
+
 Function Boogie_auswertung(beName, cgivar, fld, aIndex, rde)
     Dim kl_punkte
     kl_punkte = Punkteverteilung(beName!Startklasse, ch_runde(rde), rde)

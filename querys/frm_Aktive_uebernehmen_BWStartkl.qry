@@ -1,0 +1,2 @@
+SELECT Startklasse_Turnier.Startklasse, Startklasse.Startklasse_text FROM Startklasse_Turnier INNER JOIN Startklasse ON Startklasse_Turnier.Startklasse = Startklasse.Startklasse;
+

@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2.00';
+﻿var ver = 'V3.2004';
 
 exports.wr_login = function (wertungsrichter, title) {
     var HTML_Seite = '<!DOCTYPE html>';
@@ -14,19 +14,31 @@ exports.wr_login = function (wertungsrichter, title) {
     HTML_Seite += '<body><form name="Login" action=/login method=post><center><table border="1" rules="rows">' + '\r\n';
     HTML_Seite += '<tr><td class="ind_o" colspan="2">' + title + '<input type="hidden" name="wr_id" id="wr_id"><input type="hidden" name="passwort" id="passwort"></td></tr>' + '\r\n';
     for (var i in wertungsrichter) {
-        HTML_Seite += '<tr><td class="wr_m">' + wertungsrichter[i].WR_Kuerzel + '</td><td class="wr_l" max="' + wertungsrichter[i].WR_ID + '">' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td></tr>' + '\r\n'; // + ' ' + wertungsrichter[i].WR_func
+        HTML_Seite += '<tr><td class="wr_m">' + wertungsrichter[i].WR_Kuerzel + '</td><td class="wr_l" max="' + wertungsrichter[i].WR_ID + '">' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td></tr>' + '\r\n';
     }
-//    HTML_Seite += '<tr><td class="wr_m">&nbsp;</td><td class="wr_l" max="10000">Moderator</td></tr>' + '\r\n';
-//    HTML_Seite += '<tr><td class="wr_m">&nbsp;</td><td class="wr_l" max="20000">Beamer</td></tr>' + '\r\n';
     HTML_Seite += '</table></center></form></body></html>';
     return HTML_Seite;
 };
 
 exports.blankPage = function (rd_ind, wr_name, wr_id, runden_info, res) {
-    var HTML_Seite = make_HTMLhead(wr_id, runden_info) + '\r\n';
+    var HTML_Seite = make_HTMLhead(wr_id, runden_info, "judgetool") + '\r\n';
     HTML_Seite += make_kopf(rd_ind, runden_info, 0, wr_name) + '\r\n';
     HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
     HTML_Seite += '<td class="main" height="400px"></td></tr>';
+    HTML_Seite += make_absenden(false, false) + '</table></center></form></body></html>';
+    res.send(HTML_Seite);
+};
+
+exports.mkPage = function (rd_ind, wr_name, wr_id, runden_info, res, func) {
+    var HTML_Seite = make_HTMLhead(wr_id, runden_info, "mehrkampf") + '\r\n';
+    HTML_Seite += make_kopf(rd_ind, runden_info, 0, wr_name) + '\r\n';
+    HTML_Seite += '<script> const wr_func="' + func + '" </script>';
+    HTML_Seite += '<tr><td class="mk_sel" align="center"><table width="100%" align="center">';
+    HTML_Seite += '<tr><td width="50%"><label>Station:<select class="select" name="station" id="station"><option>---</option></select></label></td>';
+    HTML_Seite += '<td width="50%"><label id="stkl_reload">Startklasse:<select class="select" name="klasse" id="klasse"><option>---</option></select></label></td></tr>';
+    HTML_Seite += '</table></td></tr>';
+    HTML_Seite += '<tr id="wertungen">' + '\r\n';
+    HTML_Seite += '<td class="main" height="300px"></td></tr>';
     HTML_Seite += make_absenden(false, false) + '</table></center></form></body></html>';
     res.send(HTML_Seite);
 };
@@ -199,7 +211,6 @@ exports.BW_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
             HTML_Seite += make_inpBW('in' + sei, 10, 'Interpretation der Musik', st_kl) + '\r\n';
             HTML_Seite += make_inpBW('dp' + sei, 10, 'Dance Performance', st_kl) + '\r\n';
         }
-        //        HTML_Seite += '<input id="sel_color" value="btn_grn" type="hidden"></td>';
     }
     HTML_Seite += '</tr>';
     HTML_Seite += make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
@@ -257,11 +268,11 @@ exports.BW_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
             for (var i = 0; i < krit.length; i = i + 3) {
                 HTML_Seite += '<tr id="' + krit[i] + s + '"><td class="spalte">-</td><td class="spalte_br"><table width ="100%">' + '\r\n';
                 HTML_Seite += '<tr><td colspan="2">' + krit[i + 1] + '</td></tr>' + '\r\n';
-                HTML_Seite += '<tr><td id="t' + krit[i] + s + '" style="text-align: left; font-size: 14px;">' + krit[i + 2] + '</td>';
+                HTML_Seite += '<tr><td id="t' + krit[i] + s + '" style="text-align: left;">' + krit[i + 2] + '</td>';
                 HTML_Seite += '<td><input readonly ="" value ="0" name="w' + krit[i] + s + '" id="w' + krit[i] + s + '" style="width: 30px; text-align: center; border-radius:5px;"></td></tr>' + '\r\n';
                 HTML_Seite += '</table></td><td class="spalte">+</td></tr>' + '\r\n';
             }
-            HTML_Seite += '<tr><td height = "20px">&nbsp;</td></tr>';
+            HTML_Seite += '<tr><td height = "5px"> </td></tr>';
             HTML_Seite += '<tr><td class="verwbutton leer">Acrobatic<input name="wakrovw' + s + '" type="hidden"></td><td class="verwbutton leer">Figuren jun<input name="wjuniorvw' + s + '" type="hidden"></td><td class="verwbutton leer">Kleidung<input name="wkleidungvw' + s + '" type="hidden"></td></tr>' + '\r\n';
             HTML_Seite += '<tr><td class="verwbutton leer">Tanzbereich<input name="wtanzbereichvw' + s + '" type="hidden"></td><td class="verwbutton leer">Tanzzeit<input name="wtanzzeitvw' + s + '" type="hidden"></td><td class="verwbutton leer">2.Aufruf   Verlassen TF   Unsportlich<input name="waufrufvw' + s + '" type="hidden"></td></tr>' + '\r\n';
         }
@@ -296,7 +307,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                 HTML_Seite += '<td>Name</td><td>Tanztechnik</td><td>Tanzfiguren</td><td>Choreo</td><td>Synchro</td><td>Bilder</td><td>Formationsfig</td><td>Summe</td><td>&nbsp;</td></tr>';
             } else {
                 if (new_guidelines) {
-                    HTML_Seite += '<td>WR</td><td style="width: 120px;">GS H</td><td style="width: 120px;">GS D</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
+                    HTML_Seite += '<td>WR</td><td style="width: 120px;">GS D</td><td style="width: 120px;">GS H</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
                 } else {
                     if (trunde === 'ER') {
                         HTML_Seite += '<td>Name</td><td>Grundschritt</td><td>Basic Dancing</td><td>Tanzfig</td><td>Interpret</td><td>Spontane Int</td><td>Dance Perf</td><td>Summe</td><td>&nbsp;</td></tr>';
@@ -357,10 +368,10 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                             HTML_Seite += '<td' + iif('Fig Jun ', cgi_val["wjuniorvw" + seite]) + '</td>';
                             HTML_Seite += '<td' + iif('Kleid ', cgi_val["wkleidungvw" + seite]) + '</td>';
                             HTML_Seite += '<td' + iif('Tanzber ', cgi_val["wtanzbereichvw" + seite]) + '</td>';
-                            if (trunde === 'ER') {
+                            //if (trunde === 'ER') {
                                 HTML_Seite += '<td' + iif('TanzZeit ', cgi_val["wtanzzeitvw" + seite]) + '</td>';
                                 HTML_Seite += '<td' + iif('Dis ', cgi_val["waufrufvw" + seite]) + '</td>';
-                            }
+                            //}
                             if (new_guidelines) {
                                 HTML_Seite += '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>';
                             }
@@ -436,7 +447,6 @@ exports.RR_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_name,
         }
         HTML_Seite += '</table></td>' + '\r\n';
     }
-//    HTML_Seite += '</tr>' + '\r\n';         //<td><input id="sel_color" value="btn_red" type="hidden"><input id="auswertung" value="RR_" type="hidden"></td></tr>';
     HTML_Seite += '</tr>' + make_absenden(true, false) + '</table></center></form>';
 
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'RR_' });
@@ -467,7 +477,7 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
             if (runden_info[rd_ind].Runde.indexOf("_Fu") > 0 || st_kl === "RR_S") {
                 HTML_Seite += '<tr><td width="430" height="200"></td></tr>';
             } else {
-                rd_info = rd_ind + parseInt(s / anz_obs - 1);
+                rd_info = rd_ind + s - 1;        //parseInt(s / (anz_obs - 1)) - 1;
                 for (var t = 1; t <= 8; t++) {
                     pkt = runden_info[rd_info]['Wert' + t + '_' + trunde];
                     if (pkt !== null) {
@@ -480,7 +490,7 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
             }
             HTML_Seite += '<tr><td class="akro" width="400px">Fu&szlig;technik</td></tr>';
             HTML_Seite += make_fehler(s, true, false);
-            HTML_Seite += make_A20(s + 'a20') + '\r\n';
+//            HTML_Seite += make_A20(s + 'a20') + '\r\n';
         }
         HTML_Seite += '</table></td>' + '\r\n';
     }
@@ -888,12 +898,11 @@ function to_zahl(wert) {
     }
 }
 
-function make_HTMLhead(wr_id, runden_info) {
+function make_HTMLhead(wr_id, runden_info, html_title) {
     var HTML_Seite;
 
     HTML_Seite = '<!DOCTYPE html>';
-//    HTML_Seite += '<html xmlns="http://www.w3.org/1999/xhtml">';
-    HTML_Seite += '<head><title>judgetool</title><meta http-equiv="expires" content="0">';
+    HTML_Seite += '<head><title>' + html_title + '</title><meta http-equiv="expires" content="0">';
 
     HTML_Seite += '<link rel="stylesheet" href="EWS3.css">';
 

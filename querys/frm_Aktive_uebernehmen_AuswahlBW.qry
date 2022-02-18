@@ -1,0 +1,1 @@
+SELECT DISTINCT TLP_BW_PAARE.Clubnr, TLP_BW_PAARE.Clubname_kurz,1 FROM TLP_BW_PAARE WHERE (TLP_BW_PAARE.Clubname_kurz Like "*" & [Formulare]![Aktive_uebernehmen]![SearchName].[Text] & "*") And (Len([clubname_kurz])>3) UNION select distinct -9999, '<kein Club>', 0 from TLP_BW_PAARE ORDER BY 3, TLP_BW_PAARE.Clubname_kurz;

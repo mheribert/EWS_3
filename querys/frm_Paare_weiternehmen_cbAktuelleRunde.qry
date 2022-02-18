@@ -1,0 +1,1 @@
+SELECT Runden.rt_id, * FROM Runden WHERE (((Runden.rt_id)=[Formulare]![Majoritaet_ausrechnen]![Startklasse]));

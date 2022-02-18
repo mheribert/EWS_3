@@ -114,7 +114,7 @@ End Function
 
 Private Function rechne_abzuege(PR_ID, inp)
     Dim vars
-    Dim i, rh, X As Integer
+    Dim i, rh, x As Integer
     Dim Punkte As Double
     Dim verst
     verst = Array("beobachter_zukurz", "beobachter_zulang", "beobachter_Makeup", "beobachter_schmuck", "beobachter_requsit")
@@ -123,9 +123,9 @@ Private Function rechne_abzuege(PR_ID, inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh" & i)
     
-    For X = 0 To UBound(verst)
-        If vars.Item(verst(X)) <> "" Then
-            Punkte = Punkte + CSng(vars.Item(verst(X)))
+    For x = 0 To UBound(verst)
+        If vars.Item(verst(x)) <> "" Then
+            Punkte = Punkte + CSng(vars.Item(verst(x)))
         End If
     
     Next
@@ -208,16 +208,16 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
                         Punkte = Punkte - Replace(vars.Item("wfl" & i), ".", ",")
                     End If
                     If vars.Item("wmk_th" & i) <> "" Then
-                        Punkte = Punkte + CSng(vars.Item("wmk_th" & i))
-                        Punkte = Punkte + CSng(vars.Item("wmk_dh" & i))
-                        Punkte = Punkte + CSng(vars.Item("wmk_td" & i))
-                        Punkte = Punkte + CSng(vars.Item("wmk_dd" & i))
+                        Punkte = Punkte + to_zahl(vars, "wmk_th" & i)
+                        Punkte = Punkte + to_zahl(vars, "wmk_dh" & i)
+                        Punkte = Punkte + to_zahl(vars, "wmk_td" & i)
+                        Punkte = Punkte + to_zahl(vars, "wmk_dd" & i)
                     End If
                 End If
             End If
         Case "BW_"
             If vars.exists("wng_tth" & i) Then
-                Punkte = CSng(vars.Item("Punkte" & i))     ' newGuidelines ohne Kategorien-Streichverfahren
+                Punkte = CSng(vars.Item("Punkte_err" & i))     ' newGuidelines         Kategorien-Streichverfahren
             Else
                 kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
                 If ch_runde(rde) = "ER" Then
@@ -290,6 +290,15 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
     rechne_punkte = FormatNumber(Punkte, 2)
 End Function
 
+Private Function to_zahl(vars, wert)
+    to_zahl = 0
+    If vars.exists(wert) Then
+        If vars.Item(wert) <> "" Then
+            to_zahl = CSng(vars.Item(wert))
+        End If
+    End If
+End Function
+
 Public Function get_platzierung(rt)
     Dim re, pr As Recordset
     Dim rh As Integer
@@ -324,11 +333,11 @@ End Function
 ' neu newJudgingSystem
 Function add_verstoesse(vars, i)
     Dim verst
-    Dim X As Integer
+    Dim x As Integer
     verst = Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw")
-    For X = 0 To UBound(verst)
-        If vars.Item(verst(X) & i) <> "" Then
-            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(X) & i))
+    For x = 0 To UBound(verst)
+        If vars.Item(verst(x) & i) <> "" Then
+            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(x) & i))
         End If
     Next
 End Function
@@ -344,6 +353,8 @@ Function Punkteverteilung(Startklasse, rd, rde)
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20)
         Case "F_RR_J"   ' Jugend
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20)
+        Case "F_RR_Q"   ' Quattro RR
+            punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20)
         Case "F_RR_M"   ' Master RR
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20)
         Case "F_BW_M"   ' Master BW
@@ -351,7 +362,7 @@ Function Punkteverteilung(Startklasse, rd, rde)
         Case "RR_S"
             punkte_verteilung = Array(4.5, 4.5, 4.5, 4.5, 6.3, 6.3, 5.4)
         Case "RR_J"
-            punkte_verteilung = Array(4.5, 4.5, 4.5, 4.5, 6.3, 6.3, 5.4)
+            punkte_verteilung = Array(6, 6, 6, 6, 8.4, 8.4, 7.2)
         Case "RR_C"
             punkte_verteilung = Array(6, 6, 6, 6, 8.4, 8.4, 7.2)
         Case "RR_A", "RR_B"
@@ -361,20 +372,27 @@ Function Punkteverteilung(Startklasse, rd, rde)
                 Case "ER"
                     punkte_verteilung = Array(4.375, 4.375, 4.375, 4.375, 6.125, 6.125, 5.25)
             End Select
-            If rde = "Semi" Then punkte_verteilung = Array(7.25, 7.25, 7.25, 7.25, 10.15, 10.15, 8.7)
+            If rde = "Semi" Then punkte_verteilung = Array(8.75, 8.75, 8.75, 8.75, 12.25, 12.25, 10.5)
         ' Boogie NJS TSO1.8
         Case "BW_MA"
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_SA"
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_JA"
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_MB"
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_SB"
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
+        Case "BW_NG":
+            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         ' Breitensport Bayern
-        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS":
+        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1":
             punkte_verteilung = Array(15, 10, 10, 30, 0, 0, 0)
         Case Else
             punkte_verteilung = Array(10, 10, 10, 10, 10, 10, 10, 10, 10)
@@ -403,6 +421,10 @@ Function Faktor_Formation_Abzuege(Startklasse) As Formationswerte
             Faktor_Formation_Abzuege.faktor = 1.25
             Faktor_Formation_Abzuege.min = 8
             Faktor_Formation_Abzuege.max = 12
+        Case "F_RR_Q"           ' Quattro RR
+            Faktor_Formation_Abzuege.faktor = 0
+            Faktor_Formation_Abzuege.min = 8
+            Faktor_Formation_Abzuege.max = 8
         Case "F_RR_M"           ' Master RR
             Faktor_Formation_Abzuege.faktor = 1.25
             Faktor_Formation_Abzuege.min = 8
@@ -422,12 +444,12 @@ End Function
 Function Form_abzuege(PR_ID, s_kl)
     Dim db As Database
     Dim re As Recordset
-    Dim f As Formationswerte
+    Dim F As Formationswerte
     Set db = CurrentDb
     Set re = db.OpenRecordset("SELECT Anz_Taenzer FROM Paare WHERE TP_ID= " & PR_ID & ";")
-    f = Faktor_Formation_Abzuege(s_kl)
+    F = Faktor_Formation_Abzuege(s_kl)
     
-    Form_abzuege = (100 - ((f.max - re!Anz_Taenzer) * f.faktor)) / 100
+    Form_abzuege = (100 - ((F.max - re!Anz_Taenzer) * F.faktor)) / 100
 End Function
 
 Private Function get_ft(WR_ID, PR_ID, RT_ID) ' bei A/B Vorrunde FT miteinrechnen
@@ -635,7 +657,7 @@ Public Sub ObserverHTML(trunde)
     Dim HTML_WR_Werte, sql, test, PaarLinks, PaarRechts As String
     Dim st_kl As String
     Dim AbgegebeneWertungen, Paar_Infos As Recordset
-    Dim WR_Zaehler, X, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim WR_Zaehler, x, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
     Dim i, t As Integer
     Dim T_WR_Reset, A_WR_Reset As Boolean
     Dim kl_punkte
@@ -683,7 +705,7 @@ Public Sub ObserverHTML(trunde)
     Paar_ID = AbgegebeneWertungen!Paar_ID
     st_kl = Paar_Infos!Startklasse
     
-    For X = 1 To WR_Zaehler
+    For x = 1 To WR_Zaehler
         HTML_WR_Werte = HTML_WR_Template
     
         Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
@@ -807,7 +829,7 @@ Public Sub ObserverHTML(trunde)
         
         AbgegebeneWertungen.MoveNext
     
-    Next X
+    Next x
         
     HTML_Website = "<H1>" & Paar_Infos!Startklasse_text & " " & Paar_Infos!Runde & "</H1><H2>" & PaarLinks & "</H2>" & HTML_Paar_links & "<br><br><H2>" & PaarRechts & "</H2>" & HTML_Paar_rechts & "<br><br>"
     

@@ -1,0 +1,1 @@
+SELECT Punktabzug.PA_ID, Punktabzug.PA_Grund, Punktabzug.PA_Reihenfolge FROM Punktabzug ORDER BY Punktabzug.PA_Reihenfolge;

@@ -1,0 +1,5 @@
+SELECT DISTINCT View_Paare.Platz, View_Paare.Da_Vorname, View_Paare.Da_Nachname, View_Paare.He_Vorname, View_Paare.He_Nachname, View_Paare.Verein_Name, View_Paare.Name_Team, Tanz_Runden.Rundentext, View_Paare.Punkte, Tanz_Runden.Runde, View_Paare.Name, Turnier.Turnier_Name, Turnier.Turnier_Nummer, Turnier.T_Datum, View_Paare.Startnr, Turnier.Veranst_Name, View_Majoritaet.DQ_ID, View_Majoritaet.Anmerkung, View_Majoritaet.DQ_Grund, View_Majoritaet.disqualifiziert, View_Paare.Startklasse_text, View_Majoritaet.Majoritaet, Turnier.Turnier_Name, Tanz_Runden.R_NAME_ABLAUF
+FROM (Tanz_Runden INNER JOIN (((View_Paare INNER JOIN Turnier ON View_Paare.Turniernr=Turnier.Turniernum) INNER JOIN Rundentab ON View_Paare.RT_ID_Ausgeschieden=Rundentab.RT_ID) INNER JOIN View_Majoritaet ON (Rundentab.RT_ID=View_Majoritaet.RT_ID) AND (View_Paare.TP_ID=View_Majoritaet.TP_ID)) ON Tanz_Runden.Runde=Rundentab.Runde) INNER JOIN Paare_Rundenqualifikation ON Rundentab.RT_ID=Paare_Rundenqualifikation.RT_ID
+WHERE (((View_Paare.RT_ID_Ausgeschieden)=Formulare![A-Programmübersicht]!Report_RT_ID And (View_Paare.RT_ID_Ausgeschieden) Is Not Null))
+ORDER BY View_Paare.Platz, View_Paare.Startnr;
+

@@ -1,0 +1,1 @@
+SELECT Turnierleiter_Funktion.TLF_ID, Turnierleiter_Funktion.TLF_Name, Turnierleiter_Funktion.TLF_Reihenfolge FROM Turnierleiter_Funktion;

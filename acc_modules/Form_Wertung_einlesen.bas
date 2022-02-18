@@ -36,8 +36,8 @@ Private Sub Form_Load()
             'Me!Wertung_drucken.Visible = False
         Case "D"
             Me!Wertung_drucken.Visible = False
-            
         Case Else
+            Me!Wertung_drucken.Visible = False
     End Select
 
 End Sub
@@ -85,16 +85,16 @@ Private Sub Platzierung_freigeben_Click()
     Dim db As Database
     Dim re As Recordset
     Dim t As Integer
-    Dim fname, fPfad As String
+    Dim fName, fPfad As String
     Set db = CurrentDb
        
     fPfad = getBaseDir & "Apache2\htdocs\"
-    fname = Dir(fPfad & "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "R*" & "_K" & Me!Tanzrunde & "_2000.html")
+    fName = Dir(fPfad & "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "R*" & "_K" & Me!Tanzrunde & "_2000.html")
     
-    Do Until fname = ""
-        FileCopy fPfad & fname, fPfad & Replace(fname, "_2000", "_1000")
-        Kill fPfad & fname
-        fname = Dir
+    Do Until fName = ""
+        FileCopy fPfad & fName, fPfad & Replace(fName, "_2000", "_1000")
+        Kill fPfad & fName
+        fName = Dir
     Loop
 End Sub
 
@@ -108,7 +108,7 @@ Private Sub Form_AfterUpdate()
     Form_Paare_ohne_Punkte_UF.Requery
 End Sub
 
-Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String    'Beitensport Taktung
     If Me!Umschaltfläche147.Caption = "Runde starten" Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Runde_starten&text=")
@@ -159,6 +159,9 @@ Public Sub Runde_starten_Click()
     db.Execute "UPDATE wert_richter Set WR_func='', WR_status='';"
     db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE Startklasse='" & Me!Tanzrunde.Column(3) & "';"
     db.Execute "UPDATE wert_richter Set WR_status='runde' WHERE WR_func='Ob';"
+    If get_mk <> "" Then
+        db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE (((Startklasse_Wertungsrichter.WR_function) Like 'M*'));"
+    End If
     db.Execute "UPDATE rundentab SET gestartet = true WHERE RT_ID=" & Me!RT_ID & ";"
     rundeninfo = RT_ID
                 
@@ -197,8 +200,11 @@ End Sub
 
 Private Sub sende_msg_Click()
     Dim st As String
-    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&text=" & Me!sende_text)
+    
+    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
+
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&kopf=Vorrunde&inhalt=<table style=""width: 100%; float: left; padding-left:100px"" id=""table_timetable""><thead><tr role=""row""><th style=""width: 250px;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Beginn</th><th style=""width: auto;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Runde</th></tr></thead><tbody style=""font-size: 1.8vw;""> <tr class=""odd""> <td>19:00</td><td>Vorrunde  Juniorenklasse</td> </tr> <tr class=""odd""><td>19:10</td><td>Endrunde  Schülerklasse</td></tr>")
+'    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&seite=&inhalt=bodytext&kopf=heribert&wr_info=")
     
 End Sub
 
@@ -214,7 +220,7 @@ Sub Tanzrunde_AfterUpdate()
     If Not IsNull(Tanzrunde) Then
         Me.Status_Wertungen_Einlesen.Visible = False
         Me!Wertungen_einlesen.ControlTipText = Tanzrunde
-        sqlstr = "SELECT Paare_Rundenqualifikation.RT_ID, Paare.Startkl, Paare_Rundenqualifikation.Rundennummer, Paare.Startnr, Paare_Rundenqualifikation.PR_ID, Paare_Rundenqualifikation.nochmal FROM (Paare INNER JOIN Paare_Rundenqualifikation ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID= " & Me!Tanzrunde & " AND Paare_Rundenqualifikation.Anwesend_Status=1) ORDER BY Paare_Rundenqualifikation.Rundennummer, Paare.Startnr;"
+        sqlstr = "SELECT Paare_Rundenqualifikation.RT_ID, Paare.Startkl, Paare_Rundenqualifikation.Rundennummer, Paare.Startnr, Paare_Rundenqualifikation.PR_ID, Paare_Rundenqualifikation.nochmal, Paare_Rundenqualifikation.TP_ID, [Rundennummer ] Mod 2 AS Ausdr1 FROM (Paare INNER JOIN Paare_Rundenqualifikation ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID= " & Me!Tanzrunde & " AND Paare_Rundenqualifikation.Anwesend_Status=1) ORDER BY Paare_Rundenqualifikation.Rundennummer, Paare.Startnr;"
         Set dbs = CurrentDb
         Set re = dbs.OpenRecordset(sqlstr)
         If re!Rundennummer > 0 Then
@@ -452,6 +458,8 @@ Public Function Wertung_check(WR_ID, spalte)
     Dim werund, tr As String
     Dim mehrfach As Variant
     Dim Turniernr As Integer
+    Dim zeit, sortierung
+
     
     Set dbs = CurrentDb
     ' Anzahl Paare für diese Runden in die Tabelle schreiben
@@ -460,9 +468,6 @@ Public Function Wertung_check(WR_ID, spalte)
     IsEndrunde = (Tanzrunde.Column(13) = 1)
     
     ' Wertung überprüfen und Plätze vergeben
-    Dim zpl As Double, zpu As Double, zpldup As Double
-    zpl = 0
-    zpu = 0
     Set rstauswertung = dbs.OpenRecordset("SELECT Count(*) AS anz FROM Paare_Rundenqualifikation WHERE RT_ID=" & Tanzrunde & "and anwesend_Status=1;")
     anzahl_p = rstauswertung!anz
     ReDim mehrfach(anzahl_p)
@@ -481,9 +486,17 @@ Public Function Wertung_check(WR_ID, spalte)
         Exit Function
     End If
     
+    zeit = "MK_1_KLE, MK_1_STL, MK_2_KAS, MK_2_KOO, MK_2_SCH, MK_2_STE"
+    If InStr(zeit, Tanzrunde.Column(6)) = 0 Then
+        sortierung = " DESC"
+    Else
+        sortierung = ""
+    End If
+        
+    Dim pl As Double, pl_m As Double, pl_a As Double
     stmt = "SELECT * from Auswertung a"
     stmt = stmt & " where a.wr_id=" & WR_ID & " and exists (select 1 from Paare_Rundenqualifikation pr where pr.pr_id=a.pr_id and pr.rt_id=" & Tanzrunde & ")"
-    stmt = stmt & " order by a.punkte desc, a.platz asc"
+    stmt = stmt & " order by a.punkte " & sortierung & ", a.platz asc"
     
     Set rstauswertung = dbs.OpenRecordset(stmt)
     If rstauswertung.EOF() Then
@@ -491,53 +504,72 @@ Public Function Wertung_check(WR_ID, spalte)
     End If
     With rstauswertung
         .MoveFirst
-        If (IsEndrunde) Then
-            If !Platz = 0 Then   ' keine Platzvergabe für die Endrunde, wenn schon ein Platz vergeben wurde
-                .Edit
-                !Platz = 1
-                .Update
-            Else
-                zpl = !Platz
-            End If
-         Else
+        pl = 0
+        pl_m = 0
+        pl_a = 0
+        Do Until .EOF
             .Edit
-            !Platz = 1
-            .Update
-        End If
-        zpl = !Platz
-        zpu = !Punkte
-        '
-        zpldup = 1  ' erster Platz wurde fest einmal vergeben
-        .MoveNext
-        Do While Not .EOF()
-          
-          If (IsEndrunde) And !Platz <> 0 Then
-            zpl = !Platz
-            zpu = !Punkte
-          Else
-            .Edit
-            If !Punkte < zpu Then
-                zpl = zpl + zpldup ' nächster zu vergebender Platz
-                !Platz = zpl       ' diesen Platz vergeben
-                zpldup = 1         ' Platz ist einmal vergeben
-                zpu = !Punkte      ' bei diesem Punktestand
+            If pl_m = !Punkte Then
+                 pl_a = pl_a + 1
+                !Platz = pl
+        
             Else
-                If !Punkte = zpu Then  ' Platz mehrfach
-                    !Platz = zpl         ' nach wie vor diesen Platz
-                    zpldup = zpldup + 1  ' aber jetzt einmal mehr
-                    mehrfach(0) = 1
-                    mehrfach(zpl) = zpldup
-                Else
-                    If !Punkte > zpu Then
-                        MsgBox ("Hier stimmt was nicht mit der Platzvergabe")
-                        End
-                    End If
-                End If
+                pl = pl + 1 + pl_a
+                pl_m = !Punkte
+                !Platz = pl
+                pl_a = 0
             End If
+            
             .Update
-          End If
-         .MoveNext
+            .MoveNext
         Loop
+'        If (IsEndrunde) Then
+'            If !Platz = 0 Then   ' keine Platzvergabe für die Endrunde, wenn schon ein Platz vergeben wurde
+'                .Edit
+'                !Platz = 1
+'                .Update
+'            Else
+'                zpl = !Platz
+'            End If
+'         Else
+'            .Edit
+'            !Platz = 1
+'            .Update
+'        End If
+'        zpl = !Platz
+'        zpu = !Punkte
+'        '
+'        zpldup = 1  ' erster Platz wurde fest einmal vergeben
+'        .MoveNext
+'        Do While Not .EOF()
+'
+'          If (IsEndrunde) And !Platz <> 0 Then
+'            zpl = !Platz
+'            zpu = !Punkte
+'          Else
+'            .Edit
+'            If !Punkte < zpu Then
+'                zpl = zpl + zpldup ' nächster zu vergebender Platz
+'                !Platz = zpl       ' diesen Platz vergeben
+'                zpldup = 1         ' Platz ist einmal vergeben
+'                zpu = !Punkte      ' bei diesem Punktestand
+'            Else
+'                If !Punkte = zpu Then  ' Platz mehrfach
+'                    !Platz = zpl         ' nach wie vor diesen Platz
+'                    zpldup = zpldup + 1  ' aber jetzt einmal mehr
+'                    mehrfach(0) = 1
+'                    mehrfach(zpl) = zpldup
+'                Else
+''                    If !Punkte > zpu Then
+''                        MsgBox ("Hier stimmt was nicht mit der Platzvergabe")
+''                        End
+''                    End If
+'                End If
+'            End If
+'            .Update
+'          End If
+'         .MoveNext
+'        Loop
     End With
     If (IsEndrunde) And left(Me!Tanzrunde.Column(3), 3) <> "RR_" And left(Me!Tanzrunde.Column(3), 3) <> "F_R" Then
         rstauswertung.MoveFirst
@@ -628,7 +660,7 @@ Private Sub wertungen_löschen_Click()
 '    Überflüssiges_löschen
 End Sub
 
-Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 1
@@ -636,7 +668,7 @@ Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, y
     Beamer_generieren
 End Sub
 
-Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 2
@@ -644,7 +676,7 @@ Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, y As
     Beamer_generieren
 End Sub
 
-Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 3
@@ -653,14 +685,14 @@ Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As 
     Beamer_generieren
 End Sub
 
-Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 4
     Beamer_generieren
 End Sub
 
-Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 5
@@ -668,7 +700,7 @@ Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Sin
     Beamer_generieren
 End Sub
 
-Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String
     Dim Runde As String
     If no_runde_selected Then Exit Sub

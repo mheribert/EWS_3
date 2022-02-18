@@ -1,0 +1,1 @@
+SELECT Mid([Rundentext],4) AS Ausdr1, Tanz_Runden_fix.Runde, Tanz_Runden_fix.Rundenreihenfolge FROM Tanz_Runden_fix WHERE (((Tanz_Runden_fix.Runde) Like "MK_1*")) UNION SELECT TOP 1 "" as Ausdr1, "" As Ausdr2, -1 as Ausdr3 FROM Tanz_Runden_fix ORDER BY Tanz_Runden_fix.Rundenreihenfolge;

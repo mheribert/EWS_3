@@ -29,7 +29,7 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     End If
 
     
-    Set wr = db.OpenRecordset("SELECT Startklasse_Wertungsrichter.*, WR_Kuerzel FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE WR_func Like 'M*' AND Startklasse='" & st_kl & "' ORDER BY WR_Kuerzel;")
+    Set wr = db.OpenRecordset("SELECT Startklasse_Wertungsrichter.*, WR_Kuerzel FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE WR_function Like 'M*' AND Startklasse='" & st_kl & "' ORDER BY WR_Kuerzel;")
     i = 1
     If wr.RecordCount = 0 Then
         MsgBox "Für " & Startklasse & " sind keine WR eingeteilt!"
@@ -48,7 +48,7 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
             wr.MoveNext
         Loop
         Set wr = Nothing
-        csp = 0
+        csp = 2
         For s_rd = 1 To 7
             Set re = db.OpenRecordset("SELECT * FROM Auswertung;")
             If get_mk() = "Kondition und Koordination" Then
@@ -91,8 +91,8 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
         Next
     End If
      
-    oXLSApp.DisplayAlerts = True
     oXLSWKB.Save
+    oXLSApp.DisplayAlerts = True
     oXLSWKB.Close
     oXLSApp.Quit
     Set oXLSWKB = Nothing
@@ -100,22 +100,28 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     
 End Sub
 
-Function lese_4(re, MA, xsheet, y, X, WR_ID, RT_ID)
+Function lese_4(re, MA, xsheet, y, x, WR_ID, RT_ID)
     Dim pu As String
     Dim pr
     Dim TP_ID As Integer
+    Dim w_dis As Boolean     ' bei fehlendee Wertung Paar nicht angetreten
     If xsheet.cells(y, 1) <> "" Then
         lese_4 = True
+        If xsheet.cells(y, x) = "" Or xsheet.cells(y + 1, x) = "" Then w_dis = True
         TP_ID = xsheet.cells(y, 1)
-        pu = "PR_ID1=" & TP_ID & "&"
-        pu = pu & "wmk_td1=" & xsheet.cells(y, X) & "&"
-        pu = pu & IIf(xsheet.cells(y + 1, X) = "", "", "wmk_th1=" & xsheet.cells(y + 1, X) & "&")
+        pu = "PR_ID1=" & TP_ID & "&rt_ID=" & RT_ID & "&"
+        pu = pu & "wmk_td1=" & xsheet.cells(y, x) & "&"
+        pu = pu & IIf(xsheet.cells(y + 1, x) = "", "", "wmk_th1=" & xsheet.cells(y + 1, x) & "&")
         If MA > 0 Then
-            pu = pu & "wmk_dd1=" & xsheet.cells(y, X + 1) & "&"
-            pu = pu & "wmk_dh1=" & xsheet.cells(y + 1, X + 1) & "&"
+            If xsheet.cells(y, x + 1) = "" Or xsheet.cells(y + 1, x + 1) = "" Then w_dis = True
+            pu = pu & "wmk_dd1=" & xsheet.cells(y, x + 1) & "&"
+            pu = pu & "wmk_dh1=" & xsheet.cells(y + 1, x + 1) & "&"
         End If
         pu = pu & "WR_ID=" & WR_ID & "&"
-        pu = pu & "Punkte1=" & xsheet.cells(y, X) + IIf(xsheet.cells(y + 1, X) = "", 0, xsheet.cells(y + 1, X)) + IIf(MA = 0, 0, xsheet.cells(y, X + 1) + xsheet.cells(y + 1, X + 1))
+        pu = pu & "Punkte1=" & celltoZahl(xsheet.cells(y, x)) + celltoZahl(xsheet.cells(y + 1, x)) + IIf(MA = 0, 0, celltoZahl(xsheet.cells(y, x + 1)) + celltoZahl(xsheet.cells(y + 1, x + 1)))
+        If w_dis Then
+            pu = pu & "&w_dis=1"
+        End If
         pr = DLookup("PR_ID", "Paare_Rundenqualifikation", "TP_ID=" & TP_ID & " AND RT_ID=" & RT_ID & "")
         re.FindFirst ("pr_id=" & pr & " AND WR_ID=" & WR_ID & "")
         If re.NoMatch Then   'Abfrage vorhanden, wenn nicht neu
@@ -125,18 +131,27 @@ Function lese_4(re, MA, xsheet, y, X, WR_ID, RT_ID)
         Else            ' oder edit
             re.Edit
         End If
-        re!Punkte = xsheet.cells(y, X) + IIf(xsheet.cells(y + 1, X) = "", 0, xsheet.cells(y + 1, X))
+        re!Punkte = celltoZahl(xsheet.cells(y, x)) + celltoZahl(xsheet.cells(y + 1, x))
         If MA > 0 Then
-            re!Punkte = re!Punkte + xsheet.cells(y, X + 1) + xsheet.cells(y + 1, X + 1)
+            re!Punkte = re!Punkte + celltoZahl(xsheet.cells(y, x + 1)) + celltoZahl(xsheet.cells(y + 1, x + 1))
         End If
+        If w_dis Then re!Punkte = Null
     '    re!Reihenfolge = rh
         re!Cgi_Input = pu
-        re!Platz = 0
+        re!Platz = Null
         re.Update
+
     Else
         lese_4 = False
     End If
 
+End Function
+
+Private Function celltoZahl(cell)
+    celltoZahl = 0
+    If cell <> "" Then
+        celltoZahl = cell
+    End If
 End Function
 
 Function sort_rnd(rt, WR_ID)
@@ -169,14 +184,16 @@ Function sort_rnd(rt, WR_ID)
         pl_a = 0
         Do Until re.EOF
             re.Edit
-            If pl_m = re!Punkte Then
-                pl_a = pl_a + 1
-                re!Platz = pl
-            Else
-                pl = pl + 1 + pl_a
-                pl_m = re!Punkte
+            If Not IsNull(re!Punkte) Then
+                If pl_m = re!Punkte Then
+                    pl_a = pl_a + 1
                     re!Platz = pl
-                pl_a = 0
+                Else
+                    pl = pl + 1 + pl_a
+                    pl_m = re!Punkte
+                        re!Platz = pl
+                    pl_a = 0
+                End If
             End If
             re.Update
             re.MoveNext
@@ -285,8 +302,8 @@ Sub schreibe_Auswerteunterlagen()
             re.MoveNext
         Loop
       
-        oXLSWKB.Save
     End If
+    oXLSWKB.Save
     oXLSApp.DisplayAlerts = True
     oXLSWKB.Close
     oXLSApp.Quit
@@ -294,3 +311,25 @@ Sub schreibe_Auswerteunterlagen()
     Set oXLSApp = Nothing
  
 End Sub
+
+Function befülle_dateien()
+    Dim oXLSApp
+    Dim oXLSWKB
+    Dim dateien
+    Dim i As Integer
+    
+    If get_mk() = "Kondition und Koordination" Then
+        dateien = Array("2_Wertung Kondition", "2_Wertung Koordination", "2_Wertung Tanzen - A-WR", "2_Wertung Tanzen - B-WR 1", "2_Wertung Tanzen - B-WR 2", "2_Wertung Tanzen - B-WR 3")
+    Else
+        dateien = Array("1_Wertung Bodenturnen", "1_Wertung Tanzen - A-WR", "1_Wertung Tanzen - B-WR 1", "1_Wertung Tanzen - B-WR 2", "1_Wertung Tanzen - B-WR 3")
+    End If
+    Set oXLSApp = CreateObject("Excel.Application")
+    oXLSApp.Visible = True
+    oXLSApp.DisplayAlerts = False
+    For i = 0 To UBound(dateien) - 1
+        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\" & dateien(i) & ".xlsx", 3)
+        oXLSWKB.Save
+        oXLSWKB.Close
+    Next
+
+End Function

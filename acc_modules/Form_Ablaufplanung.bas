@@ -6,13 +6,13 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
     Dim re  As Recordset
     Dim res As Recordset
     Dim paa As Recordset
-    Dim strsql As String
+    Dim strSQL As String
     Dim anz As Integer
     Me.Requery
     Set dbs = CurrentDb
     Set re = Me.RecordsetClone
-    strsql = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
-    Set res = dbs.OpenRecordset(strsql)
+    strSQL = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
+    Set res = dbs.OpenRecordset(strSQL)
     re.MoveFirst
     Do Until re.EOF
         
@@ -182,7 +182,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' wenn eine geteile Vorrunde müssen beide da sein
-                        Runde = Array("Vor_r_lang", "Vor_r_schnell", "Hoff_r")
+                        Runde = Array("Vor_r_lang", "Vor_r_schnell")    ' "Hoff_r"
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde='Vor_r';"
                     End If
@@ -195,7 +195,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' eine geteile Vorrunde darf nicht sein
-                        Runde = Array("Vor_r", "Hoff_r")
+                        Runde = Array("Vor_r")  ' "Hoff_r"
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde like 'Vor_r_*';"
                     End If
@@ -212,7 +212,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' eine geteile Vorrunde darf nicht sein
-                        Runde = Array("Vor_r", "Hoff_r")
+                        Runde = Array("Vor_r")  ' "Hoff_r"
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde like 'Vor_r_*';"
                     End If
@@ -322,6 +322,9 @@ Private Sub Dauer_DblClick(Cancel As Integer)   ' berechnet  alle Zeiten neu
         End If
         re.MoveNext
     Loop
+    If get_properties("EWS") = "EWS3" Then _
+        make_wr_zeitplan
+        
 End Sub
 
 Private Sub schliesssen_Click()

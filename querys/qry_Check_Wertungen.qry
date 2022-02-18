@@ -1,0 +1,5 @@
+SELECT Rundentab.Startklasse, Rundentab.RT_ID, Wert_Richter.WR_Kuerzel, [WR_Nachname] & ", " & [WR_Vorname] AS WRName, Count(Auswertung.Punkte) AS [Paare-bewertet], Count(IIf([Punkte] Is Null,1)) AS Paare_ohne_Eingabe, Rundentab.Turniernr, Rundentab.Startklasse, Rundentab.Runde, Rundentab.Turniernr, [Rundentext] & " " & [Startklasse_text] AS Rundenname
+FROM Wert_Richter INNER JOIN ((Tanz_Runden INNER JOIN (Startklasse INNER JOIN Rundentab ON Startklasse.Startklasse=Rundentab.Startklasse) ON Tanz_Runden.Runde=Rundentab.Runde) INNER JOIN (Paare_Rundenqualifikation INNER JOIN Auswertung ON Paare_Rundenqualifikation.PR_ID=Auswertung.PR_ID) ON Rundentab.RT_ID=Paare_Rundenqualifikation.RT_ID) ON Wert_Richter.WR_ID=Auswertung.WR_ID
+GROUP BY Rundentab.Startklasse, Rundentab.RT_ID, Wert_Richter.WR_Kuerzel, [WR_Nachname] & ", " & [WR_Vorname], Rundentab.Turniernr, Rundentab.Startklasse, Rundentab.Runde, Rundentab.Turniernr, [Rundentext] & " " & [Startklasse_text]
+HAVING (((Rundentab.RT_ID)=Formulare!Wertung_aufnehmen!Tanzrunde));
+

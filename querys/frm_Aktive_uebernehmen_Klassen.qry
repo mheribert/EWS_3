@@ -1,0 +1,1 @@
+SELECT DISTINCT TLP_RR_PAARE.Startklasse, TLP_RR_PAARE.Clubnr FROM Startklasse_Turnier, TLP_RR_PAARE WHERE (((TLP_RR_PAARE.Clubnr)=[Formulare]![Aktive_uebernehmen]![AuswahlRR]) AND ((IIf(Left([TLP_RR_PAARE].[startklasse],3)="BS_","","RR_") & [TLP_RR_PAARE].[startklasse])=[Startklasse_Turnier].[Startklasse]));

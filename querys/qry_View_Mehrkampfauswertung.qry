@@ -1,0 +1,4 @@
+SELECT Paare.Turniernr, Paare.Startkl, Paare.Startnr, Paare.Da_Vorname, Paare.Da_Nachname, Paare.He_Vorname, Paare.He_Nachname, Paare.Verein_nr, Paare.Verein_Name, Paare.Startbuch, Paare.Boogie_Startkarte_H, Paare.Boogie_Startkarte_D, Paare.Platz, Paare.Punkte, RT1.Runde, MKA1.Punkte, MKA1.Platz, RT2.Runde, MK2.Punkte, MK2.Platz
+FROM (MehrkampfAuswertung AS MK2 INNER JOIN (Rundentab AS RT2 INNER JOIN (Paare INNER JOIN Paare_Rundenqualifikation AS PR2 ON Paare.TP_ID = PR2.TP_ID) ON RT2.RT_ID = PR2.RT_ID) ON MK2.PR_ID = PR2.PR_ID) INNER JOIN (Rundentab AS RT1 INNER JOIN (Paare_Rundenqualifikation AS PR1 INNER JOIN MehrkampfAuswertung AS MKA1 ON PR1.PR_ID = MKA1.PR_ID) ON RT1.RT_ID = PR1.RT_ID) ON Paare.TP_ID = PR1.TP_ID
+WHERE (((RT1.Runde) Like "*kond*" Or (RT1.Runde) Like "*tram*") AND ((RT2.Runde) Like "*koord*" Or (RT2.Runde) Like "*turn*"));
+

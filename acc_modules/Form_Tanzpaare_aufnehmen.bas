@@ -23,12 +23,6 @@ Err_Befehl12_Click:
     
 End Sub
 
-Private Sub Befehl65_Click()
-    
-    If Not IsNull(Me!TP_ID) Then DoCmd.OpenReport "Giveaway", acViewPreview, , "TP_ID = " & Me!TP_ID
-    
-End Sub
-
 Private Sub btnAktualisieren_Click()
     Requery
 End Sub
@@ -102,7 +96,7 @@ Private Sub Kombinationsfeld36_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
-Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, X As Single, y As Single)
+Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String
     If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=0")

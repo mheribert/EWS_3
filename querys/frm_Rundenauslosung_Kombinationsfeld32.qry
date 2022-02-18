@@ -1,0 +1,1 @@
+SELECT Anwesend_Status.AS_ID, Anwesend_Status.AS_Name, * FROM Anwesend_Status WHERE (((Anwesend_Status.AS_ID)>0)) ORDER BY Anwesend_Status.AS_ID;

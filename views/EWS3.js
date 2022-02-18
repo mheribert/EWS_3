@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2.00';
+﻿    var ver =  'V3.2004';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -6,8 +6,8 @@
 function start() {
     socket.on('chat', function (data) {
         if (document.title === "judgetool") {
-            if (data.msg === 'toRoot' && parseInt(data.text) === WR_ID) {
-                window.location.href = "/logout";
+            if (data.msg === 'toRoot' && parseInt(data.WR) === WR_ID) {
+//                window.location.href = "/logout";
             }
             if (data.msg === 'WR-Info1') {
                 document.getElementById(data.msg).innerHTML = data.text;
@@ -44,6 +44,7 @@ function start() {
             if (data.msg === 'mod_inhalt') {
                 document.getElementById('mod_inhalt').innerHTML = data.text;
                 set_events();
+                window.scrollTo(0, 0);
            }
             if (data.msg === 'mod_wrstatus') {
                 document.getElementById('content1').innerHTML = data.text;
@@ -54,23 +55,31 @@ function start() {
             if (data.turnier) {
                 if (data.turnier !== turnier) {
                     localStorage.clear();
-                    localStorage.setItem('Turnier', data.turnier);
+                    localStorage.setItem('turnier', data.turnier);
                     localStorage.setItem('eintraege', '');
                 }
             }
-            if (data.couple) {
+            if (data.couple && parseInt(data.WR) === WR_ID) {
                 var eintraege = localStorage.getItem('eintraege');
                 var paar_id = data.couple.Runde + '_' + data.couple.TP_ID;
-                eintraege += paar_id + ', ';
-                var aufgabeText = { 'value': data.couple };
-                localStorage.setItem(paar_id, JSON.stringify(aufgabeText));
-                localStorage.setItem('eintraege', eintraege);
+                if (eintraege.indexOf(paar_id) === -1) {
+                    eintraege += paar_id + ', ';
+                    var aufgabeText = { 'value': data.couple };
+                    localStorage.setItem(paar_id, JSON.stringify(aufgabeText));
+                    localStorage.setItem('eintraege', eintraege);
+                }
             }
-            if (data.storage_load) {
-                fill_st_kl();
+            if (parseInt(data.storage_load) === WR_ID) {
+                fill_station();
+            }
+            if (parseInt(data.send_mk) === WR_ID) {
+                senden_mk();
             }
             if (data.storage_clear) {
-                localStorage.setItem('Turnier', '');
+                localStorage.clear();
+                localStorage.setItem('Turnier', data.turnier);
+                localStorage.setItem('eintraege', '');
+                fill_station();
             }
         }
     });
@@ -83,10 +92,11 @@ function start() {
     }
     if (document.title === 'mehrkampf') {
         document.getElementById("klasse").addEventListener('change', select_klasse);
-        document.getElementById("station").setAttribute("change", select_station);
-        document.getElementById("paare").addEventListener('change', select_paare);
-        fill_st_kl();
-        ausw = "BS_"
+        document.getElementById("station").addEventListener("change", select_station);
+        s = document.getElementsByClassName("kopf_1")
+        s[0].setAttribute('onclick', "fill_station()");
+        senden('get_mk_paare', WR_ID)
+        fill_station();
     }
 }
 
@@ -105,8 +115,10 @@ function set_events() {
                 "spalte", "wr_onclick(event)",
                 "verwbutton leer", "verwarnung(event)",
                 "mod_kopf", "senden_mod(event)", 
-                "mod_nb", "senden_mod_zeit(event)", 
-                "bs_wert", "wr_onclick(event)", 
+                "mod_nb", "senden_mod_zeit(event)",
+                "mod_ns", "senden_mod_sieger(event)",
+                "bs_wert", "wr_onclick(event)",
+                "bs_sel", "wr_onclick(event)", 
                 "bs_mist", "bs_mistake(event)",
                 "weiter", "senden_sieger(event)"];
 
@@ -270,6 +282,12 @@ function senden_mod_zeit(e) {
     socket.emit('chat', { msg: "Moderator", text: "Paare", rnd: tar.id.substring(2, 5) });
 }
 
+function senden_mod_sieger(e) {
+    e = e || window.event;
+    var tar = e.target || e.srcElement;
+    socket.emit('chat', {msg: "Moderator", text: "start_Sieger", rnd: tar.id.substring(2, 5), rtid: tar.getAttribute("rtid")});
+}
+
 function senden_sieger(e) {
     e = e || window.event;
     var tar = e.target || e.srcElement;
@@ -278,6 +296,20 @@ function senden_sieger(e) {
         s[p].style.backgroundColor = "#f88";
     }
     socket.emit('chat', { msg: "Moderator", text: "Sieger", rnd: tar.parentNode.id, Platz: s[0].innerText});
+}
+
+function senden_mk() {
+    var eintraege = localStorage.getItem('eintraege').split(", ");
+    for (var i = 0; i < eintraege.length - 1; i++) {
+        var werte = localStorage.getItem('w_' + eintraege[i]);
+        if (werte !== null) {
+            var couple = JSON.parse(localStorage.getItem(eintraege[i]));
+            var cgivar = 'MK_check=1&TP_ID1=' + couple.value.TP_ID + '&rh1=1&rt_ID=' + couple.value.RT_ID + '&' + werte + '&WR_ID=' + WR_ID;
+
+            senden('auswerten', cgivar);
+        }
+    }
+
 }
 
 function wr_addmistake(e) {
@@ -320,20 +352,48 @@ function wr_onclick(e) {
 function paint_bar(tar) {
     var i;
     var ke;
+    var couple;
+    var erg;
     var t = tar.parentNode;
     var s;
     switch (ausw) {
-        case "MK_":
-//            if (t.type === "keyup") {
-                ke = tar.value.replace(',', '.');
-                if (isNaN(ke)) {
-                    var we = document.getElementById(tar.id).value;
-                    i = we.length - 1;
-                    document.getElementById(tar.id).value = we.substr(0, i);
-                    return false;
+        case "MK_T":
+            ke = tar.value.replace(',', '.');
+            if (isNaN(ke)) {
+                var we = document.getElementById(tar.id).value;
+                i = we.length - 1;
+                document.getElementById(tar.id).value = we.substr(0, i);
+                return false;
+            }
+            tar.value=tar.value.replace('.', ',');
+//            s = document.getElementsByClassName("mk_inp");
+//            ke = 'w_' + document.getElementById("station").value + '_' + document.getElementById("paare").value
+            couple = t.parentNode.classList[1];
+            s = document.getElementsByClassName(couple);
+            erg = '';
+            for (i = 0; i < s.length; i++) {
+                if (erg.length > 0) { erg += '&'; }
+                erg += 'w' + s[i].id + '=' + s[i].childNodes[0].childNodes[0].value;
+            }
+            localStorage.setItem('w_' + couple, erg);
+            return;
+        case "MK_L":
+            for (i = 0; i <= t.childElementCount - 2; i++) {
+                if (i <= parseInt(tar.cellIndex)) {
+                    t.children[i].className = "bs_sel";
+                } else {
+                    t.children[i].className = "bs_wert";
                 }
-                s = document.getElementsByClassName("mk_inp");
- //           }
+            }
+            document.getElementById("w" + t.id).value = parseFloat(tar.cellIndex) / 2;
+            couple = t.classList[1];
+            s = document.getElementsByClassName(couple);
+            erg = '';
+            for (i = 0; i < s.length; i++) {
+                if (erg.length > 0) { erg += '&'; }
+                erg += 'w' + s[i].id + '=' + document.getElementById("w" + s[i].id).value
+            }
+            localStorage.setItem('w_' + couple, erg);
             break;
         case "BS_":
             for (i = 0; i <= t.childElementCount - 2; i++) {
@@ -345,8 +405,8 @@ function paint_bar(tar) {
             }
             document.getElementById("w" + t.id).value = parseFloat(tar.cellIndex) / 2;
             s = document.getElementsByClassName("bs_krit");
-            var seite = t.id.substring(t.id.length - 1, t.id.length); 
-            add_punkte(seite);  
+            var seite = t.id.substring(t.id.length - 1, t.id.length);
+            add_punkte(seite);
             break;
         case "BW_":
             for (i = 0; i <= t.childElementCount - 1; i++) {
@@ -515,114 +575,145 @@ function verwarnung(e) {
     }
 }
 
-function fill_st_kl() {
+function fill_station() {
+    var station = new Object;
+    station[0] = '---';
+    var eintraege = localStorage.getItem('eintraege').split(", ");
+    for (var i = 0; i < eintraege.length - 1; i++) {
+        var couple = JSON.parse(localStorage.getItem(eintraege[i]));
+        station[couple.value.Runde] = couple.value.T_Text;
+    }
+    fill_select("station", station);
+    document.getElementById("klasse").innerHTML = '<option value="0">---</option>';
+    document.getElementById("wertungen").innerHTML = '<td class="main" height="300px"></td>';
+    document.getElementById("station").focus();
+}
+
+function select_station() {
     var klasse = new Object;
-    klasse[0] = '--';
+    klasse[0] = '---';
     var eintraege = localStorage.getItem('eintraege').split(", ");
     for (var i = 0; i < eintraege.length - 1; i++) {
         var couple = JSON.parse(localStorage.getItem(eintraege[i]));
         klasse[couple.value.st_kl] = couple.value.startkl;
     }
     fill_select("klasse", klasse);
-
+    document.getElementById("wertungen").innerHTML = '<td class="main" height="300px"></td>';
+    document.getElementById("klasse").focus();
 }
 
 function select_klasse() {
-    var station = new Object;
-    var menu = document.getElementById("klasse");
-    var wert = menu.options[menu.selectedIndex].value
-    station[0] = '--';
-    var eintraege = localStorage.getItem('eintraege').split(", ");
-    for (var i = 0; i < eintraege.length - 1; i++) {
-        var couple = JSON.parse(localStorage.getItem(eintraege[i]));
-        if (couple.value.st_kl === wert) {
-            station[couple.value.Runde] = couple.value.T_Text;
-        }
-    }
-    fill_select("station", station);
-    document.getElementById("paare").innerHTML = '<option value="0">--</option>';
-}
-
-function select_station() {
     var paare = new Object;
+    var HTML_Seite;
     var menu = document.getElementById("klasse");
     var kl = menu.options[menu.selectedIndex].value
     menu = document.getElementById("station");
     var rde = menu.options[menu.selectedIndex].value
-    paare[0] = '--';
+    paare[0] = '---';
     var eintraege = localStorage.getItem('eintraege').split(", ");
+    HTML_Seite = '<td align="center" id="couple1" height="300px"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
     for (var i = 0; i < eintraege.length - 1; i++) {
         var couple = JSON.parse(localStorage.getItem(eintraege[i]));
         if (couple.value.st_kl === kl && couple.value.Runde === rde) {
-            paare[couple.value.TP_ID] = couple.value.Startnr + '   ' + couple.value.Dame + ' - ' + couple.value.Herr;
+            HTML_Seite += '<tr><td class="sel_paare" colspan ="21">' + couple.value.Startnr + '   ' + couple.value.Dame + ' - ' + couple.value.Herr + '</td></tr>';
+            HTML_Seite += select_paare(couple.value);
         }
     }
-    fill_select("paare", paare);
-}
-
-function select_paare() {
-    var menu = document.getElementById("station");
-    var rde = menu.options[menu.selectedIndex].value.substr(0, 4);
-    var sei = 1;
-    wr_func = "MA";
-    rde = "MK_1";
-    ausw = "BS_";
-    var HTML_Seite = '<td align="center" id="couple' + sei + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-    if (wr_func === "MA") {
-        if (rde === "MK_3" || rde === "MK_4") {
-            HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Herr', true) + '\r\n';
-            HTML_Seite += '<tr><td height="107"></td></tr>' + '\r\n';
-            HTML_Seite += make_bs_inp('mk_td' + sei, 10, 'Dame', true) + '\r\n';
-            HTML_Seite += '<tr><td height="60"></td></tr>' + '\r\n';
-        } else {
-            HTML_Seite += '<tr><td height="10"></td></tr>' + '\r\n';
-            HTML_Seite += make_inpMKText('mk_td' + sei, 0, "Dame") + '\r\n';
-            HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
-            HTML_Seite += make_inpMKText('mk_th' + sei, 0, "Herr") + '\r\n';
-            HTML_Seite += '<tr><td height="10"></td></tr>' + '\r\n';
-            ausw = "MK_";
-        }
-    } else {
-        if (rde === "MK_3" || rde === "MK_4") {
-            HTML_Seite += make_bs_inp('mk_th' + sei, 7, 'Herr Technik & Haltung', false) + '\r\n';
-            HTML_Seite += make_bs_inp('mk_dh' + sei, 3, 'Herr Dynamik & Takt', false) + '\r\n';
-            HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
-            HTML_Seite += make_bs_inp('mk_td' + sei, 7, 'Dame Technik & Haltung', false) + '\r\n';
-            HTML_Seite += make_bs_inp('mk_dd' + sei, 3, 'Dame Dynamik & Takt', false) + '\r\n';
-            HTML_Seite += '<tr><td height="30"></td></tr ></table></td>' + '\r\n';
-        } else {
-            HTML_Seite += '<tr><td height="270">Kein Einsatz</td></tr>' + '\r\n';
-        }
-    }
+    HTML_Seite += '</table></td>';
     document.getElementById("wertungen").innerHTML = HTML_Seite;
     set_events();
 }
 
-function make_inpMKText(fName, max, aName) {
+function select_paare(val) {
+    var sei = 1;
+    var focus_to;
+    var HTML_Seite;
+    var rde = val.Runde.substr(0, 4);
+    var paar = val.Runde + '_' + val.TP_ID;
+    var werte = hole_eintrag('w_' + paar);
+    ausw = "MK_L"
+    if (wr_func === "MA") {
+        if (rde === "MK_3" || rde === "MK_4") {
+            HTML_Seite = make_bs_inp('mk_td' + sei, 10, 'Dame', true, werte['wmk_td' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
+            HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Herr', true, werte['wmk_th' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="200"></td></tr>' + '\r\n';
+        } else {
+            HTML_Seite = '<tr><td height="10"></td></tr>' + '\r\n';
+            HTML_Seite += make_inpMKText('mk_td' + sei, 0, "Dame", werte['wmk_td' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
+            HTML_Seite += make_inpMKText('mk_th' + sei, 0, "Herr", werte['wmk_th' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="150"></td></tr>' + '\r\n';
+            ausw = "MK_T";
+        }
+        focus_to = 'wmk_td' + sei;
+    } else {   //  MB
+        if (rde === "MK_3" || rde === "MK_4") {
+            HTML_Seite = make_bs_inp('mk_td' + sei, 7, 'Dame Technik & Haltung', false, werte['wmk_td' + sei], paar) + '\r\n';
+            HTML_Seite += make_bs_inp('mk_dd' + sei, 3, 'Dame Dynamik', false, werte['wmk_dd' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="30"></td></tr>' + '\r\n';
+            HTML_Seite += make_bs_inp('mk_th' + sei, 7, 'Herr Technik & Haltung', false, werte['wmk_th' + sei], paar) + '\r\n';
+            HTML_Seite += make_bs_inp('mk_dh' + sei, 3, 'Herr Dynamik', false, werte['wmk_dh' + sei], paar) + '\r\n';
+            HTML_Seite += '<tr><td height="100"></td></tr>' + '\r\n';
+        } else {
+            HTML_Seite = '<tr><td height="270">Kein Einsatz</td></tr>' + '\r\n';
+        }
+        focus_to = 'station';
+    }
+    return HTML_Seite;
+}
+
+function hole_eintrag(couple) {
+    var cat;
+    var wert = new Object();
+    var i;
+    var vorh = localStorage.getItem(couple);
+    if (vorh !== null) {
+        vorh = vorh.split("&");
+        for (i = 0; i < vorh.length; i++) {
+            cat = vorh[i].split("=");
+            wert[cat[0]] = cat[1];
+        }
+    }
+    return wert;
+}
+
+function make_inpMKText(fName, max, aName, pre, paar) {
     var inp;
+    if (pre === undefined) {
+        pre = "";
+    }
     inp = '<tr><td colspan="20">' + aName + '</td></tr>';
-    inp += '<tr class="mk_inp" id="' + fName + '"><td><input class="mk_fld" id="w' + fName + '" name="w' + fName + '"  autocomplete="off" onkeyup="wr_onclick(event)"></td></tr>';
+    inp += '<tr class="mk_inp ' + paar + '" id="' + fName + '"><td><input class="mk_fld" id="w' + fName + '" name="w' + fName + '" value="' + pre + '" autocomplete="off" onkeyup="wr_onclick(event)"></td></tr>';
 
     return inp;
 }
 
-function make_bs_inp(fName, max, aName, ganz) {
+function make_bs_inp(fName, max, aName, ganz, pre, paar) {
     var inp;
-    inp = '<tr><td class="bs_schmal"></td></tr>';
-    inp += '<tr class="bs_head"><td colspan="20">' + aName + '</td></tr>';
-    inp += '<tr class="bs_krit" id="' + fName + '" max="' + max + '">';
+    var b_class;
+    if (pre === undefined) {
+        pre = -1;
+    }
+    inp = '<tr class="bs_head"><td colspan="20">' + aName + '</td></tr>';
+    inp += '<tr class="bs_krit ' + paar + '" id="' + fName + '" max="' + max + '">';
     for (var t = 0; t < max * 2 + 1; t++) {
+        if (pre * 2 < t) {
+            b_class = "bs_wert";
+        } else { 
+            b_class = "bs_sel";
+        }
         if (t % 2) {
             if (ganz) {
-                inp += '<td class="bs_wert" style="visibility: hidden;">' + '-' + '</td>';
+                inp += '<td style="width:40px; height:40px; visibility: hidden;" class="' + b_class + '">' + '-' + '</td>';
             } else {
-                inp += '<td class="bs_wert">' + '-' + '</td>';
+                inp += '<td style="width:40px; height:40px;" class="' + b_class + '">' + '-' + '</td>';
             }
         } else {
-            inp += '<td class="bs_wert">' + t / 2 + '</td>';
+            inp += '<td style="width:40px; height:40px;" class="' + b_class + '">' + t / 2 + '</td>';
         }
     }
-    inp += '<input name="w' + fName + '" id="w' + fName + '" value="" type="hidden"></tr>';
+    inp += '<input name="w' + fName + '" id="w' + fName + '" value="' + pre +' " type="hidden"></tr>';
 
     return inp;
 }

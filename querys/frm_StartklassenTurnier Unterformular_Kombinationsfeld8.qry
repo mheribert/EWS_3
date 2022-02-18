@@ -1,0 +1,1 @@
+SELECT [Startklasse].[Startklasse], [Startklasse].[Startklasse_text], [Startklasse].[Reihenfolge] FROM [Startklasse] ORDER BY [Reihenfolge];

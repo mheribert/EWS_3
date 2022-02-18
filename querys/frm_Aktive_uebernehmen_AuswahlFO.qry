@@ -1,0 +1,1 @@
+SELECT DISTINCT TLP_FORMATIONEN.Clubnr, TLP_FORMATIONEN.Clubname_kurz FROM TLP_FORMATIONEN WHERE (((TLP_FORMATIONEN.Clubname_kurz) Like "*" & [Formulare]![Aktive_uebernehmen]![SearchName].[Text] & "*")) ORDER BY TLP_FORMATIONEN.Clubname_kurz;

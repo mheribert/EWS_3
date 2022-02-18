@@ -20,7 +20,7 @@ Sub send_zeitplan(Turniernr)
     re.MoveFirst
     Zeitplan = """Uhrzeit"";""Runde"";""Startklasse""" & vbCrLf
     Do Until re.EOF
-        If re!Rundenreihenfolge < 999 Then
+        If re!Rundenreihenfolge < 999 And InStr(re!Rundentext, "MK_") = 0 Then
             Zeitplan = Zeitplan & """" & Format(re!Startzeit, "hh:mm") & """;""" & re!Rundentext & """;""" & re!Startklasse_text & """" & vbCrLf
         End If
         re.MoveNext

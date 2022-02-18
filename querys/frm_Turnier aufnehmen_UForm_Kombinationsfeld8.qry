@@ -1,0 +1,1 @@
+SELECT Startklasse.Startklasse, Startklasse.Startklasse_text, Startklasse.Reihenfolge, Startklasse.isStartklasse FROM Startklasse WHERE (((Startklasse.isStartklasse)=Yes)) ORDER BY Startklasse.Reihenfolge;
