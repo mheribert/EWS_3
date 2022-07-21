@@ -641,7 +641,7 @@ function verteilen(WR_ID) {
                         case "F_R":
                             if (runden_info[rd_ind].PpR === 1 && observer[WR_ID] > 0) {
                                 HTML_erstellen.wait(rd_ind, runden_info, '<div class="wertung_offen" onclick="return p_logout()">kein Einsatz in dieser Runde</div>', wr_name, WR_ID, io);
-//                                io.sockets.emit('chat', { msg: 'toRoot', WR: WR_ID });
+                                io.sockets.emit('chat', { text: 'toRoot', WR: WR_ID });
                             } else {
                                 HTML_erstellen.RR_Observer(rd_ind, runden_info, observer[WR_ID], wr_name, WR_ID, akrobatiken, anz_obs, io);
                             }

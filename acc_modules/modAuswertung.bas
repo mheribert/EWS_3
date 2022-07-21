@@ -212,7 +212,7 @@ Public Sub RR_platz_vergeben(rt, ord)
         so = ""
     End If
 'hier muss die Reihenfoge gedreht werden bei Zeit stop
-    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7" & so & ";")
+    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE (WR6<>0 OR WR7<>0) AND RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7" & so & ";")
     If maj.RecordCount = 0 Then
         MsgBox "Es gibt noch keine Wertungen in dieser Tanzrunde!"
     Else

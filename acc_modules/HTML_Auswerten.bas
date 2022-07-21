@@ -1,14 +1,14 @@
 Option Compare Database
-Option Explicit
+Option Explicit On
 
-    Public Type Formationswerte
+Public Type Formationswerte
       faktor    As Single           ' Faktor für Reduzierung bei Berechnung
       min       As Integer          ' minimum Anzahl Tänzer
       max       As Integer          ' maximum Anzahl Tänzer
     End Type
 
     Dim db As Database
-    Dim fs, inp
+Dim fs, inp
 
 Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
     Dim re, pr, ana As Recordset
@@ -22,7 +22,7 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
     Set db = CurrentDb
     
     WR_func = gen_wr_arr(s_kl)
-    
+
     fName = getBaseDir & get_TerNr & "_RT" & CInt(rt) & "_raw.txt"   ' Dateiname erstellen
     Set fs = CreateObject("Scripting.FileSystemObject")
     If get_properties("EWS") = "EWS3" And Len(Dir(fName)) > 0 Then  ' bei EWS3 die rawWerte einlesen
@@ -30,7 +30,7 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
         Set ana = db.OpenRecordset("Analyse", DB_OPEN_DYNASET)
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
-            
+
             ana.FindFirst "TP_ID = " & cgivar(0) & " And WR_ID = " & cgivar(1) & " And Cgi_Input = '" & cgivar(2) & "'"
             If ana.NoMatch Then
                 ana.AddNew
@@ -40,10 +40,10 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
                 ana!Cgi_Input = cgivar(2)
                 ana.Update
             End If
-            
+
         Loop
     End If
-    
+
     If InStr(1, rde, "_Akro") Then      ' Sicherstellen dass Ft-Runde da ist
         Set re = db.OpenRecordset("SELECT * from RundenTab WHERE Startklasse = '" & s_kl & "' AND Runde = '" & left(rde, 3) & "_r_Fuß';", DB_OPEN_DYNASET)
         ft_rt = re!RT_ID
@@ -87,13 +87,13 @@ Public Function get_wertungen(rt, s_kl, rde)  'Aus Server Input-Datei einlesen
     Else
         get_wertungen = True
     End If
-    
+
     ' Wertungen löschen, die nicht rein gehören z.B. unentschuldigt
     sqlcmd = "select distinct pr.pr_id from Paare_Rundenqualifikation pr, Auswertung a where a.pr_id=pr.pr_id and pr.rt_id=" & rt & " and anwesend_Status<>1;"
     Set re = db.OpenRecordset(sqlcmd)
     Do Until re.EOF
         sqlcmd = "Delete from Auswertung where pr_id=" & re!PR_ID
-        db.Execute (sqlcmd)
+        db.Execute(sqlcmd)
         re.MoveNext
     Loop
 
@@ -122,12 +122,12 @@ Private Function rechne_abzuege(PR_ID, inp)
     Set vars = zerlege(inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh" & i)
-    
+
     For x = 0 To UBound(verst)
         If vars.Item(verst(x)) <> "" Then
             Punkte = Punkte + CSng(vars.Item(verst(x)))
         End If
-    
+
     Next
     rechne_abzuege = Punkte
 End Function
@@ -139,7 +139,7 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
     Dim Punkte As Double
     Dim ft_pte As Double
     Dim kl_punkte, flds As Variant
-    
+
     If left(s_kl, 3) = "RR_" Then
         inp = Replace(inp, "_1=", "1=")
         inp = Replace(inp, "_2=", "2=")
@@ -148,9 +148,9 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
     Set vars = zerlege(inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh1")
-    
+
     Select Case left(s_kl, 3)
-    
+
         Case "F_B"
             If vars.Item("wtk1") <> "" Then
                 kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
@@ -167,7 +167,7 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
                     If t = 0 Then t = 1
                     '"wtk1", "wch1", "wtf1", "wab1", "waw1", "waf1" , "wak11", "wak12", "wak13", "wak14", "wak15", "wak16", "wak17", "wak18"
                     If s_kl = "F_RR_M" Then ' Master RR
-        '                Punkte = Punkte / IIf(t < 7, 6, t) * 5
+                        '                Punkte = Punkte / IIf(t < 7, 6, t) * 5
                     Else
                         Punkte = 0
                     End If
@@ -232,12 +232,12 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             End If
             Punkte = Punkte + add_verstoesse(vars, i)
             If Punkte < 0 Then Punkte = 0
-            
+
         Case "LH_"
             Punkte = CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wsd" & i)) + CSng(vars.Item("wtd" & i))
             Punkte = Punkte + CSng(vars.Item("wfg" & i)) - CSng(vars.Item("wfl" & i))
             If Punkte < 0 Then Punkte = 0
-        
+
         Case Else
             Select Case DLookup("Land", "Startklasse", "Startklasse ='" & s_kl & "'")
                 Case "BY"
@@ -259,34 +259,34 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
                     End If
                 Case "SL"
                     Punkte = CSng(vars.Item("wth" & i)) + CSng(vars.Item("wtd" & i)) + CSng(vars.Item("wta" & i))
-                
+
                 Case "D"
                     Punkte = CSng(vars.Item("wgs" & i))
 '                    Punkte = CSng(vars.Item("Punkte" & i))
-                    
+
                 Case "NBS_"
                     Select Case left(s_kl, 6)
                         Case "BS_RR_"
                             Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wsd" & i))
                             Punkte = Punkte + CSng(vars.Item("wth" & i)) - Replace(vars.Item("wfl" & i), ".", ",")
-                     
+
                         Case "BS_F_R"
                             Punkte = Punkte + CSng(vars.Item("wsh" & i)) + CSng(vars.Item("wth" & i))
                             Punkte = Punkte + CSng(vars.Item("wch" & i)) - Val(Nz(Replace(vars.Item("wfl" & i), ".", ",")))
-                              
+
                         Case "BS_"
                             Punkte = CSng(vars.Item("wsh" & i))
-                              
+
                     End Select
                     If Punkte < 0 Then Punkte = 0
-                
+
                 Case Else
                     MsgBox "Fehler bei der Punkteberechnung" & vbCrLf & "Startklasse wurde nicht erkannt."
 
             End Select
             If Punkte < 0 Then Punkte = 0
     End Select
-'    If Punkte < 0 Then Punkte = 0
+    '    If Punkte < 0 Then Punkte = 0
     rechne_punkte = FormatNumber(Punkte, 2)
 End Function
 
@@ -321,7 +321,7 @@ Public Function get_platzierung(rt)
                     re.Edit
                     re!Platz = cgivar.Item("wpt" & t)
                     re.Update
-        
+
                 End If
             Next
         Loop
@@ -375,24 +375,24 @@ Function Punkteverteilung(Startklasse, rd, rde)
             If rde = "Semi" Then punkte_verteilung = Array(8.75, 8.75, 8.75, 8.75, 12.25, 12.25, 10.5)
         ' Boogie NJS TSO1.8
         Case "BW_MA"
-'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            '            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_SA"
-'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            '            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_JA"
-'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            '            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_MB"
-'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            '            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         Case "BW_SB"
-'            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
+            '            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
-        Case "BW_NG":
+        Case "BW_NG"
             punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
         ' Breitensport Bayern
-        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1":
+        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1"
             punkte_verteilung = Array(15, 10, 10, 30, 0, 0, 0)
         Case Else
             punkte_verteilung = Array(10, 10, 10, 10, 10, 10, 10, 10, 10)
@@ -448,7 +448,7 @@ Function Form_abzuege(PR_ID, s_kl)
     Set db = CurrentDb
     Set re = db.OpenRecordset("SELECT Anz_Taenzer FROM Paare WHERE TP_ID= " & PR_ID & ";")
     F = Faktor_Formation_Abzuege(s_kl)
-    
+
     Form_abzuege = (100 - ((F.max - re!Anz_Taenzer) * F.faktor)) / 100
 End Function
 
@@ -509,29 +509,29 @@ End Function
 '*****AB***** V13.02 neue Funktion zum Einlesen der RT_Daten
 Public Function Str_to_Sng(AuswerteString As String)
 
-'*** Wandelt einen übergebenen String in einen CSingle Wert um, wenn der String nicht leer ist, sonst gibt er Null zurück
+    '*** Wandelt einen übergebenen String in einen CSingle Wert um, wenn der String nicht leer ist, sonst gibt er Null zurück
 
-If IsEmpty(AuswerteString) Or AuswerteString = "" Then
-    Str_to_Sng = Null
-Else
-    Str_to_Sng = CSng(AuswerteString)
-End If
+    If IsEmpty(AuswerteString) Or AuswerteString = "" Then
+        Str_to_Sng = Null
+    Else
+        Str_to_Sng = CSng(AuswerteString)
+    End If
 End Function
 
 '*****AB***** V13.02 neue Funktion zum Einlesen der RT_Daten
 Public Sub Import_RT_txt(RundenTab_ID)
 
-On Error GoTo RT_Import_Fehler_Err
-'*** benötigte Übergabewerte Runden_ID aus RTTabelle
-' Parameter RundenTab_ID As Integer
+    On Error GoTo RT_Import_Fehler_Err
+    '*** benötigte Übergabewerte Runden_ID aus RTTabelle
+    ' Parameter RundenTab_ID As Integer
 
-Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
-Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
-Dim n, Akrozähler As Integer
-Dim fs, inp, cgivar, Zeile, Testarray
-Dim anzahl_paare As Integer
-Dim AbgegebeneWertungen, rt, html_felder As Recordset
-Dim db As Database
+    Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
+    Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
+    Dim n, Akrozähler As Integer
+    Dim fs, inp, cgivar, Zeile, Testarray
+    Dim anzahl_paare As Integer
+    Dim AbgegebeneWertungen, rt, html_felder As Recordset
+    Dim db As Database
 
 Set db = CurrentDb()
 Set AbgegebeneWertungen = db.OpenRecordset("SELECT * from Abgegebene_Wertungen;", DB_OPEN_DYNASET)
@@ -540,28 +540,28 @@ Set rt = db.OpenRecordset("Select * from rundentab where rt_id = " & RundenTab_I
 Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & left(rt!Startklasse, 3) & """;", DB_OPEN_DYNASET)
 
     fName = getBaseDir & get_TerNr & "_RT" & CInt(RundenTab_ID) & ".txt"   ' Dateiname erstellen
-    
+
     If Len(Dir(fName)) > 0 Then
         Set fs = CreateObject("Scripting.FileSystemObject")
         Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
             Zeile = cgivar(2)
-    
+
             If left(rt!Startklasse, 3) = "RR_" Then
                 Zeile = Replace(Zeile, "_1=", "1=")
                 Zeile = Replace(Zeile, "_2=", "2=")
             End If
-            
+
             Werte_Array = Split(Zeile, "&")
-            
+
             '*** prüfen ob ein oder zwei Paare im String stehen
-                Dim back, var
-                Dim ki As Integer
+            Dim back, var
+            Dim ki As Integer
                 Set back = CreateObject("Scripting.Dictionary")
                 For ki = 0 To UBound(Werte_Array)
-                  var = Split(Werte_Array(ki), "=")
-                  back.Add var(0), Replace(var(1), ".", ",")
+                var = Split(Werte_Array(ki), "=")
+                back.Add var(0), Replace(var(1), ".", ",")
                 Next
 
             If back.exists("PR_ID2") Then
@@ -573,15 +573,15 @@ Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & 
             Else
                 anzahl_paare = 1
             End If
-            
+
             Dim Paar_ID As Single
             Dim textakro As String
-            
+
             'Werte aus dem Scripting.Dictionary raus holen, bei zwei Paaren nacheinander
             For n = 1 To anzahl_paare
-                
-                AbgegebeneWertungen.FindFirst ("Paar_ID = " & CSng(back.Item("PR_ID" & n)) & " AND RundenTab_ID = " & CSng(back.Item("rt_ID")) & "AND Wertungsrichter_ID = " & CSng(back.Item("WR_ID")))
-                
+
+                AbgegebeneWertungen.FindFirst("Paar_ID = " & CSng(back.Item("PR_ID" & n)) & " AND RundenTab_ID = " & CSng(back.Item("rt_ID")) & "AND Wertungsrichter_ID = " & CSng(back.Item("WR_ID")))
+
                 If AbgegebeneWertungen.NoMatch Then
                     AbgegebeneWertungen.AddNew
                 Else
@@ -591,7 +591,7 @@ Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & 
                 AbgegebeneWertungen!rh = CSng(back.Item("rh" & n))
                 AbgegebeneWertungen!Wertungsrichter_ID = CSng(back.Item("WR_ID"))
                 AbgegebeneWertungen!RundenTab_ID = CSng(back.Item("rt_ID"))
-                 
+
                 AbgegebeneWertungen!Herr_Grundtechnik = Str_to_Sng(back.Item(html_felder!Ber1 & n))
                 AbgegebeneWertungen!Herr_Haltung_Drehtechnik = Str_to_Sng(back.Item(html_felder!Ber2 & n))
                 AbgegebeneWertungen!Dame_Grundtechnik = Str_to_Sng(back.Item(html_felder!Ber3 & n))
@@ -601,7 +601,7 @@ Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & 
                 AbgegebeneWertungen!Tänzerische_Darbietung = Str_to_Sng(back.Item(html_felder!Ber10 & n))
                 AbgegebeneWertungen!Grobfehler_Text = back.Item(html_felder!Ber8 & n)
                 AbgegebeneWertungen!Grobfehler_Summe = CSng(back.Item(html_felder!Ber9 & n))
-                
+
                 For Akrozähler = 1 To 8
                     AbgegebeneWertungen("Akrobatik" & Akrozähler) = Str_to_Sng(back.Item("wak" & n & Akrozähler))
                     If back.exists("tflak" & n & Akrozähler) Then
@@ -618,11 +618,11 @@ Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & 
     Else
         MsgBox "kein Import"
     End If
-    
+
 RT_Import_Fehler_Exit:
-        'Funktion verlassen
-        Exit Sub
-        
+    'Funktion verlassen
+    Exit Sub
+
 RT_Import_Fehler_Err:
     Resume Next
 
@@ -647,10 +647,10 @@ Function Observer_FT(st_kl, abge_Wertung, arr, rd)
 End Function
 
 Public Sub ObserverHTML(trunde)
-'*****AB***** V13.04 -  neue Funktion zum Anzeigen der Wertungen für den Observer unter IP_Adresse-Webserver/observer.html
+    '*****AB***** V13.04 -  neue Funktion zum Anzeigen der Wertungen für den Observer unter IP_Adresse-Webserver/observer.html
 
     On Error GoTo ObserverHTML_Fehler_Err
-    
+
     Dim HTML_Website, HTML_Paar_links, HTML_Paar_rechts As Variant
     Dim HTML_überschrift As String
     Dim HTML_WR_Template As String
@@ -664,7 +664,7 @@ Public Sub ObserverHTML(trunde)
     Dim db As Database
     Dim rd As String
     Dim GesamtPunkte As Double
-    
+
     '*** Checken ob Website neu aufgebaut oder nur aktualisiert werden muss
     sql = "SELECT Abgegebene_Wertungen.RundenTab_ID, Abgegebene_Wertungen.rh, Abgegebene_Wertungen.Wertungsrichter_ID FROM Abgegebene_Wertungen;"
     
@@ -672,7 +672,7 @@ Public Sub ObserverHTML(trunde)
     Set AbgegebeneWertungen = db.OpenRecordset(sql, DB_OPEN_DYNASET)
     rd = ch_runde(trunde)
     AbgegebeneWertungen.MoveLast
-    
+
     Letzte_Runde = AbgegebeneWertungen!RundenTab_ID
     letzte_Tanzrunde = AbgegebeneWertungen!rh
     
@@ -689,29 +689,29 @@ Public Sub ObserverHTML(trunde)
         HTML_überschrift = HTML_überschrift & "<tr bgcolor=#d0d0d0><td>Name</td><td>Akro1</td><td>GF&nbsp;1</td><td>Akro2</td><td>GF&nbsp;2</td><td>Akro3</td><td>GF&nbsp;3</td><td>Akro4</td><td>GF&nbsp;4</td><td>Akro5</td><td>GF&nbsp;5</td><td>Akro6</td><td>GF&nbsp;6</td><td>Akro7</td><td>GF&nbsp;7</td><td>Akro8</td><td>GF&nbsp;8</td><td>Punkte</td></tr><tr><td>AWR1</td></tr><tr><td>AWR2</td></tr><tr><td>AWR3</td></tr><tr><td>AWR4</td></tr><tr></tr></tbody></table>"
         HTML_WR_Template = "<td>WRNAME</td><td>WERT01</td><td>WERT02</td><td>WERT03</td><td>WERT04</td><td>WERT05</td><td>WERT06</td><td>WERT07</td><td>WERT08</td><td>WERT09</td><td>WERT10</td><td>WERT11</td><td>WERT12</td><td>WERT13</td><td>WERT14</td><td>WERT15</td><td>WERT16</td><td>WERT17</td>"
     End If
-    
+
     '**** neue Seite erzeugen
     HTML_Paar_links = HTML_überschrift
     HTML_Paar_rechts = HTML_überschrift
-    
+
     AbgegebeneWertungen.MoveLast
     WR_Zaehler = AbgegebeneWertungen.RecordCount
     AbgegebeneWertungen.MoveFirst
-    
+
     A_WR = 1
     T_WR = 1
     T_WR_Reset = False
     A_WR_Reset = False
     Paar_ID = AbgegebeneWertungen!Paar_ID
     st_kl = Paar_Infos!Startklasse
-    
+
     For x = 1 To WR_Zaehler
         HTML_WR_Werte = HTML_WR_Template
-    
+
         Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
-    
+
         If AbgegebeneWertungen!WR_function = "Ft" Or AbgegebeneWertungen!WR_function = "X" Then
-        
+
             GesamtPunkte = 0
             Select Case left(st_kl, 3)
                 Case "BW_"
@@ -745,7 +745,7 @@ Public Sub ObserverHTML(trunde)
                     GesamtPunkte = GesamtPunkte + (CSng(Nz(AbgegebeneWertungen!Dame_Haltung_Drehtechnik)) / 2) + (CSng(AbgegebeneWertungen!Choreographie) * 6 / 10) + (CSng(Nz(AbgegebeneWertungen!Tanzfiguren) * 6 / 10)) + (CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * 8 / 10)
             End Select
             If GesamtPunkte < 0 Then GesamtPunkte = 0
-            
+
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
             'einen FT-WR einfügen
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Observer_FT(st_kl, AbgegebeneWertungen!Herr_Grundtechnik, 0, trunde))
@@ -765,7 +765,7 @@ Public Sub ObserverHTML(trunde)
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", "&nbsp;")
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", "&nbsp;")
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", "&nbsp;")
-            
+
             If AbgegebeneWertungen!Paar_ID <> Paar_ID And T_WR_Reset = False Then
                 T_WR = 1
                 T_WR_Reset = True
@@ -777,9 +777,9 @@ Public Sub ObserverHTML(trunde)
                 HTML_Paar_rechts = Replace(HTML_Paar_rechts, "<td>TWR" & T_WR & "</td>", HTML_WR_Werte)
                 PaarRechts = Paar_Infos!Startnr & " " & Paar_Infos!Ausdr1 & " / " & Paar_Infos!He_Nachname
             End If
-           T_WR = T_WR + 1
+            T_WR = T_WR + 1
         Else
-            
+
             GesamtPunkte = 0
             For i = 1 To 8
                 If Not IsNull(AbgegebeneWertungen!Akrobatik1) Then
@@ -793,7 +793,7 @@ Public Sub ObserverHTML(trunde)
                 GesamtPunkte = 0
             End If
             If GesamtPunkte < 0 Then GesamtPunkte = 0
-            
+
             'einen AK-WR einfügen
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Round((100 - (AbgegebeneWertungen!Akrobatik1 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 1))), 0) & " ")
@@ -813,7 +813,7 @@ Public Sub ObserverHTML(trunde)
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", Round((100 - (AbgegebeneWertungen!Akrobatik8 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 8))), 0) & " ")
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", AbgegebeneWertungen!Akrobatik8_Grobfehler_Text & " ")
             HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", Round(GesamtPunkte, 2))
-           
+
             If AbgegebeneWertungen!Paar_ID <> Paar_ID And A_WR_Reset = False Then
                 A_WR = 1
                 A_WR_Reset = True
@@ -825,29 +825,29 @@ Public Sub ObserverHTML(trunde)
             End If
             A_WR = A_WR + 1
         End If
-    
-        
+
+
         AbgegebeneWertungen.MoveNext
-    
+
     Next x
-        
+
     HTML_Website = "<H1>" & Paar_Infos!Startklasse_text & " " & Paar_Infos!Runde & "</H1><H2>" & PaarLinks & "</H2>" & HTML_Paar_links & "<br><br><H2>" & PaarRechts & "</H2>" & HTML_Paar_rechts & "<br><br>"
-    
+
     Dim out
     Dim pfad As String
     Dim Server_IP
-    
+
     'Server_IP = GetIpAddrTable()
-    
+
     pfad = getBaseDir & "Apache2\htdocs\observer\index.html"
     Set out = file_handle(pfad)
-    out.writeline ("<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd""><html><head><title>" & Forms![A-Programmübersicht]!Turnierbez & "Observer Übersicht" & "</title> <meta http-equiv=""refresh"" content=""5""; URL="" " & GetIpAddrTable() & "/observer.html""><meta http-equiv=""expires"" content=""0""></head><body>" & HTML_Website & "</body></html>")
+    out.writeline("<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd""><html><head><title>" & Forms![A-Programmübersicht]!Turnierbez & "Observer Übersicht" & "</title> <meta http-equiv=""refresh"" content=""5""; URL="" " & GetIpAddrTable() & "/observer.html""><meta http-equiv=""expires"" content=""0""></head><body>" & HTML_Website & "</body></html>")
     out.Close
 
 ObserverHTML_Fehler_Exit:
-        'Funktion verlassen
-        Exit Sub
-        
+    'Funktion verlassen
+    Exit Sub
+
 ObserverHTML_Fehler_Err:
     Resume Next
 
@@ -870,10 +870,10 @@ Public Function Get_Akropunkte(TP_ID, Runde, Akronummer)
         RundTxt = "_ZR"
     ElseIf Runde = "End_r" Or Runde = "End_r_Akro" Then
         RundTxt = "_ER"
-  
+
     End If
-    
+
     AkroText = "Wert" & Akronummer & RundTxt
     Get_Akropunkte = Paare(AkroText)
-    
+
 End Function
