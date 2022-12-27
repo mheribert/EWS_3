@@ -344,3 +344,10 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 /views/favicon.ico
+
+#webserver
+webserver.njsproj
+webserver.sln
+config.json
+/node.e x e
+*.js
