@@ -29,7 +29,7 @@ End Sub
 
 Private Sub Form_Close()
     Dim re As Recordset
-    Dim i As Integer
+    Dim i As Long
     
     Set re = DBEngine(0)(0).OpenRecordset("Select MAX(WR_Lizenznr) AS maxLiz FROM wert_richter;")
     i = 9000
@@ -60,7 +60,7 @@ Private Sub km_holen_Click()
     Set re = db.OpenRecordset("SELECT * FROM turnier WHERE turniernum=" & get_aktTNr & ";")
     If wr.RecordCount > 0 Then
         Set objIE = CreateObject("InternetExplorer.Application")
-        objIE.Navigate2 "https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!PLZ & " " & wr!ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10)   '"About:blank"
+        objIE.Navigate2 "https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!plz & " " & wr!ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10)   '"About:blank"
         objIE.Visible = True
         
         'ti = Time

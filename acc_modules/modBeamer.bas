@@ -24,7 +24,6 @@ Sub Beamer_generieren(Optional ausw)
     Dim auswahl As Integer
     Dim ht_pfad As String
     
-    ht_pfad = getBaseDir & "Apache2\htdocs\beamer\"
     If IsMissing(ausw) Then
         auswahl = Nz(Forms!Wertung_einlesen!HTML_Select)
         RT_ID = Forms!Wertung_einlesen!Tanzrunde
@@ -58,10 +57,13 @@ Sub Beamer_generieren(Optional ausw)
         Case 10
             line = make_beamer_werbung
     End Select
-    line = Replace(line, "x__zoom", "")                  ' "style=""padding:200px""")
-    Set out = file_handle(ht_pfad & "index.html")
-    out.writeline (line)
-    out.Close
+    If get_properties("EWS") = "EWS1" Then
+        ht_pfad = getBaseDir & "Apache2\htdocs\beamer\"
+        line = Replace(line, "x__zoom", "")                  ' "style=""padding:200px""")
+        Set out = file_handle(ht_pfad & "index.html")
+        out.writeline (line)
+        out.Close
+    End If
 
 End Sub
 

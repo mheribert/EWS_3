@@ -221,10 +221,10 @@ Public Sub start_config_webserver()
 '        MsgBox "Apacheserver ist nicht im Ordner installiert!"
     End If
     If get_properties("EWS") = "EWS3" Then
+        make_wr_zeitplan
         write_config_json
         nodePfad = getBaseDir & "webserver"
         retVal = Shell(nodePfad & "\node.exe " & nodePfad & "\server.js", vbMinimizedNoFocus)
-        make_wr_zeitplan
     End If
     
 End Sub

@@ -31,7 +31,7 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
 End Sub
 
 Private Sub Feld81_AfterUpdate()
-    Const stklassen = "RR_C, RR_J, RR_S, RR_S1, RR_S2"
+    Const stklassen = "RR_J, RR_S, RR_S1, RR_S2"
     If InStr(stklassen, Me!Feld81) > 0 Then
         Me!Mehrkampf_eintragen.Visible = True
     Else
@@ -182,7 +182,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' wenn eine geteile Vorrunde müssen beide da sein
-                        Runde = Array("Vor_r_lang", "Vor_r_schnell")    ' "Hoff_r"
+                        Runde = Array("Vor_r_lang", "Vor_r_schnell", "Hoff_r")
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde='Vor_r';"
                     End If
@@ -195,7 +195,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' eine geteile Vorrunde darf nicht sein
-                        Runde = Array("Vor_r")  ' "Hoff_r"
+                        Runde = Array("Vor_r", "Hoff_r")
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde like 'Vor_r_*';"
                     End If
@@ -212,7 +212,7 @@ Private Sub runden_ergaenzen_Click()
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'Vor_r*';"
                     Set rst = dbs.OpenRecordset(stmt)
                     If rst!Anzahl > 0 Then      ' eine geteile Vorrunde darf nicht sein
-                        Runde = Array("Vor_r")  ' "Hoff_r"
+                        Runde = Array("Vor_r", "Hoff_r")
                         If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Vorrunde, " & vbCrLf
                         dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde like 'Vor_r_*';"
                     End If
@@ -228,19 +228,26 @@ Private Sub runden_ergaenzen_Click()
                     ' Löschen von End_r
                     dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde='End_r';"
                     
+                Case "RR_C"
+                    Runde = Array("End_r", "Sieger")
+                    If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
+                    
+                    ' Löschen von End_r_
+                    dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde Like 'End_r_*';"
+                    
+                Case "RR_S", "RR_J"
+                    Runde = get_mk("End_r, Sieger")
+                    If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
+                    
+                    ' Löschen von End_r_
+                    dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde Like 'End_r_*';"
+                    
                 Case "RR_S1", "RR_S2"
                 '****** ToDo Endrunden nur bei mehr als sieben Paaren ****
                 '   Debug.Print DCount("TP_ID", "Paare", "Anwesent_Status<>0 AND Startkl='" & rde!Startklasse & "'")
                     Runde = get_mk("MK_5_TNZ, Sieger")
                     
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
-                    
-                Case "RR_S", "RR_J", "RR_C"
-                    Runde = get_mk("End_r, Sieger")
-                    If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
-                    
-                    ' Löschen von End_r_
-                    dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde Like 'End_r_*';"
                     
                 Case "BWBS_", "SLBS_", "BYBS_"
                     stmt = "Select count(*) as anzahl from rundentab where turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " and Startklasse='" & rde!Startklasse & "' and Runde like 'End_r_*';"
@@ -343,7 +350,9 @@ Private Sub btnAblaufplanung_Click()
 End Sub
 
 Private Sub btnAktualisieren_Click()
-    runden_ergaenzen_Click
+    If get_properties("check_runden") = 1 Then
+        runden_ergaenzen_Click
+    End If
     Me.Requery
 End Sub
 
@@ -358,7 +367,10 @@ Private Sub Kombinationsfeld53_AfterUpdate()        'Runde
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-    runden_ergaenzen_Click
+    
+    If get_properties("check_runden") = 1 Then
+        runden_ergaenzen_Click
+    End If
 End Sub
 
 Private Sub Zeitplan_Click()

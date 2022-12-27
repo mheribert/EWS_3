@@ -1,4 +1,5 @@
-﻿var ver = 'V3.2004';
+﻿var ver = 'V3.2010';
+const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
     var HTML_Seite = '<!DOCTYPE html>';
@@ -24,7 +25,7 @@ exports.blankPage = function (rd_ind, wr_name, wr_id, runden_info, res) {
     var HTML_Seite = make_HTMLhead(wr_id, runden_info, "judgetool") + '\r\n';
     HTML_Seite += make_kopf(rd_ind, runden_info, 0, wr_name) + '\r\n';
     HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
-    HTML_Seite += '<td class="main" height="400px"></td></tr>';
+    HTML_Seite += '<td class="main" height="450px"></td></tr>';
     HTML_Seite += make_absenden(false, false) + '</table></center></form></body></html>';
     res.send(HTML_Seite);
 };
@@ -45,7 +46,7 @@ exports.mkPage = function (rd_ind, wr_name, wr_id, runden_info, res, func) {
 
 exports.wait = function (rd_ind, runden_info, text, wr_name, wr_id, io) {
     var HTML_Seite = make_kopf(rd_ind, runden_info, 0, wr_name) + '\r\n';
-    HTML_Seite += '<tr><td height="400px" align="center"><div class="wr_status" id="content1">' + text + '</div></td></tr>';
+    HTML_Seite += '<tr><td height="450px" align="center"><div class="wr_status" id="content1">' + text + '</div></td></tr>';
     HTML_Seite += make_absenden(false, false);
     HTML_Seite += '</table></center></form>';
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite });
@@ -104,7 +105,7 @@ exports.BS_BY_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
 exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io, wr_func) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].Runde.substr(0, 4);
-    var html_ausw = "BS_";
+    var ausw = "BS_";
     var sei;
 
     HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, tausch) + '\r\n';
@@ -115,39 +116,40 @@ exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io,
         HTML_Seite += '<td align="center" id="couple' + sei + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
         if (wr_func === "MA") {
             if (trunde === "MK_5") {
-                HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Figuren', st_kl) + '\r\n';
+                HTML_Seite += make_inpMK('mk_th' + sei, 10, 'Figuren', st_kl) + '\r\n';
                 HTML_Seite += '<tr><td height="230"></td></tr>' + '\r\n';
             } else {
                 if (trunde === "MK_3" || trunde === "MK_4") {
-                    HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Herr', "Ob") + '\r\n';
-                    HTML_Seite += '<tr><td height="107"></td></tr>' + '\r\n';
-                    HTML_Seite += make_bs_inp('mk_td' + sei, 10, 'Dame', "Ob") + '\r\n';
+                    HTML_Seite += make_inpMK('mk_td' + sei, 10, 'Dame', "Ob") + '\r\n';
                     HTML_Seite += '<tr><td height="60"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMK('mk_th' + sei, 10, 'Herr', "Ob") + '\r\n';
+                    HTML_Seite += '<tr><td height="100"></td></tr>' + '\r\n';
                 } else {
                     HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
                     HTML_Seite += make_inpMKText('mk_td' + sei, 0, "Dame", st_kl) + '\r\n';
                     HTML_Seite += '<tr><td height="100"></td></tr>' + '\r\n';
                     HTML_Seite += make_inpMKText('mk_th' + sei, 0, "Herr", st_kl) + '\r\n';
                     HTML_Seite += '<tr><td height="30"></td></tr>' + '\r\n';
-                    html_ausw = "MK_";
+                    ausw = "MK_T";
                }
             }
         } else {
             if (trunde === "End_" || trunde === "MK_3" || trunde === "MK_4" || trunde === "MK_5") {
-                HTML_Seite += make_bs_inp('mk_th' + sei, 7, 'Herr Technik & Haltung', st_kl) + '\r\n';
-                HTML_Seite += make_bs_inp('mk_dh' + sei, 3, 'Herr Dynamik & Takt', st_kl) + '\r\n';
+                HTML_Seite += make_inpMK('mk_td' + sei, 7, 'Dame Technik & Haltung', st_kl) + '\r\n';
+                HTML_Seite += make_inpMK('mk_dd' + sei, 3, 'Dame Dynamik & Takt', st_kl) + '\r\n';
                 HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
-                HTML_Seite += make_bs_inp('mk_td' + sei, 7, 'Dame Technik & Haltung', st_kl) + '\r\n';
-                HTML_Seite += make_bs_inp('mk_dd' + sei, 3, 'Dame Dynamik & Takt', st_kl) + '\r\n';
-            } else {
+                HTML_Seite += make_inpMK('mk_th' + sei, 7, 'Herr Technik & Haltung', st_kl) + '\r\n';
+                HTML_Seite += make_inpMK('mk_dh' + sei, 3, 'Herr Dynamik & Takt', st_kl) + '\r\n';
+           } else {
                 HTML_Seite += '<tr><td height="270">Kein Einsatz</td></tr>' + '\r\n';
             }
+            ausw = "MK_B"
         }
         HTML_Seite += '<tr><td height="30"></td></tr ></table></td>' + '\r\n';
     }
     HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
 
-    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: html_ausw });
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: ausw });
 };
 
 exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
@@ -302,7 +304,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
             } else {
                 HTML_Seite = '<tr id = "anzeige_body"><td>' + runden_info[rd_ind + seite - 1].Name_Team + '</td></tr>';
             }
-            HTML_Seite += '<tr><td><table style="width: 800px; text-align: center;" cellspacing="0" cellpadding="1" border="1"><tbody><tr background-color="#ddd">';
+            HTML_Seite += '<tr><td><table style="width: 800px; text-align: center;" cellspacing="0" cellpadding="1" border="1"><tbody><tr bgcolor="#ddd">';
             if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
                 HTML_Seite += '<td>Name</td><td>Tanztechnik</td><td>Tanzfiguren</td><td>Choreo</td><td>Synchro</td><td>Bilder</td><td>Formationsfig</td><td>Summe</td><td>&nbsp;</td></tr>';
             } else {
@@ -322,8 +324,8 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                     if (typeof wertungen[wr] !== "undefined") {
                         if (typeof wertungen[wr][tp_id] !== "undefined") {
                             cgi_val = wertungen[wr][tp_id].cgi;
-                            HTML_Seite += '<tr><td height="40px">' + wertungsrichter[wr].WR_Nachname + '</td>';
                             if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
+                                HTML_Seite += '<tr><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["wtk" + seite]) + '</td>';
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["wch" + seite]) + '</td>';
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
@@ -331,11 +333,20 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["waw" + seite]) + '</td>';
                                 HTML_Seite += '<td>' + parseFloat(cgi_val["waf" + seite]) + '</td>';
                             } else {
+                                if (wertungen[wr][tp_id].in === true) {
+                                    HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                } else {
+                                    HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                }
                                 if (new_guidelines) {
                                     var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
                                     for (var k = 0; k < wr_kr.length; k++) {
-                                        HTML_Seite += '<td>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
-                                    }
+                                        if (wertungen[wr][tp_id]["w" + wr_kr[k] + seite] === false) {
+                                            HTML_Seite += '<td bgcolor="#dbd" fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                        } else {
+                                            HTML_Seite += '<td fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                        }
+                                }
                                 } else {
                                     HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
                                     if (trunde === 'ER') {
@@ -454,8 +465,9 @@ exports.RR_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_name,
 
 exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akrobatiken, anz_obs, io) {
     var st_kl = runden_info[0].Startklasse;
-    var trunde = runden_info[0].RundeArt;
-    var auswertung = "RR_";
+    var trunde;
+    var ausw = "RR_";
+    var btn_aktiv = true;
     var seiten = 1 + seite;
     var s = 1 + seite;
     var rd_info;
@@ -467,13 +479,37 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
     //----
     for (s; s <= seiten; s++) {
         HTML_Seite += '<td class="main"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-
-        if (st_kl === "RR_S1" || st_kl === " RR_S2") {
-            HTML_Seite += '<tr><td height="100"></td></tr>';
-            HTML_Seite += make_bs_inp('mk_th' + s, 10, 'Figuren', "Ob") + '\r\n';
-            HTML_Seite += '<tr><td height="100"></td></tr>';
-            auswertung = "BS_"
+        var rde = (runden_info[0].Runde.substr(0, 4));
+        if (st_kl === "RR_S1" || st_kl === "RR_S2" || rde === "MK_1" || rde === "MK_2" || rde === "MK_3" || rde === "MK_4") {
+            switch (rde) {
+                case "MK_1":
+                case "MK_2":
+                    HTML_Seite += '<tr><td height="10"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMKText('mk_td' + s, 0, "Dame") + '\r\n';
+                    HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMKText('mk_th' + s, 0, "Herr") + '\r\n';
+                    HTML_Seite += '<tr><td height="150"></td></tr>' + '\r\n';
+                    ausw = "MK_T";
+                    break;
+                case "MK_3":
+                case "MK_4":
+                    HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMK('mk_td' + s, 10, 'Dame', st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
+                    HTML_Seite += make_inpMK('mk_th' + s, 10, 'Herr', st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="50"></td></tr>' + '\r\n';
+                    ausw = "MK_A";
+                    break;
+                case "MK_5":
+                    HTML_Seite += '<tr><td height="100"></td></tr>';
+                    HTML_Seite += make_inpMK('mk_th' + s, 10, 'Figuren', st_kl) + '\r\n';
+                    HTML_Seite += '<tr><td height="100"></td></tr>';
+                    ausw = "MK_A";
+                    break;
+            }
+            btn_aktiv = false;
         } else {
+            var trunde = runden_info[0].RundeArt;
             if (runden_info[rd_ind].Runde.indexOf("_Fu") > 0 || st_kl === "RR_S") {
                 HTML_Seite += '<tr><td width="430" height="200"></td></tr>';
             } else {
@@ -495,11 +531,11 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
         HTML_Seite += '</table></td>' + '\r\n';
     }
 //---
-    HTML_Seite += '</tr>' + make_absenden(true, true);
+    HTML_Seite += '</tr>' + make_absenden(true, btn_aktiv);
     HTML_Seite += '</table></center></form>';
     HTML_Seite += '<script> const ausw="' + runden_info[0].Startklasse.substr(0, 2) + '" </script>';
 
-    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: auswertung });
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: ausw });
 };
 
 exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info, runde, seite, wr_name, wr_id, akrobatiken, anz_obs, io) {
@@ -713,6 +749,66 @@ exports.RR_Form_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'RR_' });
 };
 
+exports.reisekosten = function (runden_info, wr_id, io, connection) {
+    connection
+        .query('SELECT * FROM Wert_Richter WHERE WR_ID =' + wr_id + ' ;')
+        .on('done', function (data) {
+            var HTML_Seite = make_kopf(0, runden_info, 0, data[0].WR_Nachname.substr(0, 1) + data[0].WR_Vorname, false) + '\r\n';
+            HTML_Seite += '<tr><td style="font-family: Arial; font-size: 16px; width: 50%; "><table align="center" border="0"><tbody>';
+            // <!-- personal Daten -->
+            HTML_Seite += make_reise('<b>Wertungsrichter</b>', '&nbsp;');
+            HTML_Seite += make_reise('Name:', data[0].WR_Vorname + ' ' + data[0].WR_Nachname);
+            HTML_Seite += make_reise('&nbsp;', '&nbsp;');
+            HTML_Seite += make_reise('Reise von/nach:', ' nach Zwönitz');
+            HTML_Seite += make_reise('Grund der Reise:', '<input class="reise_i" style="width:300px;" id="r_grund" value="' + runden_info[0].Turnier_Name + '">');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            HTML_Seite += make_reise('Beginn der Reise:', '<input class="reise_i" id="r_beginn" value="01.10.2022 09:30">');
+            HTML_Seite += make_reise('Ende der Reise:', '<input class="reise_i" id="r_ende" value="02.10.2022 01:30">');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            HTML_Seite += make_reise('Beginn des Dienstgeschäfts:', '<input class="reise_i" id="r_dbeginn" value="01.10.2022 09:30">');
+            HTML_Seite += make_reise('Ende des Dienstgeschäfts:', '<input class="reise_i" id="r_dende" value="02.10.2022 01:30">');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            //	<!-- Fahrkosten  -->
+            HTML_Seite += make_reise('<b>Fahr- und Nebenkosten</b>', '&nbsp;');
+            HTML_Seite += make_reise('Auto - einfache Entfernung:', '<input class="reise_i" onchange="reise_summe()" style="width:70px;" id="r_km" value="330"> km');
+            HTML_Seite += make_reise('andere Anreise', '<input class="reise_i" style="width:200px;" type="text" id="r_bahn" value="" placeholder="z.B. Bahn / Flug">');
+            HTML_Seite += make_reise('alle Ausgaben', '<input onchange="reise_summe()" style="width:100px;" class="reise_i" id="r_kbahn">&nbsp;€');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            HTML_Seite += '</tbody></table></td>';
+            HTML_Seite += '<td style="font-family: Arial; font-size: 16px;"><table align="center" border="0"><tbody>';
+            //	<!-- Verpflegungskosten  -->
+            HTML_Seite += make_reise('<b>Verpflegungspauschale</b>', '&nbsp;');
+            HTML_Seite += make_reise('Abwesenheit von mehr als 8 Stunden:', '<input onchange="reise_summe()" style="width:50px;" class="reise_i" id="r_pausch14">&nbsp;Tage');
+            HTML_Seite += make_reise('mehrtägiger Auswärtstätigkeit:', '<input onchange="reise_summe()" style="width:50px;" class="reise_i" id="r_pausch28">&nbsp;Tage');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            HTML_Seite += make_reise('abzgl. € 5,60 je Frühstück:', '<input onchange="reise_summe()" style="width:50px;" class="reise_i" id="r_frueh">&nbsp;Tage');
+            HTML_Seite += make_reise('abzgl. € 11,20 je Mittagessen:', '<input onchange="reise_summe()" style="width:50px;" class="reise_i" id="r_essen">&nbsp;Tage');
+            HTML_Seite += make_reise('abzgl. € 11,20 je Abendessen:', '<input onchange="reise_summe()" style="width:50px;" class="reise_i" id="r_abend">&nbsp;Tage');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            HTML_Seite += make_reise('Übernachtungskosten:', '<input onchange="reise_summe()" style="width:100px;" class="reise_i" id="r_uekosten">&nbsp;€');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            //	<!-- Honorar  -->
+            HTML_Seite += make_reise('<b>Honorar</b>', '<input style="width:250px;" class="reise_i" id="r_hono" value="" placeholder="z.B. Moderator / DJ">');
+            HTML_Seite += make_reise('Honorarkosten:', '<input onchange="reise_summe()" style="width:100px;" class="reise_i" id="r_khono">&nbsp;€');
+            HTML_Seite += '<tr> <td height="10"></tr>';
+            //  <!-- Summe  -->	
+            HTML_Seite += make_reise('<b>Gesammtsumme</b>', '<input style="width:100px;" class="reise_i" id="r_summe" readonly>&nbsp;€');
+            HTML_Seite += '</tbody></table></td></tr>';
+//            HTML_Seite += '</tr>' + make_absenden(true, true, false) + '</table></center></form>';
+            HTML_Seite += '<tr id = "anzeige_absenden"><td class="button_b" colspan="4">';
+            HTML_Seite += '<input id= "absend" name= "absend" class="button_2" value= "Absenden" onclick = "reise_send()" type = "button" > ';
+            HTML_Seite += '<input id="wtim" name="wtim" type="hidden"></td></tr>';
+
+            io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BW_' });
+        });
+
+    function make_reise(w1, w2) {
+        var HTML_Seite = '<tr><td class="reise_r">' + w1 + '</td >';
+        HTML_Seite += '<td><td class="reise_l">' + w2 + '</td></tr >';
+        return HTML_Seite;
+    }
+};
+
 function get_grobfehler(fl, fl_id) {
     var gr = fl.trim().split(' ');
     var HTML = '<table><tr id="' + fl_id + '">';
@@ -782,6 +878,58 @@ function make_inpMKText(fName, max, aName, st_kl) {
     return inp;
 }
 
+function make_inpMK(fName, max, aName, ganz, pre, paar) {
+    var inp;
+    var b_class;
+    if (pre === undefined) {
+        //        pre = -1;
+    }
+    var g_zahl = parseInt(pre);
+    var k_zahl = (parseFloat(pre) - g_zahl).toFixed(1);
+    inp = '<tr class="bs_head"><td><table align="center"><tr><td colspan="20">' + aName + '</td></tr>';
+    inp += '<tr class="bs_krit ' + paar + '" id="' + fName + '" max="' + max + '">';
+    if (max === 10) {
+        for (var t = 0; t < max + 1; t++) {
+            if (g_zahl === t) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            inp += '<td class="' + b_class + '">' + t + '</td>';
+        }
+    } else {
+        for (var t = 0; t < 8; t++) {
+            if (g_zahl === t) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            if (t < max + 1) {
+                inp += '<td class="' + b_class + '">' + t + '</td>';
+            } else {
+                inp += '<td class = "mk_binvi"> </td>';
+            }
+        }
+        inp += '<td class="mk_bwert">+</td>';
+        for (t = 1; t < 5; t++) {
+            var k_wert = (t * 0.2).toFixed(1);
+            if (k_zahl === k_wert) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            inp += '<td class="' + b_class + '">' + k_wert + '</td>';
+        }
+    }
+    inp += '<td width="30px"> </td>';
+    if (pre === undefined) {
+        pre = '';
+    }
+    inp += '<td width="30px"><input class="mk_berg" name="w' + fName + '" id="w' + fName + '" value="' + pre + '" disabled="true"></td></tr>';
+    inp += '</tr></table></td>';
+    return inp;
+}
+
 function kriterium_text(text1, text2) {
     var inp = '<tr>';
     if (typeof text2 !== "undefined") {
@@ -796,20 +944,29 @@ function kriterium_text(text1, text2) {
 
 function make_kopf(rd_ind, runden_info, seiten, wr_name, tausch, switch_TP) {
     var HTML_kopf;
+    var HTML_nav;
     var sei1 = rd_ind;
     var sei2 = rd_ind + 1;
     if (tausch === true && runden_info[rd_ind].PpR === 2) {
         sei1 = rd_ind + 1;
         sei2 = rd_ind;
     }
+    HTML_nav = '<td align="center" width="40"><nav><ul><li onclick="getPaging(event)">&#x2630;<ul id="nav_innen">';
+    HTML_nav += '<li id = "li_zeit"> Zeitplan</li>';
+    if (rei) {
+        HTML_nav += '<li id = "li_reise"> Reisekosten</li>';
+        HTML_nav += '<li id = "li_back"> zurück</li>';
+    }
+    HTML_nav += '</ul ></li ></ul ></nav ></td > ' + '\r\n';
+
     HTML_kopf = '<form name="Formular" action=/judge method=post onsubmit="return chkFormular()"><center >';
     HTML_kopf += '<table frame="void" border="1" bordercolor="#888888" cellpadding="0" cellspacing="0">';
     HTML_kopf += '<tr id="anzeige_kopf"><td class="rd_o" colspan="4"><table width="100%" cellspacing="0" cellpadding="0" border="0"><tr>';
     if (seiten === 0) {
         HTML_kopf += '<td class="kopf_1" width="50"></td>';
         HTML_kopf += '<td class="runden" width="400"></td>' + '\r\n';
-        HTML_kopf += '<td align="center" width="50"><a target="_blank" rel="noopener noreferrer" href="Zeitplan.html"><img src="zeitplan.jpg" width="40" height="40" alt="DRBV"></a></td>' + '\r\n';
-        HTML_kopf += '<td onclick="return p_logout()" width="350">Logout ' + wr_name + '</td>' + '\r\n';
+        HTML_kopf += HTML_nav + '\r\n';
+        HTML_kopf += '<td style="padding-left: 10px;" onclick="return p_logout()" width="300">Logout ' + wr_name + '</td>' + '\r\n';
         HTML_kopf += '<td class="kopf_1" width="50"></td>' + '\r\n';
     } else {
         if (switch_TP === true) {
@@ -819,7 +976,7 @@ function make_kopf(rd_ind, runden_info, seiten, wr_name, tausch, switch_TP) {
         }
         HTML_kopf += '<input type="hidden" name=rh1 value="' + runden_info[sei1].Rundennummer + '"><input name="rt_ID" value="' + runden_info[sei1].RT_ID + '" type="hidden"></td>' + '\r\n';
         HTML_kopf += '<td class="runden" width="400">' + runden_info[sei1].Tanzrunde_Text + '</td>' + '\r\n';
-        HTML_kopf += '<td align="center" width="50"><a target="_blank" rel="noopener noreferrer" href="Zeitplan.html"><img src="zeitplan.jpg" width="40" height="40" alt="DRBV"></a></td>' + '\r\n';
+        HTML_kopf += HTML_nav + '\r\n';
         HTML_kopf += '<td onclick="return p_logout()" width="350">Logout ' + wr_name + '</td>' + '\r\n';
         if (runden_info[sei1].PpR === 2 && seiten === 2) {
             HTML_kopf += '<td class="kopf_1" width="50">' + runden_info[sei2].Startnr + '<input type="hidden" name=TP_ID' + (sei2 - rd_ind + 1) + ' value="' + runden_info[sei2].TP_ID + '"></td>' + '\r\n';

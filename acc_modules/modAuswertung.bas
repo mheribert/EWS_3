@@ -104,7 +104,11 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             End If
             
         If is_wertung Then
-            If w_dis = 1 Then maj!DQ_ID = w_dis
+            If w_dis = 1 Then
+                maj!DQ_ID = w_dis
+            Else
+                maj!DQ_ID = 0
+            End If
             maj!WR1_Punkte = IIf(ft_id < 0, 0, ftft_pu)
             maj!WR2_Punkte = ft_pu
             maj!WR3_Punkte = ak_pu
@@ -212,7 +216,7 @@ Public Sub RR_platz_vergeben(rt, ord)
         so = ""
     End If
 'hier muss die Reihenfoge gedreht werden bei Zeit stop
-    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE (WR6<>0 OR WR7<>0) AND RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7" & so & ";")
+    Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " ORDER BY KO_Sieger, DQ_ID, WR7" & so & ";")
     If maj.RecordCount = 0 Then
         MsgBox "Es gibt noch keine Wertungen in dieser Tanzrunde!"
     Else

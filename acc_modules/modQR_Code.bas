@@ -108,8 +108,8 @@ End Sub ' reed solomon qr_rs
 Sub bb_putbits(ByRef parr As Variant, ByRef ppos As Integer, pa As Variant, ByVal plen As Integer)
   Dim i%, b%, w&, l%, j%
   Dim dw As Double
-  Dim X(7) As Byte
-  Dim Y As Variant
+  Dim x(7) As Byte
+  Dim y As Variant
   w = VarType(pa)
   If w = 17 Or w = 2 Or w = 3 Or w = 5 Then ' byte,integer,long, double
     If plen > 56 Then Exit Sub
@@ -119,26 +119,26 @@ Sub bb_putbits(ByRef parr As Variant, ByRef ppos As Integer, pa As Variant, ByVa
     i = 0
     Do While i < 6 And dw > 0#
       w = Int(dw / 2 ^ 48)
-      X(i) = w Mod 256
+      x(i) = w Mod 256
       dw = dw - 2 ^ 48 * w
       dw = dw * 256
       l = l - 8
       i = i + 1
     Loop
-    Y = X
+    y = x
   ElseIf InStr("Integer(),Byte(),Long(),Variant()", TypeName(pa)) > 0 Then
-    Y = pa
+    y = pa
   Else
     MsgBox TypeName(pa), "Unknown type"
     Exit Sub
   End If
   i = Int(ppos / 8) + 1
   b = ppos Mod 8
-  j = LBound(Y)
+  j = LBound(y)
   l = plen
   Do While l > 0
-    If j <= UBound(Y) Then
-      w = Y(j)
+    If j <= UBound(y) Then
+      w = y(j)
       j = j + 1
     Else
       w = 0
@@ -177,20 +177,20 @@ End Function
 ' TYPE_INFO_POLY = 0x537  [(ecLevel << 3) | maskPattern] : 5 + 10 = 15 bitu
 ' VERSION_INFO_POLY = 0x1f25 : 5 + 12 = 17 bitu
 Sub qr_bch_calc(ByRef data As Long, ByVal poly As Long)
-  Dim b%, n%, rv&, X&
+  Dim b%, n%, rv&, x&
   b = qr_numbits(poly) - 1
   If data = 0 Then
 '    data = poly
     Exit Sub
   End If
-  X = data * 2 ^ b
-  rv = X
+  x = data * 2 ^ b
+  rv = x
   Do
     n = qr_numbits(rv)
     If n <= b Then Exit Do
     rv = rv Xor (poly * 2 ^ (n - b - 1))
   Loop
-  data = X + rv
+  data = x + rv
 End Sub
 
 Sub qr_params(ByVal pcap As Long, ByVal ecl As Integer, ByRef rv As Variant, ByRef ecx_poc As Variant)
@@ -285,7 +285,7 @@ End Function
 Sub qr_mask(parr As Variant, pb As Variant, ByVal pbits As Integer, ByVal pr As Integer, ByVal pc As Integer)
 ' max 8 bites wide
   Dim i%, w&, r%, c%, j%
-  Dim X As Boolean
+  Dim x As Boolean
   If pbits > 8 Or pbits < 1 Then Exit Sub
   r = pr: c = pc
   w = VarType(pb)
@@ -293,7 +293,7 @@ Sub qr_mask(parr As Variant, pb As Variant, ByVal pbits As Integer, ByVal pr As 
     w = Int(pb)
     i = 2 ^ (pbits - 1)
     Do While i > 0
-      X = qr_bit(parr, -1, r, c, w And i)
+      x = qr_bit(parr, -1, r, c, w And i)
       c = c + 1
       i = Int(i / 2)
     Loop
@@ -303,7 +303,7 @@ Sub qr_mask(parr As Variant, pb As Variant, ByVal pbits As Integer, ByVal pr As 
       i = 2 ^ (pbits - 1)
       c = pc
       Do While i > 0
-        X = qr_bit(parr, -1, r, c, w And i)
+        x = qr_bit(parr, -1, r, c, w And i)
         c = c + 1
         i = Int(i / 2)
       Loop
@@ -529,7 +529,7 @@ Function qr_gen(ptext As String, poptions As String) As String
   Dim ecl%, r%, c%, mask%, utf8%, ebcnt%
   Dim i&, j&, k&, m&
   Dim ch%, s%, siz%
-  Dim X As Boolean
+  Dim x As Boolean
   Dim wasfixed As Boolean
   Dim qrarr() As Byte ' final matrix
   Dim qrpos As Integer
@@ -866,14 +866,14 @@ Function qr_gen(ptext As String, poptions As String) As String
   Call qr_mask(qrarr, qrsync1, 8, siz - 7, 0) ' sync DL (zasahuje i do quiet zony)
   Call qr_mask(qrarr, 0, 8, siz - 8, 0)   ' blank nad DL
   For i = 0 To 6
-    X = qr_bit(qrarr, -1, i, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
-    X = qr_bit(qrarr, -1, i, siz - 8, 0) ' svisly blank pred UR
-    X = qr_bit(qrarr, -1, siz - 1 - i, 8, 0) ' svisle fmtinfo DL - bity 14..8
+    x = qr_bit(qrarr, -1, i, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
+    x = qr_bit(qrarr, -1, i, siz - 8, 0) ' svisly blank pred UR
+    x = qr_bit(qrarr, -1, siz - 1 - i, 8, 0) ' svisle fmtinfo DL - bity 14..8
   Next
-  X = qr_bit(qrarr, -1, 7, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
-  X = qr_bit(qrarr, -1, 7, siz - 8, 0) ' svisly blank pred UR
-  X = qr_bit(qrarr, -1, 8, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
-  X = qr_bit(qrarr, -1, siz - 8, 8, 1) ' black dot DL
+  x = qr_bit(qrarr, -1, 7, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
+  x = qr_bit(qrarr, -1, 7, siz - 8, 0) ' svisly blank pred UR
+  x = qr_bit(qrarr, -1, 8, 8, 0) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7
+  x = qr_bit(qrarr, -1, siz - 8, 8, 1) ' black dot DL
   If qrp(13) <> 0 Or qrp(14) <> 0 Then ' versioninfo
   ' UR ver 0 1 2;3 4 5;...;15 16 17
   ' LL ver 0 3 6 9 12 15;1 4 7 10 13 16; 2 5 8 11 14 17
@@ -881,8 +881,8 @@ Function qr_gen(ptext As String, poptions As String) As String
     c = 0: r = 0
     For i = 0 To 17
       ch = k Mod 2
-      X = qr_bit(qrarr, -1, r, siz - 11 + c, ch) ' UR ver
-      X = qr_bit(qrarr, -1, siz - 11 + c, r, ch) ' DL ver
+      x = qr_bit(qrarr, -1, r, siz - 11 + c, ch) ' UR ver
+      x = qr_bit(qrarr, -1, siz - 11 + c, r, ch) ' DL ver
       c = c + 1
       If c > 2 Then c = 0: r = r + 1
       k = Int(k / 2&)
@@ -890,8 +890,8 @@ Function qr_gen(ptext As String, poptions As String) As String
   End If
   c = 1
   For i = 8 To siz - 9 ' sync lines
-    X = qr_bit(qrarr, -1, i, 6, c) ' vertical on column 6
-    X = qr_bit(qrarr, -1, 6, i, c) ' horizontal on row 6
+    x = qr_bit(qrarr, -1, i, 6, c) ' vertical on column 6
+    x = qr_bit(qrarr, -1, 6, i, c) ' horizontal on row 6
     c = (c + 1) Mod 2
   Next
   ' other syncs
@@ -962,8 +962,8 @@ addmm:
   For i = 0 To 14
     ch = k Mod 2
     k = Int(k / 2)
-    X = qr_bit(qrarr, -1, r, 8, ch) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7 .... 8..14 dole
-    X = qr_bit(qrarr, -1, 8, c, ch) ' vodorovne odzadu 0..7 ............ 8,SYNC,9..14
+    x = qr_bit(qrarr, -1, r, 8, ch) ' svisle fmtinfo UL - bity 0..5 SYNC 6,7 .... 8..14 dole
+    x = qr_bit(qrarr, -1, 8, c, ch) ' vodorovne odzadu 0..7 ............ 8,SYNC,9..14
     c = c - 1
     r = r + 1
     If i = 7 Then c = 7: r = siz - 7
@@ -996,7 +996,7 @@ Sub DrawQRCode(xBC As String, rptName As String, rangeName As String, xoff As In
     Dim xAddr As String
     Dim xPosOldX As Double, xPosOldY As Double
     Dim xSizeOldW As Double, xSizeOldH As Double
-    Dim X, Y, m, dm, a As Double
+    Dim x, y, m, dm, a As Double
     Dim lngColor As Long
     Dim b%, n%, w%, P$, s$, h%, g%
     Const qr_size = 50      ' bis 250 ok
@@ -1007,8 +1007,8 @@ Sub DrawQRCode(xBC As String, rptName As String, rangeName As String, xoff As In
     xSizeOldW = 0
     xSizeOldH = 0
     s = "BC" & xAddr & "#GR"
-    X = 0#
-    Y = 0#
+    x = 0#
+    y = 0#
     m = qr_size
     dm = m * 2#
     a = 0#
@@ -1019,60 +1019,60 @@ Sub DrawQRCode(xBC As String, rptName As String, rangeName As String, xoff As In
         If (w >= 97 And w <= 112) Then
             a = a + dm
         ElseIf w = 10 Or n = b Then
-            If X < a Then X = a
-            Y = Y + dm
+            If x < a Then x = a
+            y = y + dm
             a = 0#
         End If
     Next n
-    If X <= 0# Then Exit Sub
-    X = xoff
-    Y = yoff
+    If x <= 0# Then Exit Sub
+    x = xoff
+    y = yoff
     g = 0
     For n = 1 To b
         w = AscL(Mid(P, n, 1)) Mod 256
         If w = 10 Then
-            Y = Y + dm
-            X = xoff
+            y = y + dm
+            x = xoff
         ElseIf (w >= 97 And w <= 112) Then
             w = w - 97
             Select Case w
                 Case 1:
-                    Reports(rptName).Line (X, Y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(m, m), lngColor, BF
                 Case 2:
-                    Reports(rptName).Line (X + m, Y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y)-Step(m, m), lngColor, BF
                 Case 3:
-                    Reports(rptName).Line (X, Y)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(dm, m), lngColor, BF
                 Case 4:
-                    Reports(rptName).Line (X, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(m, m), lngColor, BF
                 Case 5:
-                    Reports(rptName).Line (X, Y)-Step(m, dm), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(m, dm), lngColor, BF
                 Case 6:
-                    Reports(rptName).Line (X + m, Y)-Step(m, m), lngColor, BF
-                    Reports(rptName).Line (X, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(m, m), lngColor, BF
                 Case 7:
-                    Reports(rptName).Line (X, Y)-Step(dm, m), lngColor, BF
-                    Reports(rptName).Line (X, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(m, m), lngColor, BF
                 Case 8:
-                    Reports(rptName).Line (X + m, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y + m)-Step(m, m), lngColor, BF
                 Case 9:
-                    Reports(rptName).Line (X, Y)-Step(m, m), lngColor, BF
-                    Reports(rptName).Line (X + m, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y + m)-Step(m, m), lngColor, BF
                 Case 10:
-                    Reports(rptName).Line (X + m, Y)-Step(m, dm), lngColor, BF
-                Case 11: Reports(rptName).Line (X, Y)-Step(dm, m), lngColor, BF
-                    Reports(rptName).Line (X + m, Y + m)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y)-Step(m, dm), lngColor, BF
+                Case 11: Reports(rptName).Line (x, y)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y + m)-Step(m, m), lngColor, BF
                 Case 12:
-                    Reports(rptName).Line (X, Y + m)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(dm, m), lngColor, BF
                 Case 13:
-                    Reports(rptName).Line (X, Y)-Step(m, m), lngColor, BF
-                    Reports(rptName).Line (X, Y + m)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(dm, m), lngColor, BF
                 Case 14:
-                    Reports(rptName).Line (X + m, Y)-Step(m, m), lngColor, BF
-                    Reports(rptName).Line (X, Y + m)-Step(dm, m), lngColor, BF
+                    Reports(rptName).Line (x + m, y)-Step(m, m), lngColor, BF
+                    Reports(rptName).Line (x, y + m)-Step(dm, m), lngColor, BF
                 Case 15:
-                    Reports(rptName).Line (X, Y)-Step(dm, dm), lngColor, BF
+                    Reports(rptName).Line (x, y)-Step(dm, dm), lngColor, BF
           End Select
-          X = X + dm
+          x = x + dm
         End If
     Next n
 

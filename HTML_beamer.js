@@ -1,25 +1,31 @@
-var ver = 'V3.2004';
+var ver = 'V3.2010';
 var beamer_inhalt = new Object();
+var HTML_Kopf = '';
+var HTML_Inhalt = '';
+var allranking;
+var tp_id;
 
-exports.inhalt = function () {
-    return beamer_inhalt;
+exports.inhalt = function (io) {
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf || '' });
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt || '' });
 };
 
-exports.beamer_seite = function () {
+exports.beamer_seite = function (next) {
     var HTML_Seite;
-
     HTML_Seite = '<!DOCTYPE html>';
-    HTML_Seite += '<head><title>beamer</title><meta http-equiv="expires" content="0">';
-
+    if (typeof next === 'string') {     // next => beamer2  beamer3
+        HTML_Seite += '<head><title>beamer' + next + '</title><meta http-equiv="expires" content="0">';
+    } else {
+        HTML_Seite += '<head><title>beamer</title><meta http-equiv="expires" content="0">';
+    }
     HTML_Seite += '<link rel="stylesheet" href="EWS3.css">';
-
     HTML_Seite += '<script src="socket.io/socket.io.js"></script>';
-    HTML_Seite += '<script src="EWS3.js" ></script>';
+    HTML_Seite += '<script src="beamod.js" ></script>';
 
     HTML_Seite += '</head><body style="height: 98%; font-family: Verdana;" id="beamer_seite">';
 
     HTML_Seite += '<table cellpadding="0" frame="void" class="tb1"><tr height = "20%" ><td><table width="100%">';
-    HTML_Seite += '<tr><td class="kopf" width="300px"><img src="logo.jpg" width="290" height="180" alt="DRBV"></td>';
+    HTML_Seite += '<tr><td id="beamer_bild" class="kopf" width="300px"><img src="logo.jpg" width="290" height="180" alt="DRBV"></td>';
     HTML_Seite += '<td class="kopf" width = "auto" id = "beamer_kopf">&nbsp;</td ></tr>';
     HTML_Seite += '</table></td></tr>';
     HTML_Seite += '<tr height="80%"><td><table style="width: 100%; float: left; " id="beamer_inhalt">';
@@ -41,9 +47,9 @@ exports.beamer_runde = function (io, runden_info, runde, rd_ind) {
         }*/
         if (runde > runden_info[0].Tanzrunde_MAX) { return; }
 
-        var HTML_Kopf = runden_info[rd_ind].Turnier_Name + '<br>' + runden_info[rd_ind].Tanzrunde_Text;
+        HTML_Kopf = runden_info[rd_ind].Turnier_Name + '<br>' + runden_info[rd_ind].Tanzrunde_Text;
         // Rundeninfo
-        var HTML_Inhalt = '<tr height="10%"><td colspan="2" class="runde">' + 'Runde ' + runden_info[rd_ind].Rundennummer + ' von ' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
+        HTML_Inhalt = '<tr height="10%"><td colspan="2" class="runde">' + 'Runde ' + runden_info[rd_ind].Rundennummer + ' von ' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
         // Startnummer(n)
         HTML_Inhalt += '<tr height="15%"><td class="stnr">' + runden_info[rd_ind].Startnr + '</td>';
         if (runden_info[rd_ind].PpR === 2) {
@@ -63,8 +69,8 @@ exports.beamer_runde = function (io, runden_info, runde, rd_ind) {
         HTML_Inhalt += '</tr>';
         //WR-Info
         HTML_Inhalt += '<tr height="10%"><td colspan="2" align="center"><div class="wr_status" id="beamer_wrinfo">&nbsp;</div></td></tr>';
-        beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
-        io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
+        io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+        io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
     }
 };
 
@@ -74,9 +80,9 @@ exports.beamer_zeitplan = function (io, connection, ab_rtid) {
         .on('done', function (data) {
             // Kopf Text
             var beginn = false;
-            var HTML_Kopf = 'Zeitplan';
+            HTML_Kopf = 'Zeitplan';
             // Rundeninfo
-            var HTML_Inhalt = '<tr height="100%"><td><table style="width: 100%; float: left; ">';
+            HTML_Inhalt = '<tr height="100%"><td><table style="width: 100%; float: left; ">';
             HTML_Inhalt += '<thead><tr class="runden" role="row"><th style="width: 200px; padding-left:60px; " colspan="1" rowspan="1" class="sorting">Beginn</th><th style="width: auto;" colspan="1" rowspan="1" class="sorting">Runde</th></tr></thead>';
             HTML_Inhalt += '<tbody style="font-size: 2.5vw;">';
             for (var i in data) {
@@ -91,8 +97,8 @@ exports.beamer_zeitplan = function (io, connection, ab_rtid) {
                     HTML_Inhalt += '<tr class="odd" ><td style="padding-left:60px;" >' + data[i].Zeit + '</td><td>' + data[i].Rundentext + ' ' + (data[i].Startklasse_text || "") + '</td></tr>';
                 }
             }
-            beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
-            io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
         });
 };
 
@@ -102,7 +108,7 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var temp = new Object;
     var anz = 0;
     // Kopf Text
-    var HTML_Kopf = runden_info[0].Turnier_Name  + '<br>' + runden_info[0].Tanzrunde_Text;
+    HTML_Kopf = runden_info[0].Turnier_Name  + '<br>' + runden_info[0].Tanzrunde_Text;
 	// nur getanzte Runden
     var sum1;
     var sum2;
@@ -139,16 +145,18 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var punkte = 0;
     var linie = false;
     var max_paare = 8;
-    var HTML_Inhalt = make_thead() + '<tbody>';
+    HTML_Inhalt = make_thead() + '<tbody>';
+    allranking = ratings;
 
     for (p in ratings) {
-        if (fix2(ratings[p].ersteRunde + ratings[p].Punkte) !== punkte) {
+        if ((ratings[p].ersteRunde + ratings[p].Punkte) !== punkte) {
             platz = parseInt(p) + 1;
         //    if (p === ratings[p].NextPaare && ratings[p].NextPaare !== null) {
         //        HTML_Inhalt += '<tr class="trenn"><td>&nbsp;</td> <td>&nbsp;</td> <td>&nbsp;</td> <td>&nbsp;</td> </tr>';
         //        HTML_class = '<tr class="raus">';
         //    }
         }
+        allranking[p].punkte = platz;
         runden_info[ratings[p].rd_info].Platz = platz;
         if (platz <= max_paare || ratings[p].Rundennummer === runde) {
             if (platz > max_paare && !linie) {
@@ -169,16 +177,17 @@ exports.beamer_ranking = function (io, runden_info, runde) {
                 HTML_Inhalt += '<td class="text_left">' + ratings[p].Name_Team + '</td>';
             }
             if (ratings[p].ersteRunde !== null) {
-                HTML_Inhalt += '<td style="font-size:1.6vw;">' + fix2(ratings[p].ersteRunde) + ' + ' + fix2(ratings[p].Punkte) + '</td>';
+                HTML_Inhalt += '<td style="font-size:1.6vw;">' + ratings[p].ersteRunde.toFixed(2) + ' + ' + ratings[p].Punkte.toFixed(2) + '</td>';
             }
-            punkte = fix2(ratings[p].ersteRunde + ratings[p].Punkte);
-            HTML_Inhalt += '<td>' + punkte + '</td></tr>';
+            punkte = ratings[p].ersteRunde + ratings[p].Punkte;
+            HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ',');
         }
     }
     HTML_Inhalt += '</tbody>';
+    allranking.lenght = s + 1;
 
-    beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
-    io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
 };
 
 exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
@@ -200,13 +209,78 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
                 } else {
                     HTML_Inhalt += '<td>' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
-                punkte = fix2(data[p].jetztRunde);
-                HTML_Inhalt += '<td>' + punkte + '</td></tr>';
+                punkte = data[p].jetztRunde.toFixed(2);
+                HTML_Inhalt += '<td class="pkte">' + punkte + '</td></tr>';
             }
             HTML_Inhalt += '</tbody>';
 
-            beamer_inhalt = { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt };
-            io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: HTML_Inhalt });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
+        });
+};
+
+exports.beamer_allranking = function (io, runde) {
+    if (allranking === undefined) { return; }
+
+    if (runde + 1> allranking.lenght) {
+        io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
+        return;
+    }
+    var HTML_Seite = make_thead() + '<tbody>';
+
+    for (p = runde; p < runde + 8; p++) {
+        if (p + 1 > allranking.lenght) {
+            break;
+        }
+        HTML_Seite += '<tr class="weiter"><td>' + allranking[p].Platz + '&nbsp;</td>';
+        HTML_Seite += '<td>' + allranking[p].Startnr + '</td>';
+        if (allranking[p].Name_Team === null) {
+            HTML_Seite += '<td class="text_left">' + allranking[p].Dame + ' - ' + allranking[p].Herr + '</td>';
+        } else {
+            HTML_Seite += '<td class="text_left">' + allranking[p].Name_Team + '</td>';
+        }
+        if (allranking[p].ersteRunde !== null) {
+            HTML_Seite += '<td style="font-size:1.6vw;">' + allranking[p].ersteRunde.toFixed(2) + ' + ' + allranking[p].Punkte.toFixed(2) + '</td>';
+        }
+        punkte = (allranking[p].summe).toFixed(2).replace('.', ',');
+        HTML_Seite += '<td>' + punkte + '</td></tr>';
+    }
+    HTML_Seite += '</tbody>';
+
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Seite });
+        setTimeout(function () {
+            exports.beamer_allranking(io, p);
+        }, 4000);
+
+};
+
+exports.beamer_stellprobe = function (io, connection, teams, title) {
+    tp_id = teams.split(';');
+    connection
+        .query('SELECT * FROM paare WHERE TP_ID =' + tp_id[0] + ';')
+        .on('done', function (data) {
+            HTML_Kopf = 'Stellprobe<br>' + title ;
+            HTML_Inhalt = '<tr class="runde"><td height = "25hv" width="20%">Jetzt:</td><td id = "jetzt">';
+            if (tp_id[0] === '-1') {
+                HTML_Inhalt += 'Pause</td></tr>';
+            } else {
+                HTML_Inhalt += '<strong>' + data[0].Name_Team + '</strong><br>' + data[0].Verein_Name + '</td></tr >';
+            }
+            connection
+                .query('SELECT * FROM paare WHERE TP_ID =' + tp_id[1] + ';')
+                .on('done', function (data) {
+
+                    HTML_Inhalt += '<tr"><td height = "30hv" colspan="2" id="beamer_minute" style="text-align:center; font-size:7vw;">4:00</td></tr>';
+                    HTML_Inhalt += '<tr class="runde"><td height = "25hv" >Danach:</td><td>';
+                    if (tp_id[1] === '-1') {
+                        HTML_Inhalt += 'Pause</td></tr>';
+                    } else {
+                        HTML_Inhalt += '<strong>' + data[0].Name_Team + '</strong><br>' + data[0].Verein_Name + '</td></tr>';
+                    }
+
+                    io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+                    io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
+                });
         });
 };
 

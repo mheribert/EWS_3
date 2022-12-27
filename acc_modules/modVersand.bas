@@ -20,7 +20,7 @@ Sub send_zeitplan(Turniernr)
     re.MoveFirst
     Zeitplan = """Uhrzeit"";""Runde"";""Startklasse""" & vbCrLf
     Do Until re.EOF
-        If re!Rundenreihenfolge < 999 And InStr(re!Rundentext, "MK_") = 0 Then
+        If re!Rundenreihenfolge < 999 Then
             Zeitplan = Zeitplan & """" & Format(re!Startzeit, "hh:mm") & """;""" & re!Rundentext & """;""" & re!Startklasse_text & """" & vbCrLf
         End If
         re.MoveNext
@@ -53,8 +53,6 @@ End Sub
 
 Sub Gen_Mail()
     Dim DefPath As String
-    Dim retl As Integer
-    Dim tName As String
     Dim FileToZip
     Dim empf As String
     Dim tur_ber As Boolean
@@ -82,10 +80,10 @@ Sub Gen_Mail()
         FileToZip = DefPath & "_Ergebnisliste.txt"
         Call writeErgebnisliste(CStr(FileToZip))
         zip_file ZipFileName, FileToZip, i
-        
+
         FileToZip = DefPath & "_Ergebnisliste.html"
         zip_file ZipFileName, FileToZip, i
-        
+
         Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
             Case "SL"
                 empf = "breitensport@bwrrv.de"
@@ -96,46 +94,41 @@ Sub Gen_Mail()
                 FileToZip = DefPath & "_Abgegebene_Wertungen.csv"
                 export_tabelle "Abgegebene_Wertungen", FileToZip
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Paare.csv"
                 DoCmd.TransferText acExportDelim, "Paare Exportspezifikation", "Paare", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Majoritaet.csv"
                 DoCmd.TransferText acExportDelim, "Majoritaet Exportspezifikation", "Majoritaet", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Rundentab.csv"
                 DoCmd.TransferText acExportDelim, "Rundentab Exportspezifikation", "Rundentab", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Turnier.csv"
                 DoCmd.TransferText acExportDelim, "Turnier Exportspezifikation", "Turnier", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Turnierleitung.csv"
                 DoCmd.TransferText acExportDelim, "Turnierleitung Exportspezifikation", "Turnierleitung", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Wert_Richter.csv"
                 DoCmd.TransferText acExportDelim, "Wert_Richter Exportspezifikation", "Wert_Richter", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Paare_Rundenqualifikation.csv"
                 DoCmd.TransferText acExportDelim, "Paare_Rundenqualifikation Exportspezifikation", "Paare_Rundenqualifikation", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-                
+
                 FileToZip = DefPath & "_Auswertung.csv"
                 DoCmd.TransferText acExportDelim, "Auswertung Exportspezifikation", "Auswertung", FileToZip, True
                 zip_file ZipFileName, FileToZip, i
-        
-'                FileToZip = DefPath & "_Mehrkampfplatzierungen.csv"
-'                DoCmd.TransferText acExportDelim, "Mehrkampfauswertung", "view_Mehrkampfauswertung", FileToZip, True
-'                zip_file ZipFileName, FileToZip, i
-'
+
         End Select
-        
-        
+
         If OutlookInstalliert Then
             Dim betreff As String
             Dim text As String

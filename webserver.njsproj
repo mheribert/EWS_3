@@ -9,7 +9,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>c7b700b4-e70f-474b-8b29-3a5fc52e3a90</ProjectGuid>
+    <ProjectGuid>41a77d22-47fc-41ff-b87f-18bc73140856</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>server.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
@@ -28,112 +28,8 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="acc_modules\ExecuteWithWait.bas" />
-    <Content Include="acc_modules\Folien.bas" />
-    <Content Include="acc_modules\Form_A-Programmübersicht.bas" />
-    <Content Include="acc_modules\Form_Ablaufplanung.bas" />
-    <Content Include="acc_modules\Form_Admin.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_BWD_Liste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_BWH_Liste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_BW_Startliste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_Fo_Liste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_Fo_Startliste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_RR_Liste.bas" />
-    <Content Include="acc_modules\Form_Aktive_uebernehmen_RR_Startliste.bas" />
-    <Content Include="acc_modules\Form_Ausdrucke.bas" />
-    <Content Include="acc_modules\Form_DebugTestdaten.bas" />
-    <Content Include="acc_modules\Form_Einstellungen.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Color.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Deckblatt.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_ErgListe.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_NetzCheck.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_PPt.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Properties.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Runden.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Rundeneinteilung.bas" />
-    <Content Include="acc_modules\Form_Einstellungen_Wertungsystem.bas" />
-    <Content Include="acc_modules\Form_Majoritaet_ausrechnen.bas" />
-    <Content Include="acc_modules\Form_Mehrkampf Wertung aufnehmen1 Unterformular.bas" />
-    <Content Include="acc_modules\Form_Mehrkampf Wertung aufnehmen2 Unterformular.bas" />
-    <Content Include="acc_modules\Form_Mehrkampf_Paare_ohne_Punkte_UF.bas" />
-    <Content Include="acc_modules\Form_Mehrkampf_Wertung_aufnehmen.bas" />
-    <Content Include="acc_modules\Form_Paare_Akrobatiken.bas" />
-    <Content Include="acc_modules\Form_Paare_in erste Runde nehmen.bas" />
-    <Content Include="acc_modules\Form_Paare_ohne_Punkte_UF.bas" />
-    <Content Include="acc_modules\Form_Paare_ohne_Startbuch.bas" />
-    <Content Include="acc_modules\Form_Paare_ohne_Startbuch_UForm_BW.bas" />
-    <Content Include="acc_modules\Form_Paare_ohne_Startbuch_UForm_RR.bas" />
-    <Content Include="acc_modules\Form_Paare_schon_qualifiziert.bas" />
-    <Content Include="acc_modules\Form_Paare_weiternehmen.bas" />
-    <Content Include="acc_modules\Form_Rundenauslosung.bas" />
-    <Content Include="acc_modules\Form_Stellprobe.bas" />
-    <Content Include="acc_modules\Form_Stellprobe_Liste.bas" />
-    <Content Include="acc_modules\Form_Tanzpaare_aufnehmen.bas" />
-    <Content Include="acc_modules\Form_TL_BS_aufnehmen.bas" />
-    <Content Include="acc_modules\Form_TL_BS_aufnehmen_U1.bas" />
-    <Content Include="acc_modules\Form_TL_BS_aufnehmen_U2.bas" />
-    <Content Include="acc_modules\Form_Turnier aufnehmen.bas" />
-    <Content Include="acc_modules\Form_Turnier aufnehmen_UForm.bas" />
-    <Content Include="acc_modules\Form_Turnier_uebernehmen.bas" />
-    <Content Include="acc_modules\Form_Wertung aufnehmen1 Unterformular.bas" />
-    <Content Include="acc_modules\Form_Wertung aufnehmen2 Unterformular.bas" />
-    <Content Include="acc_modules\Form_Wertungsrichter_aufnehmen.bas" />
-    <Content Include="acc_modules\Form_Wertungsrichter_aufnehmen_U1.bas" />
-    <Content Include="acc_modules\Form_Wertungsrichter_aufnehmen_U2.bas" />
-    <Content Include="acc_modules\Form_Wertungsrichter_aufnehmen_U3.bas" />
-    <Content Include="acc_modules\Form_Wertung_aufnehmen.bas" />
-    <Content Include="acc_modules\Form_Wertung_einlesen.bas" />
-    <Content Include="acc_modules\Form_Wertung_zeigen.bas" />
-    <Content Include="acc_modules\geteilteEndrunde.bas" />
-    <Content Include="acc_modules\HTML_Auswerten.bas" />
-    <Content Include="acc_modules\HTML_Moderation.bas" />
-    <Content Include="acc_modules\HTML_Seiten.bas" />
-    <Content Include="acc_modules\modAllgemein.bas" />
-    <Content Include="acc_modules\modAuswertung.bas" />
-    <Content Include="acc_modules\modAutoUpdate.bas" />
-    <Content Include="acc_modules\modBeamer.bas" />
-    <Content Include="acc_modules\modBoogieObserver.bas" />
-    <Content Include="acc_modules\modCheckDBVersion.bas" />
-    <Content Include="acc_modules\modErgebnisliste.bas" />
-    <Content Include="acc_modules\modFileDialog.bas" />
-    <Content Include="acc_modules\modGlobal.bas" />
-    <Content Include="acc_modules\modPlatzierungsliste.bas" />
-    <Content Include="acc_modules\modQR_Code.bas" />
-    <Content Include="acc_modules\modReports.bas" />
-    <Content Include="acc_modules\modRundenauslosung.bas" />
-    <Content Include="acc_modules\modSkating.bas" />
-    <Content Include="acc_modules\modStartup.bas" />
-    <Content Include="acc_modules\modVersand.bas" />
-    <Content Include="acc_modules\Report_Ablaufplanung.bas" />
-    <Content Include="acc_modules\Report_Akrobatiken_je_Tanzpaar.bas" />
-    <Content Include="acc_modules\Report_Anwesenheitsliste.bas" />
-    <Content Include="acc_modules\Report_gemeldete_Akrobatiken.bas" />
-    <Content Include="acc_modules\Report_Giveaway.bas" />
-    <Content Include="acc_modules\Report_Giveaway_U.bas" />
-    <Content Include="acc_modules\Report_Musikliste.bas" />
-    <Content Include="acc_modules\Report_Reisekosten1.bas" />
-    <Content Include="acc_modules\Report_Reisekosten2.bas" />
-    <Content Include="acc_modules\Report_Rundenplanung.bas" />
-    <Content Include="acc_modules\Report_Startliste.bas" />
-    <Content Include="acc_modules\Report_Startliste_Runden.bas" />
-    <Content Include="acc_modules\Report_Turnierbericht.bas" />
-    <Content Include="acc_modules\Report_Wertungsbogen.bas" />
-    <Content Include="acc_modules\Report_Wertungsbogen_U.bas" />
-    <Content Include="acc_modules\Report_Wertungsrichter_Einteilung.bas" />
-    <Content Include="acc_modules\Report_Wertungsrichter_Login.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_F_Prozente.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_NJS_Abweichung.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_NJS_Observer.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_NJS_TanzpaareFeedback.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_RR_Prozente.bas" />
-    <Content Include="acc_modules\Report_WR_Auswertung_RR_Punkte.bas" />
-    <Content Include="config.json" />
-    <Content Include="HTML_auswerten.js" />
-    <Content Include="HTML_beamer.js" />
-    <Content Include="HTML_erstellen.js" />
-    <Content Include="HTML_moderator.js" />
-    <Content Include="node.exe" />
+    <Content Include="views\beamod.js" />
+    <Content Include="node_modules\.package-lock.json" />
     <Content Include="node_modules\accepts\HISTORY.md" />
     <Content Include="node_modules\accepts\index.js" />
     <Content Include="node_modules\accepts\LICENSE" />
@@ -982,7 +878,6 @@
     <Content Include="node_modules\vary\package.json" />
     <Content Include="node_modules\vary\README.md" />
     <Content Include="node_modules\ws\index.js" />
-    <Content Include="node_modules\ws\lib\.DS_Store" />
     <Content Include="node_modules\ws\lib\BufferUtil.js" />
     <Content Include="node_modules\ws\lib\Constants.js" />
     <Content Include="node_modules\ws\lib\ErrorCodes.js" />
@@ -1017,18 +912,22 @@
     <Content Include="node_modules\yeast\LICENSE" />
     <Content Include="node_modules\yeast\package.json" />
     <Content Include="node_modules\yeast\README.md" />
+    <Content Include="server.js" />
+    <Content Include="config.json" />
+    <Content Include="HTML_auswerten.js" />
+    <Content Include="HTML_beamer.js" />
+    <Content Include="HTML_erstellen.js" />
+    <Content Include="HTML_moderator.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <Content Include="server.js" />
-    <Content Include="Start.bat" />
     <Content Include="views\EWS3.css" />
     <Content Include="views\EWS3.js" />
     <Content Include="views\logo.jpg" />
     <Content Include="views\zeitplan.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="acc_modules\" />
     <Folder Include="node_modules\" />
+    <Folder Include="node_modules\.bin\" />
     <Folder Include="node_modules\accepts\" />
     <Folder Include="node_modules\after\" />
     <Folder Include="node_modules\after\test\" />

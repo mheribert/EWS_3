@@ -218,3 +218,7 @@ Sub AnzahlTaenzereinstellen()
     Me!AnzahlTaenzerInnen.RowSource = werte
 End Sub
 
+Private Sub Form_Resize()
+    Me.Rechteck191.Width = Me.InsideWidth - 100
+    Me.Rechteck192.Width = Me.InsideWidth - 100
+End Sub

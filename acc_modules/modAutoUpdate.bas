@@ -64,7 +64,7 @@ Public Function updateTLP(dl_data, rmldg)
                 ' Check neues TLP
                 aktVersion = Replace(db_Ver, "-", ".")
                 Version = get_url_to_string("http://www.drbv.de/cms/index.php/aktivenportal/downloads/turnierprogramm")
-                off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V17/")
+                off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V20/")
                 If off <> 0 Then
                     Version = Replace(Mid(Version, off + 53, Len(aktVersion)), "-", ".")
                     If Version - aktVersion > 0 Then

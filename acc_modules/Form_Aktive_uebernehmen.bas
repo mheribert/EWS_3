@@ -376,7 +376,7 @@ End Sub
 
 Private Sub btnDeletePaar_Click()
     Dim res As Integer
-    Dim strsql As String
+    Dim strSQL As String
     If (IsNull(Me!STBuchnum)) Then
         Exit Sub
     End If
@@ -387,9 +387,9 @@ Private Sub btnDeletePaar_Click()
         Dim dbs As Database
         ' Bezug auf aktuelle Datenbank zurückgeben.
         Set dbs = CurrentDb
-        strsql = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
+        strSQL = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strsql)
+        dbs.Execute (strSQL)
         Me!STBuchnum = ""
         Me!VName_Dame = ""
         Me!NName_Dame = ""
@@ -405,7 +405,7 @@ End Sub
 
 Private Sub btnFormationDelete_Click()
     Dim res As Integer
-    Dim strsql As String
+    Dim strSQL As String
     If (IsNull(Me!FBuch)) Then
         Exit Sub
     End If
@@ -416,9 +416,9 @@ Private Sub btnFormationDelete_Click()
     If (res = vbYes) Then
         Dim dbs As Database
         Set dbs = CurrentDb
-        strsql = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
+        strSQL = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strsql)
+        dbs.Execute (strSQL)
         Me!formationsname = ""
         Me!Clubname_kurz = ""
         Me!FBuch = ""

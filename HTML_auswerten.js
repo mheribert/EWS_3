@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2004';
+﻿var ver = 'V3.2010';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -61,15 +61,15 @@ function rechne_wertungen(body, seite, runden_info) {
                 Punkte += parseFloat(body["wsd" + seite]) * kl_punkte[2] / 10;
                 Punkte += parseFloat(body["wch" + seite]) * kl_punkte[4] / 10;
                 if (trunde === 'ER') {       //    && runden_info[0].Runde != "Semi"
-                    Punkte += parseFloat(body["wth" + seite]) * kl_punkte[1] / 10;
-                    Punkte += parseFloat(body["wtd" + seite]) * kl_punkte[3] / 10;
-                    Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[5] / 10;
-                    Punkte += parseFloat(body["wda" + seite]) * kl_punkte[6] / 10;
+                    Punkte += parseFloat(body["wth" + seite]) * kl_punkte[1] / 10 || 0;
+                    Punkte += parseFloat(body["wtd" + seite]) * kl_punkte[3] / 10 || 0;
+                    Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[5] / 10 || 0;
+                    Punkte += parseFloat(body["wda" + seite]) * kl_punkte[6] / 10 || 0;
                 } else {
-                    Punkte += parseFloat(body["wsh" + seite]) * kl_punkte[1] / 10;
-                    Punkte += parseFloat(body["wsd" + seite]) * kl_punkte[3] / 10;
-                    Punkte += parseFloat(body["wch" + seite]) * kl_punkte[5] / 10;
-                    Punkte += parseFloat(body["wch" + seite]) * kl_punkte[6] / 10;
+                    Punkte += parseFloat(body["wsh" + seite]) * kl_punkte[1] / 10 || 0;
+                    Punkte += parseFloat(body["wsd" + seite]) * kl_punkte[3] / 10 || 0;
+                    Punkte += parseFloat(body["wch" + seite]) * kl_punkte[5] / 10 || 0;
+                    Punkte += parseFloat(body["wch" + seite]) * kl_punkte[6] / 10 || 0;
                 }
             }
             // Mehrkampf 
@@ -218,19 +218,19 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                             case 'Ft':
                             case 'X':
                             case 'MB':
-                                PunkteFt.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
+                                PunkteFt.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
                                 break;
                             case 'MA':
-                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
+                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
                                 break;
                             case 'Ak':
-                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde.substring(0, 3)]);
+                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
                                 break;
                         }
                     }
                 }
             }
-            var st_kl = runden_info[0].Startklasse.substring(0, 3);
+            var st_kl = runden_info[0].Startklasse;
             runden_info[s].PunkteFt = get_mittel(PunkteFt, wertungen, st_kl);
             runden_info[s].PunkteAk = get_mittel(PunkteAk, wertungen, st_kl);
             runden_info[s].PunkteOb = get_mittel(PunkteOb, wertungen, st_kl);
@@ -315,10 +315,13 @@ function get_mittel(avr, wertungen, st_kl) {
                 max = avr.length;
                 break;
             case 3:
+                var rde = avr[0][6].substring(0, 4);
                 min = 1;
                 max = avr.length;
-                if (avr[0][6] === "MK_") {
-                    max = 2;
+                if (rde.substring(0, 3) === "MK_") {
+                    if (!(rde === 'MK_5' && (st_kl === "RR_J" || st_kl === "RR_S"))) {
+                        max = 2;
+                    } 
                 } 
                 break;
             case 4:
@@ -328,7 +331,7 @@ function get_mittel(avr, wertungen, st_kl) {
             case 5:
                 min = 2;
                 max = 4;
-                if (st_kl === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
+                if (st_kl.substring(0, 3) === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
                     if (avr[0][2] === avr[1][2]) { min--; }
                     if (avr[max][2] === avr[max - 1][2]) { max++; }
                 }
@@ -340,7 +343,7 @@ function get_mittel(avr, wertungen, st_kl) {
             case 7:
                 min = 2;
                 max = 6;
-                if (st_kl === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
+                if (st_kl.substring(0, 3) === "BW_") {          // bei Gleichheit der Punkte, kein aussortieren
                     if (avr[0][2] === avr[1][2]) { min--; }
                     if (avr[max][2] === avr[max - 1][2]) { max++; }
                 }
@@ -381,23 +384,29 @@ function get_mittel(avr, wertungen, st_kl) {
                 var allrest = 0;
                 var anzwrrest = 0;      // Reste addieren
                 for (x = min - 1; x < max; x++) {
-                    if (diff[x] !== max_abw) {
+                    if ((diff[x] === max_abw) && (durchschnitt > 0 && max_abw !== 0)) {
+                        wertungen[avr[x][0]][avr[x][1]][kat_name] = false;
+                    } else {
                         allrest += parseFloat(avr[x][4][kat_name]);
                         anzwrrest++;
                     }
                 }
-                if ((durchschnitt > 0 && max_abw === 0) || anzwrrest === 0 ) {
+                if ((durchschnitt > 0 && max_abw === 0) || anzwrrest === 0) {
                     pu += durchschnitt * kl_punkte[kat];
-                }
-                if (anzwrrest !== 0) {              // daraus Mittelwert, keine division durch 0
-                    pu += allrest / anzwrrest * kl_punkte[kat];       
+                } else {
+                    if (anzwrrest !== 0) {              // daraus Mittelwert, keine division durch 0
+                        pu += allrest / anzwrrest * kl_punkte[kat];
+                    }
                 }
 
             }
             for (x in wertungen) {
                 wertungen[x][avr[0][1]]["Punkte_err"] = pu;
             }
-            return pu ;
+            if (avr[0][6].indexOf("r_schnell") > 0) {
+                pu = pu * 1.1;
+            }
+           return pu ;
         }
     } else {
         return parseFloat(0);
@@ -478,7 +487,8 @@ function Punkteverteilung(Startklasse, trunde, rd) {
             punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
             break;
         case "BW_NG":
-            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3);
+//            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         // Breitensport Bayern Boogie
         case "BS_BY_BJ":

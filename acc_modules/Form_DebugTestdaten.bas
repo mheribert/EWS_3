@@ -38,7 +38,7 @@ Close #1
     
 Set oFSO = CreateObject("Scripting.FileSystemObject")
     
-    Set oFile = oFSO.openTextFile(DateinameEinlesen)
+    Set oFile = oFSO.OpenTextFile(DateinameEinlesen)
  
     ' Alles lesen und in Array zerlegen
     sLines = Split(oFile.ReadAll, vbCrLf)

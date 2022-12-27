@@ -27,7 +27,7 @@ Private Sub km_holen_Click()
 
     If wr.RecordCount > 0 Then
         Set objIE = CreateObject("InternetExplorer.Application")
-        objIE.Navigate2 "https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!PLZ & " " & wr!ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10)   '"About:blank"
+        objIE.Navigate2 "https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!plz & " " & wr!ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10)   '"About:blank"
         objIE.Visible = True
         'Shell ("C:\Program Files\Mozilla Firefox\firefox.exe " & """https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!plz & " " & wr!ort & "/" & re!Veranst_Ort & """")
         'ti = Time

@@ -1,5 +1,5 @@
-﻿/*   Version 3.2004   */
-.runden             { vertical-align:middle; text-align:center; background-color:#F0F080; height:40px; }
+﻿/*   Version V3.2010  */
+.runden             { vertical-align:middle; text-align:center; background-color:#FFA; height:40px; }
 .kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
 .rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
 .button_1           { font-family: Arial; vertical-align:middle; text-align:center ;background-color:#888; color:#fff; width:280px; height:35px; }
@@ -43,6 +43,12 @@
 .wertung_ok         { background-color: #0d0; border-color: #dec; color: #000; padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
 .wr_status div      { display: inline-block; padding: 0.7em; }
 .wr_nochmal         { border-radius:5px; background-color:#f00; color:#fff; }
+main                { position: relative; }
+nav, nav > ul       { width: 100%; margin: 0; padding: 0; }
+nav > ul > li       { position: relative; display: inline-block; padding: 5px; background-color: #FB0; width: 40px;  }
+nav > ul > li > ul  { position: absolute; list-style-type: none; margin: 0; padding: 10px; background-color: #FB0; top: 40px; left: 0; width: 150px; display: none; text-align: left; }
+li                  { padding: 5px; background-color: #FB0; }
+a                   { text-decoration: none; }
 /* Observer */
 .verw               { font-family: Arial; font-size:14px; width:60px; border: thin solid black; background-color:white; color:black; vertical-align: middle; text-align: center; border-radius: 5px; height:40px }
 .verwbutton         { font-family: Arial; font-size:14px; width:90px; border: thin solid black; vertical-align: middle; text-align: center; border-radius: 5px; height:50px }
@@ -59,29 +65,31 @@
 .tb1                { font-family: Verdana; width: 100%; }
 .kopf               { height: 20%; vertical-align: middle; font-size: 3.5vw; background-color: #CCCCCC; padding: 15px; }
 .stnr               { width: 50%; text-align: center; vertical-align: middle; font-weight: bold; font-size: 5vw; }
+.pkte               { padding-right: 20px; text-align: right; }
 .tzer               { text-align: center; vertical-align: top; font-size: 4vw; }
 .tver               { text-align: center; vertical-align: top; font-size:2.8vw; }
 .sorting            { text-align: left; font-weight: normal; font-size: 2.5vw; }
 .text_left          { text-align: left; }
-.weiter             { font-size: 2.6vw; text-align: center; }
+.weiter             { font-family: Verdana; font-size: 2.6vw; text-align: center; }
 .raus               { font-size: 2vw; text-align: center; }
 .trenn              { font-size: 1px; background-color:#000;}
 .runde              { text-align: center; font-size: 3.5vw;  }
 /*WR-Login*/
 .ind_o              { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; font-weight:bold; background-color:#CCCCCC; height: 40px; }
-.wr_l               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left; background-color:#F0F080; height: 50px; width: 600px}
-.wr_m               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; background-color:#F0F080; height: 50px;  width: 200px; }
+.wr_l               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left; background-color:#FFA; height: 50px; width: 600px}
+.wr_m               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:center; background-color:#FFA; height: 50px;  width: 200px; }
 /* moderator */
-.mod_kopf           { font-family: Arial; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#ff8; height:6vw; border:1px solid #000; border-radius: 10px; width: 33%; }
-.mod_n              { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
-.mod_nb             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
-.mod_ns             { font-family: Arial; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #fa6; background-color: #FFFFFF; height: 25px; }
-.mod_m              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
-.mod_s              { font-family: Arial; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:100px; }
-.mod_mk             { font-family: Arial; font-size: 3vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
-.mod_z              { font-family: Arial; font-size: 4.5vw; vertical-align:middle; text-align:center; color:#000000; background-color:#FFFFFF; height:25px; }
-.mod_verein         { font-family: Arial; font-size:4vw; vertical-align:middle; text-align:left; background-color:#F0F080; height:50px; }
-.mod_paar           { font-family: Arial; font-size:3vw; }
+.mod_kopf           { font-family: Verdana; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#FFA; height:6vw; border:1px solid #000; border-radius: 10px; width: 33%; }
+.mod_n              { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
+.mod_nb             { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
+.mod_ns             { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #fa6; background-color: #FFFFFF; height: 25px; }
+.mod_m              { font-family: Verdana; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
+.mod_s              { font-family: Verdana; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:100px; }
+.mod_pkte           { font-family: Verdana; font-size: 4vw; padding-right: 20px; text-align: right; }
+.mod_mk             { font-family: Verdana; font-size: 3vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
+.mod_z              { font-family: Verdana; font-size: 4.5vw; vertical-align:middle; text-align:center; color:#000000; background-color:#FFFFFF; height:25px; }
+.mod_verein         { font-family: Verdana; font-size:4vw; vertical-align:middle; text-align:left; background-color:#FFA; height:50px; }
+.mod_paar           { font-family: Verdana; font-size:3vw; }
 /*   Breitensport  */
 .bs_krit            { font-family:Arial; width:18px; height:25px; }
 .bs_head            { font-family:Arial; width:18px; height:25px; font-size:14px; }
@@ -100,4 +108,12 @@
 .mk_fld             { font-family: Arial; font-size: 24px; height: 30px; width: 120px; }
 .mk_sel             { font-family: Arial; font-size: 15px; height: 70px }
 .select             { font-size: 1.5em; width: 350px; margin: 10px;}
-.sel_paare          { font-family: Arial; font-size: 1.5em; width: 780px; padding: 5px; background:#ff8}
+.sel_paare          { font-family: Arial; font-size: 1.5em; width: 780px; padding: 5px; background:#FFA}
+.mk_bsel            { width: 35px; height: 30px; text-align: center; color: #000000; font-size: 16px; background-color: #0d0; border: 1px solid #000; }
+.mk_binvi           { width: 35px; height: 30px; visibility: hidden; border: 1px solid #000; }
+.mk_bwert           { width: 35px; height: 30px; text-align: center; color: #000000; font-size: 16px; border: 1px solid #000; }
+.mk_berg            { width: 35px; height: 30px; text-align: center; color: #000000; font-size: 18px; font-weight: bold; }
+/* Reisekosten */
+.reise_r            { padding-top: 5px; padding-right: 10px; width: 50%; text-align: right; }
+.reise_l            { padding-top: 5px; width: 50%; }
+.reise_i            { font-family: Arial; font-size: 16px; height: 25px; width: 180px; padding-left: 4px}

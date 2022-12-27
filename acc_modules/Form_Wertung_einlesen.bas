@@ -44,6 +44,7 @@ End Sub
 
 Private Sub Form_Resize()
     Me!Linie137.Width = Me.InsideWidth - 2
+    Me!Text162.Width = Me.InsideWidth - 20
 End Sub
 
 Private Sub Form_Timer()
@@ -170,7 +171,7 @@ Public Sub Runde_starten_Click()
         Do While Timer < SngSec
             DoEvents
         Loop
-    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=aufWRwartenweiter&text=")
+'    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=aufWRwartenweiter&text=")
 
 End Sub
 
@@ -193,16 +194,20 @@ Private Sub Runde_beenden_Click()
         End If
     End If
     db.Execute ("UPDATE rundentab SET [HTML] = 0 WHERE RT_ID =" & Me!Tanzrunde & ";")
-    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('" & Me!Tanzrunde.Column(1) & " beendet', '" & Time & "')"
+    db.Execute "INSERT INTO Analyse (CGI_Input, zeit, RT_ID) VALUES ('" & Me!Tanzrunde.Column(1) & " beendet', '" & Time & "', '" & Me!Tanzrunde & "')"
     Start_Seite "T" & Forms![A-Programmübersicht]!Turnier_Nummer
     make_a_schedule
 End Sub
 
 Private Sub sende_msg_Click()
     Dim st As String
+'  bild wechsel "<td id="bild" class="kopf" width="300px"><img src="http://motion4:8082/" alt="DRBV" width="290" height="180"></td>"    stream von video
+'    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_bild&cont=<td id=""bild"" class=""kopf"" width=""300px""><img src=""BSW Boogie-Woogie Silver-Cup.jpg"" width=""290"" height=""180""></td>")
+'    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&bereich=beamer_inhalt&cont=" & Me!sende_text)
     
-    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
-
+    
+     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & Me!sende_text)
+'    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&kopf=Vorrunde&inhalt=<table style=""width: 100%; float: left; padding-left:100px"" id=""table_timetable""><thead><tr role=""row""><th style=""width: 250px;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Beginn</th><th style=""width: auto;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Runde</th></tr></thead><tbody style=""font-size: 1.8vw;""> <tr class=""odd""> <td>19:00</td><td>Vorrunde  Juniorenklasse</td> </tr> <tr class=""odd""><td>19:10</td><td>Endrunde  Schülerklasse</td></tr>")
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&seite=&inhalt=bodytext&kopf=heribert&wr_info=")
     
@@ -233,8 +238,10 @@ Sub Tanzrunde_AfterUpdate()
             Else
                 If wr_tr = "MK_1" Or wr_tr = "MK_2" Or wr_tr = "MK_3" Or wr_tr = "MK_4" Then
                     where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)='M' OR WR_function='Ob'))"
+                    Me!Runde_starten.Visible = False
                 Else
                     where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
+                    Me!Runde_starten.Visible = True
                 End If
             End If
             Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE " & where_part & " ORDER BY Wert_Richter.WR_Kuerzel;")

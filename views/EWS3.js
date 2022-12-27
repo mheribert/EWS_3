@@ -1,7 +1,9 @@
-﻿    var ver =  'V3.2004';
+﻿    var ver =  'V3.2010';
     window.onload = start;
     var socket = io.connect();
     var ausw;
+
+var drop_filled = new Object;
 
 function start() {
     socket.on('chat', function (data) {
@@ -24,30 +26,13 @@ function start() {
                 set_events();
                 return;
             }
-        }
-        if (document.title === "beamer") {
-            if (data.seite) {
-                //"beamer_seite"
+            if (data.msg === 'setWert' && parseInt(data.WR) === WR_ID) {
+                btn = document.getElementById(data.fld);
+                btn = btn.children[data.val];
+                paint_bar(btn);
             }
-            if (data.kopf) {
-                document.getElementById("beamer_kopf").innerHTML = data.kopf;
-            }
-            if (data.inhalt) {
-                document.getElementById("beamer_inhalt").innerHTML = data.inhalt;
-            }
-            if (data.wrstatus) {
-                document.getElementById("beamer_wrinfo").innerHTML = data.wrstatus;
-            }
-            return;
-        }
-        if (document.title === "moderator") {
-            if (data.msg === 'mod_inhalt') {
-                document.getElementById('mod_inhalt').innerHTML = data.text;
-                set_events();
-                window.scrollTo(0, 0);
-           }
-            if (data.msg === 'mod_wrstatus') {
-                document.getElementById('content1').innerHTML = data.text;
+            if (data.msg === 'remSend') {
+                f_send();
             }
         }
         if (document.title === 'mehrkampf') {
@@ -93,9 +78,9 @@ function start() {
     if (document.title === 'mehrkampf') {
         document.getElementById("klasse").addEventListener('change', select_klasse);
         document.getElementById("station").addEventListener("change", select_station);
-        s = document.getElementsByClassName("kopf_1")
+        s = document.getElementsByClassName("kopf_1"); 
         s[0].setAttribute('onclick', "fill_station()");
-        senden('get_mk_paare', WR_ID)
+        senden('get_mk_paare', WR_ID);
         fill_station();
     }
 }
@@ -114,13 +99,12 @@ function set_events() {
                 "obsbuttons", "obs_add(event)",
                 "spalte", "wr_onclick(event)",
                 "verwbutton leer", "verwarnung(event)",
-                "mod_kopf", "senden_mod(event)", 
-                "mod_nb", "senden_mod_zeit(event)",
-                "mod_ns", "senden_mod_sieger(event)",
                 "bs_wert", "wr_onclick(event)",
-                "bs_sel", "wr_onclick(event)", 
+                "bs_sel", "wr_onclick(event)",
                 "bs_mist", "bs_mistake(event)",
-                "weiter", "senden_sieger(event)"];
+                "mk_bwert", "wr_onclick(event)",
+                "mk_bsel", "wr_onclick(event)"
+             ];
 
     for (var add_ev = 0; add_ev < ev.length; add_ev += 2) {
         t = document.getElementsByClassName(ev[add_ev]);
@@ -208,10 +192,13 @@ function obs_add(e) {
     var t = tar.parentNode;
     document.getElementById("t" + t.id).value +=  " " + tar.innerText;
     document.getElementById("t" + t.id).value = document.getElementById("t" + t.id).value.trim();
+    if (document.getElementById("t" + t.id).value.split("-").length === 3) {
+        document.getElementById("t" + t.id).value = "";
+    }
     if (document.getElementById("t" + t.id).value.indexOf("-") > -1) {
         document.getElementById("t" + t.id).value = "-";
     }
-    poll_mistakes();
+    poll_mistakes(); "-   -"
 }
 
 function poll_mistakes() {
@@ -268,34 +255,6 @@ function senden_WRInfo() {
             senden('WR-Info' + s, info);
         }
     }
-}
-
-function senden_mod(e) {
-    e = e || window.event;
-    var tar = e.target || e.srcElement;
-    senden("Moderator", tar.innerText);
-}
-
-function senden_mod_zeit(e) {
-    e = e || window.event;
-    var tar = e.target || e.srcElement;
-    socket.emit('chat', { msg: "Moderator", text: "Paare", rnd: tar.id.substring(2, 5) });
-}
-
-function senden_mod_sieger(e) {
-    e = e || window.event;
-    var tar = e.target || e.srcElement;
-    socket.emit('chat', {msg: "Moderator", text: "start_Sieger", rnd: tar.id.substring(2, 5), rtid: tar.getAttribute("rtid")});
-}
-
-function senden_sieger(e) {
-    e = e || window.event;
-    var tar = e.target || e.srcElement;
-    var s = tar.parentNode.children
-    for (var p = 0; p < s.length; p++) {
-        s[p].style.backgroundColor = "#f88";
-    }
-    socket.emit('chat', { msg: "Moderator", text: "Sieger", rnd: tar.parentNode.id, Platz: s[0].innerText});
 }
 
 function senden_mk() {
@@ -359,15 +318,13 @@ function paint_bar(tar) {
     switch (ausw) {
         case "MK_T":
             ke = tar.value.replace(',', '.');
-            if (isNaN(ke)) {
-                var we = document.getElementById(tar.id).value;
+/*            if (isNaN(ke)) {
+                var we = ke;
                 i = we.length - 1;
-                document.getElementById(tar.id).value = we.substr(0, i);
+                tar.value = we.substr(0, i);
                 return false;
-            }
+            }*/
             tar.value=tar.value.replace('.', ',');
-//            s = document.getElementsByClassName("mk_inp");
-//            ke = 'w_' + document.getElementById("station").value + '_' + document.getElementById("paare").value
             couple = t.parentNode.classList[1];
             s = document.getElementsByClassName(couple);
             erg = '';
@@ -376,22 +333,57 @@ function paint_bar(tar) {
                 erg += 'w' + s[i].id + '=' + s[i].childNodes[0].childNodes[0].value;
             }
             localStorage.setItem('w_' + couple, erg);
+            check_mkpagefilled(); 
             return;
-        case "MK_L":
-            for (i = 0; i <= t.childElementCount - 2; i++) {
-                if (i <= parseInt(tar.cellIndex)) {
-                    t.children[i].className = "bs_sel";
-                } else {
-                    t.children[i].className = "bs_wert";
-                }
+        case "MK_A":
+            var max_pu = parseInt(t.attributes['max'].value);
+            var pre = parseInt(tar.textContent);
+            for (i = 0; i < 11; i++) {
+                t.children[i].className = "mk_bwert";
             }
-            document.getElementById("w" + t.id).value = parseFloat(tar.cellIndex) / 2;
+            tar.className = "mk_bsel";
+            t.lastChild.firstChild.value = pre;
             couple = t.classList[1];
             s = document.getElementsByClassName(couple);
             erg = '';
             for (i = 0; i < s.length; i++) {
                 if (erg.length > 0) { erg += '&'; }
-                erg += 'w' + s[i].id + '=' + document.getElementById("w" + s[i].id).value
+                erg += 'w' + s[i].id + '=' + s[i].lastChild.firstChild.value;
+            }
+            localStorage.setItem('w_' + couple, erg);
+            break;
+        case "MK_B":
+            var max_pu = parseInt(t.attributes['max'].value);
+            var pre = parseFloat(tar.textContent);
+            var g_zahl = parseInt(t.lastChild.firstChild.value) || 0;
+            var k_zahl = parseFloat(t.lastChild.firstChild.value) - g_zahl || 0;
+            if (tar.cellIndex < 8) {
+                for (i = 0; i <= parseInt(t.attributes['max'].value); i++) {
+                    t.children[i].className = "mk_bwert";
+               }
+                tar.className = "mk_bsel";
+                g_zahl = pre;
+            }
+            if (tar.cellIndex > 7 || pre === max_pu) {
+                if (tar.textContent === '+' || g_zahl === max_pu || tar.textContent === k_zahl.toFixed(1)) { pre = 0; }
+                for (i = 1; i < 5; i++) {
+                    if (i * 2 / 10 === pre) {
+                        t.children[i + 8].className = "mk_bsel";
+                    } else {
+                        t.children[i + 8].className = "mk_bwert";
+                    }
+                }
+                k_zahl = pre;
+            }
+            t.lastChild.firstChild.value = (g_zahl + k_zahl).toFixed(1).trim();
+            couple = t.classList[1];
+            s = document.getElementsByClassName(couple);
+            erg = '';
+            for (i = 0; i < s.length; i++) {
+                if (erg.length > 0) {
+                    erg += '&';
+                }
+                erg += 'w' + s[i].id + '=' + s[i].lastChild.firstChild.value
             }
             localStorage.setItem('w_' + couple, erg);
             break;
@@ -465,13 +457,12 @@ function paint_bar(tar) {
             return false;
         }
     }
-    document.getElementById('WR-Info1').innerHTML = '';
+//    document.getElementById('WR-Info1').innerHTML = '';
     document.getElementById("absend").disabled = false;
-    document.getElementById("absend").className = "button_2"; 
+    document.getElementById("absend").className = "button_2";
 }
 
 function test_mk(te) {
-    var cgivar = '';
     var ke;
     if (te.type === "keyup") {
         ke = te.target.value.replace(',', '.');
@@ -507,15 +498,7 @@ function f_send() {
 //    var eingabe = window.confirm("Sicher alles gewertet?");
     var eingabe = true;
     if (eingabe === true) {
-        var Jetzt = new Date();
-        var Stunden = Jetzt.getHours();
-        var Minuten = Jetzt.getMinutes();
-        var Sekunden = Jetzt.getSeconds();
-        var Vorstd = Stunden < 10 ? "0" : "";
-        var Vormin = Minuten < 10 ? "_0" : "_";
-        var Vorsek = Sekunden < 10 ? "_0" : "_";
-        var Uhrzeit = Vorstd + Stunden + Vormin + Minuten + Vorsek + Sekunden;
-        document.getElementsByName("wtim")[0].value = Uhrzeit;
+        format_zeit();
 
         var elements = document.forms["Formular"].elements;
         var cgivar = '';
@@ -536,10 +519,42 @@ function f_send() {
     return false;
 }
 
+function format_zeit() {
+    var Jetzt = new Date();
+    var Stunden = Jetzt.getHours();
+    var Minuten = Jetzt.getMinutes();
+    var Sekunden = Jetzt.getSeconds();
+    var Vorstd = Stunden < 10 ? "0" : "";
+    var Vormin = Minuten < 10 ? "_0" : "_";
+    var Vorsek = Sekunden < 10 ? "_0" : "_";
+    var Uhrzeit = Vorstd + Stunden + Vormin + Minuten + Vorsek + Sekunden;
+    document.getElementsByName("wtim")[0].value = Uhrzeit;
+}
+
 function chkFormular () {
     document.getElementById("absend").disabled = true;
     document.getElementById("absend").className="button_1";
     return true;
+}
+
+function check_mkpagefilled() {
+    var s = document.forms["Formular"].elements;
+    var all_filled = true;
+    format_zeit();
+    for (var el = 0; el < s.length; el++) {
+        if (s[el].tagName === 'INPUT' && s[el].value === '') {
+            all_filled = false;
+        }
+    }
+    var otext = s["klasse"][s["klasse"].selectedIndex];
+    if (all_filled) {
+        document.getElementById('couple1').style.backgroundColor = "#dfd";
+        otext.textContent = '*   ' + otext.textContent.replace("*   ", "");
+    } else {
+        document.getElementById('couple1').style.backgroundColor = "";
+        otext.textContent = otext.textContent.replace("*   ", "");
+    }
+    drop_filled[document.getElementById("station").value + document.getElementById("klasse").value] = all_filled;
 }
 
 function p_logout() {
@@ -582,6 +597,7 @@ function fill_station() {
     for (var i = 0; i < eintraege.length - 1; i++) {
         var couple = JSON.parse(localStorage.getItem(eintraege[i]));
         station[couple.value.Runde] = couple.value.T_Text;
+        drop_filled[couple.value.Runde + couple.value.st_kl] = false;
     }
     fill_select("station", station);
     document.getElementById("klasse").innerHTML = '<option value="0">---</option>';
@@ -602,13 +618,29 @@ function select_station() {
     document.getElementById("klasse").focus();
 }
 
+function fill_select(dropdown, werte) {
+    var dr = document.getElementById(dropdown);
+    dr.innerHTML = '';
+    for (var i in werte) {
+        var option = document.createElement("option");
+        option.text = werte[i];
+        option.value = i;
+        if (dropdown !== "station") {
+            if (drop_filled[document.getElementById("station").value + option.value] === true) {
+                option.text = '*   ' + option.text;
+            }
+        }
+        dr.add(option);
+    }
+}
+
 function select_klasse() {
     var paare = new Object;
     var HTML_Seite;
     var menu = document.getElementById("klasse");
-    var kl = menu.options[menu.selectedIndex].value
+    var kl = menu.options[menu.selectedIndex].value;
     menu = document.getElementById("station");
-    var rde = menu.options[menu.selectedIndex].value
+    var rde = menu.options[menu.selectedIndex].value;
     paare[0] = '---';
     var eintraege = localStorage.getItem('eintraege').split(", ");
     HTML_Seite = '<td align="center" id="couple1" height="300px"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
@@ -622,22 +654,23 @@ function select_klasse() {
     HTML_Seite += '</table></td>';
     document.getElementById("wertungen").innerHTML = HTML_Seite;
     set_events();
+    check_mkpagefilled();
 }
 
 function select_paare(val) {
     var sei = 1;
     var focus_to;
     var HTML_Seite;
-    var rde = val.Runde.substr(0, 4);
+    var trunde = val.Runde.substr(0, 4);
     var paar = val.Runde + '_' + val.TP_ID;
     var werte = hole_eintrag('w_' + paar);
-    ausw = "MK_L"
     if (wr_func === "MA") {
-        if (rde === "MK_3" || rde === "MK_4") {
-            HTML_Seite = make_bs_inp('mk_td' + sei, 10, 'Dame', true, werte['wmk_td' + sei], paar) + '\r\n';
+        if (trunde === "MK_3" || trunde === "MK_4") {
+            HTML_Seite = make_inpMK('mk_td' + sei, 10, 'Dame', true, werte['wmk_td' + sei], paar) + '\r\n';
             HTML_Seite += '<tr><td height="20"></td></tr>' + '\r\n';
-            HTML_Seite += make_bs_inp('mk_th' + sei, 10, 'Herr', true, werte['wmk_th' + sei], paar) + '\r\n';
+            HTML_Seite += make_inpMK('mk_th' + sei, 10, 'Herr', true, werte['wmk_th' + sei], paar) + '\r\n';
             HTML_Seite += '<tr><td height="200"></td></tr>' + '\r\n';
+            ausw = "MK_A";
         } else {
             HTML_Seite = '<tr><td height="10"></td></tr>' + '\r\n';
             HTML_Seite += make_inpMKText('mk_td' + sei, 0, "Dame", werte['wmk_td' + sei], paar) + '\r\n';
@@ -648,13 +681,14 @@ function select_paare(val) {
         }
         focus_to = 'wmk_td' + sei;
     } else {   //  MB
-        if (rde === "MK_3" || rde === "MK_4") {
-            HTML_Seite = make_bs_inp('mk_td' + sei, 7, 'Dame Technik & Haltung', false, werte['wmk_td' + sei], paar) + '\r\n';
-            HTML_Seite += make_bs_inp('mk_dd' + sei, 3, 'Dame Dynamik', false, werte['wmk_dd' + sei], paar) + '\r\n';
+        if (trunde === "MK_3" || trunde === "MK_4") {
+            HTML_Seite = make_inpMK('mk_td' + sei, 7, 'Dame Technik & Haltung', false, werte['wmk_td' + sei], paar) + '\r\n';
+            HTML_Seite += make_inpMK('mk_dd' + sei, 3, 'Dame Dynamik', false, werte['wmk_dd' + sei], paar) + '\r\n';
             HTML_Seite += '<tr><td height="30"></td></tr>' + '\r\n';
-            HTML_Seite += make_bs_inp('mk_th' + sei, 7, 'Herr Technik & Haltung', false, werte['wmk_th' + sei], paar) + '\r\n';
-            HTML_Seite += make_bs_inp('mk_dh' + sei, 3, 'Herr Dynamik', false, werte['wmk_dh' + sei], paar) + '\r\n';
+            HTML_Seite += make_inpMK('mk_th' + sei, 7, 'Herr Technik & Haltung', false, werte['wmk_th' + sei], paar) + '\r\n';
+            HTML_Seite += make_inpMK('mk_dh' + sei, 3, 'Herr Dynamik', false, werte['wmk_dh' + sei], paar) + '\r\n';
             HTML_Seite += '<tr><td height="100"></td></tr>' + '\r\n';
+            ausw = "MK_B";
         } else {
             HTML_Seite = '<tr><td height="270">Kein Einsatz</td></tr>' + '\r\n';
         }
@@ -678,17 +712,6 @@ function hole_eintrag(couple) {
     return wert;
 }
 
-function make_inpMKText(fName, max, aName, pre, paar) {
-    var inp;
-    if (pre === undefined) {
-        pre = "";
-    }
-    inp = '<tr><td colspan="20">' + aName + '</td></tr>';
-    inp += '<tr class="mk_inp ' + paar + '" id="' + fName + '"><td><input class="mk_fld" id="w' + fName + '" name="w' + fName + '" value="' + pre + '" autocomplete="off" onkeyup="wr_onclick(event)"></td></tr>';
-
-    return inp;
-}
-
 function make_bs_inp(fName, max, aName, ganz, pre, paar) {
     var inp;
     var b_class;
@@ -700,7 +723,7 @@ function make_bs_inp(fName, max, aName, ganz, pre, paar) {
     for (var t = 0; t < max * 2 + 1; t++) {
         if (pre * 2 < t) {
             b_class = "bs_wert";
-        } else { 
+        } else {
             b_class = "bs_sel";
         }
         if (t % 2) {
@@ -713,18 +736,130 @@ function make_bs_inp(fName, max, aName, ganz, pre, paar) {
             inp += '<td style="width:40px; height:40px;" class="' + b_class + '">' + t / 2 + '</td>';
         }
     }
-    inp += '<input name="w' + fName + '" id="w' + fName + '" value="' + pre +' " type="hidden"></tr>';
+    inp += '<input name="w' + fName + '" id="w' + fName + '" value="' + pre + ' " type="hidden"></tr>';
 
     return inp;
 }
 
-function fill_select(dropdown, werte) {
-    var dr = document.getElementById(dropdown);
-    dr.innerHTML = '';
-    for (var i in werte) {
-        var option = document.createElement("option");
-        option.text = werte[i];
-        option.value = i;
-        dr.add(option);
+function make_inpMK(fName, max, aName, ganz, pre, paar) {
+    var inp;
+    var b_class;
+    var g_zahl = parseInt(pre);
+    var k_zahl = (parseFloat(pre) - g_zahl).toFixed(1);
+    inp = '<tr class="bs_head"><td><table align="center"><tr><td colspan="20">' + aName + '</td></tr>';
+    inp += '<tr class="bs_krit ' + paar + '" id="' + fName + '" max="' + max + '">';
+    if (max === 10) {
+        for (var t = 0; t < max +1 ; t++) {
+            if (g_zahl === t) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            inp += '<td class="' + b_class + '">' + t + '</td>';
+        }
+    } else {
+        for (var t = 0; t < 8; t++) {
+            if (g_zahl === t) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            if (t < max + 1) {
+                inp += '<td class="' + b_class + '">' + t + '</td>';
+            } else {
+                inp += '<td class = "mk_binvi"> </td>';
+            }
+        }
+        inp += '<td class="mk_bwert">+</td>';
+        for (t = 1; t < 5; t++) {
+            var k_wert = (t * 0.2).toFixed(1);
+            if (k_zahl === k_wert) {
+                b_class = "mk_bsel";
+            } else {
+                b_class = "mk_bwert";
+            }
+            inp += '<td class="' + b_class + '">' + k_wert + '</td>';
+        }
+    }
+    inp += '<td width="30px"> </td>';
+    if (pre === undefined) {
+        pre = '';
+    }
+    inp += '<td width="30px"><input class="mk_berg" name="w' + fName + '" id="w' + fName + '" value="' + pre + '" disabled="true"></td></tr>';
+    inp += '</tr></table></td>';
+    return inp;
+}
+
+function make_inpMKText(fName, max, aName, pre, paar) {
+    var inp;
+    if (pre === undefined) {
+        pre = "";
+    }
+    inp = '<tr><td><table align="center"><tr><td colspan="20">' + aName + '</td></tr>';
+    inp += '<tr class="mk_inp ' + paar + '" id="' + fName + '"><td><input class="mk_fld" id="w' + fName + '" name="w' + fName + '" value="' + pre + '" autocomplete="off" onkeyup="wr_onclick(event)"></td></tr>';
+    inp += '</table></td></tr>';
+
+    return inp;
+}
+
+function reise_summe() {
+    var km = document.getElementById("r_km").value;
+    var summe;
+    if (km > 300) {
+        km -= 300;
+        summe = (300 * 0.3 + km * 0.15) * 2;
+    } else {
+        summe = km * 0.15 * 2;
+    }
+    summe += (parseInt(document.getElementById("r_kbahn").value) || 0);
+
+    summe += (parseInt(document.getElementById("r_pausch14").value) || 0) * 14;
+    summe += (parseInt(document.getElementById("r_pausch28").value) || 0) * 28;
+
+    summe = parseFloat(summe) - (parseInt(document.getElementById("r_frueh").value) || 0) * 5.60;
+    summe = parseFloat(summe) - (parseInt(document.getElementById("r_essen").value) || 0) * 11.20;
+    summe = parseFloat(summe) - (parseInt(document.getElementById("r_abend").value) || 0) * 11.20;
+
+    summe += (parseInt(document.getElementById("r_uekosten").value) || 0);
+    summe += (parseInt(document.getElementById("r_khono").value) || 0);
+
+    document.getElementById("r_summe").value = summe.toFixed(2);
+}
+
+function reise_send() {
+    format_zeit();
+
+    var elements = document.forms["Formular"].elements;
+    var cgivars = cgivars = 'WR_ID=' + WR_ID;
+    for (var el = 0; el < elements.length; el++) {
+        if (elements[el].type !== 'button') {
+            cgivars +=  '&' + elements[el].id + '=' + elements[el].value;
+        }
+    }
+    reise_summe();
+    socket.emit('chat', { msg: 'reise_schreib', text: cgivars });
+    location.reload();
+}
+
+function getPaging(e) {
+    e = e || window.event;
+    var tar = e.target || e.srcElement;
+
+    var sheet = document.styleSheets[0];
+    if (sheet.rules[47].style.display === "block") {
+        sheet.rules[47].style.display = "none";
+    } else {
+        sheet.rules[47].style.display = "block";
+    }
+    switch (tar.id) {
+        case "li_zeit":
+            window.open("zeitplan.html");
+            break;
+        case "li_reise":
+            senden("reise_fill", WR_ID);
+            break;
+        case "li_back":
+            location.reload();
+            break;
     }
 }

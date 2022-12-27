@@ -25,7 +25,7 @@ Public Sub make_a_startlist(RT_ID As Integer)
     Set ht = open_re("Mod", "Start")
     Set out = file_handle(ht_pfad & "moderator\" & tr_nr & "_Sta_K" & RT_ID & ".html")
     
-    line = Replace(ht!f1, "x_title", "Startliste  " & st_kl)
+    line = Replace(ht!F1, "x_title", "Startliste  " & st_kl)
     line = Replace(line, "rt__txt", "Startliste  " & st_kl & " " & rde)
     
     Set re = db.OpenRecordset("SELECT Paare.Startnr, [Da_Vorname] & "" "" & [Da_Nachname] AS DName, [He_Vorname] & "" "" & [He_Nachname] AS HName, Paare.Name_Team, Paare.Verein_Name, IIf(Nz([Name_Team])="""",False,True) AS isTeam FROM Paare_Rundenqualifikation INNER JOIN Paare ON Paare_Rundenqualifikation.TP_ID = Paare.TP_ID WHERE (((Paare_Rundenqualifikation.RT_ID)=" & RT_ID & ")) ORDER BY Paare.Startnr;")
@@ -81,7 +81,7 @@ Public Sub make_a_Vorstellungslist()
     
     Set re = db.OpenRecordset("SELECT Verein_Name, Paare.Startnr, [Da_Vorname] & "" "" & [Da_Nachname] AS DName, [He_Vorname] & "" "" & [He_Nachname] AS HName, Name_Team, IIf(Nz([Name_Team])="""",False,True) AS isTeam, Startklasse.Startklasse_text, Paare.Verein_nr FROM Startklasse INNER JOIN Paare ON Startklasse.Startklasse = Paare.Startkl WHERE ((Paare.Turniernr=" & get_aktTNr & ") AND (Paare.Anwesent_Status=1)) ORDER BY Paare.Verein_name, Startklasse.Startklasse_text, Paare.Startnr;")
     
-    line = Replace(ht!f1, "x_title", "Vorstellung aller Tanzpaare")
+    line = Replace(ht!F1, "x_title", "Vorstellung aller Tanzpaare")
     line = Replace(line, "rt__txt", re!Verein_Name)
     vText = Trim(re!Verein_Name)
     
@@ -122,7 +122,7 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
     Dim tr_nr As String
     Dim line As String
     Dim Sta, cou, org As String
-    Dim max_Runde As Integer
+    Dim max_runde As Integer
     Dim Runden_anz As Integer
     Dim fil As Boolean
     
@@ -146,11 +146,11 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
         Set out = file_handle(ht_pfad & "moderator\" & tr_nr & "_Mod_K" & runde_id & ".html")
     
 '        Call erste_Folie(oPPTPres.Slides(1), st_Klasse & " " & Runde)
-        line = Replace(ht!f1, "x_title", "Rundeneinteilung" & " " & st_klasse)
+        line = Replace(ht!F1, "x_title", "Rundeneinteilung" & " " & st_klasse)
         line = Replace(line, "rt__txt", st_klasse & " " & Runde)
 '        out.Writeline (line)
         
-        max_Runde = Int(re.RecordCount / re!Anz_Paare) + re.RecordCount Mod re!Anz_Paare
+        max_runde = Int(re.RecordCount / re!Anz_Paare) + re.RecordCount Mod re!Anz_Paare
         re.MoveFirst
         Do Until re.EOF
             If Nz(re!Rundennummer) <> Runden_anz Then
@@ -223,7 +223,7 @@ Public Sub make_a_siegerehrung(RT_ID As Integer)
     Set out = file_handle(ht_pfad & "moderator\" & tr_nr & "_Mod" & sie_id & ".html")
     Set wr = db.OpenRecordset("SELECT Startklasse, wr.* FROM Wert_Richter AS wr INNER JOIN Startklasse_Wertungsrichter ON wr.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Startklasse='" & re![r.Startklasse] & "' AND Startklasse_Wertungsrichter.WR_function<>'Ob') ORDER BY wr.WR_Kuerzel;")
     
-    line = Replace(ht!f1, "x_title", "Siegerehrung  " & re![r.Startklasse_text])
+    line = Replace(ht!F1, "x_title", "Siegerehrung  " & re![r.Startklasse_text])
     line = Replace(line, "rt__txt", "Siegerehrung  " & re![r.Startklasse_text] & "  Moderator")
     line = get_sieger(re, "MajoritaetKurz", line)
     out.writeline (line)
@@ -314,7 +314,7 @@ Public Sub make_a_schedule()
     Set out = file_handle(ht_pfad & "moderator\index.html")
     
     re.MoveFirst
-    line = Replace(ht!f1, "x_title", "Zeitplan")
+    line = Replace(ht!F1, "x_title", "Zeitplan")
     line = Replace(line, "wr_k", "&nbsp")
     line = Replace(line, "tr__txt", Forms![A-Programmübersicht]!Turnierbez)
     out.writeline (line)
@@ -384,7 +384,7 @@ Private Sub make_a_off()
         Exit Sub
     End If
     re.MoveFirst
-    line = Replace(ht!f1, "x_title", "Offizielle")
+    line = Replace(ht!F1, "x_title", "Offizielle")
     line = line & "    <tr>" & vbCrLf & _
            "        <td colspan=""2"" width=""720"" class=""wr_l"" >Offizielle</td>" & vbCrLf & _
            "    </tr>"
@@ -434,7 +434,7 @@ Private Sub make_a_wrlist()
     Set wr = db.OpenRecordset("SELECT Wert_Richter.* FROM Wert_Richter WHERE (Turniernr=" & get_aktTNr & " AND WR_Azubi = False) ORDER BY WR_Kuerzel;")
     re.MoveFirst
     wr.MoveLast
-    line = Replace(ht!f1, "x_title", "Wertungsrichtereinteilung")
+    line = Replace(ht!F1, "x_title", "Wertungsrichtereinteilung")
     line = line & vbCrLf & "    <tr>" & vbCrLf & _
            "        <td colspan=""" & wr.RecordCount + 1 & """ class=""wr_l"" >Wertungsrichtereinteilung</td>" & vbCrLf & _
            "    </tr>"

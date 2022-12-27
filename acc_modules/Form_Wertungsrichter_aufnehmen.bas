@@ -59,7 +59,7 @@ Public Sub btnAddOffiziellen_Click()
         !WR_Lizenznr = Lizenznr
         !WR_Vorname = VName
         !WR_Nachname = NName
-        !Vereinsnr = Club
+        !Vereinsnr = IIf(Club = "", 0, Club)
         !WR_Kuerzel = Chr(Asc(ZW_WR) + 1)
         .Update
         End With
@@ -149,11 +149,9 @@ Private Sub Login_generieren_Click()
         If retl = vbNo Then Exit Sub
     End If
     Set wr = Me!Offizielle.Form.RecordsetClone
-    For retl = 1 To 23
-        rnd
-    Next
     wr.MoveFirst
     Do Until wr.EOF
+        Randomize
         retl = Int((9999 * rnd) + 1)
         wr.Edit
         wr!WR_kenn = Format(retl, "0000")

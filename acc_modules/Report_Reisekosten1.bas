@@ -39,10 +39,10 @@ On Error GoTo raus
         Me!Stunden14 = Forms!reisekostenabrechnung!Stunden14Tage
         Me!Stunden24 = Forms!reisekostenabrechnung!Stunden24Tage
         Me!Frühstück_Tg = Forms!reisekostenabrechnung!Frühstück
-        Me!Stunden8sum = Me!Stunden8 * 12
-        Me!Stunden14sum = Me!Stunden14 * 12
-        Me!Stunden24sum = Me!Stunden24 * 24
-        Me!Frühstücksum = Me!Frühstück_Tg * 4.5
+        Me!Stunden8sum = Me!Stunden8 * 14
+        Me!Stunden14sum = Me!Stunden14 * 14
+        Me!Stunden24sum = Me!Stunden24 * 28
+        Me!Frühstücksum = Me!Frühstück_Tg * 5.6
         Me!Tagegeld = Nz(Me!Stunden8sum) + Nz(Me!Stunden14sum) + Nz(Me!Stunden24sum) - Nz(Me!Frühstücksum)
     End If
     If Nz(Forms!reisekostenabrechnung!ÜKosten) > 0 Then

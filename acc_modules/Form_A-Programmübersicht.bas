@@ -232,10 +232,38 @@ Private Sub Turnierausw_AfterUpdate()
         Getrennte_Auslosung = Turnierausw.Column(5)
         Land = Turnierausw.Column(8)
         'akt_Turnier
+        setzte_logo Turnierausw.Column(1)
         write_config_json
     End If
     lae = Nz(Forms![A-Programmübersicht]!Turnierausw.Column(8))
     setzte_buttons "A-Programmübersicht", "Dokumentation", IIf(lae = "", get_properties("LAENDER_VERSION"), lae)
+End Sub
+
+Sub setzte_logo(turnier)
+    Dim db As Database
+    Dim ht As Recordset
+    Dim Buffer() As Byte
+    Dim Dateigroesse As Long
+    Dim BilddateiID As Long
+    Dim dbPfad As String
+        
+    dbPfad = getBaseDir() & "\webserver\views\"
+    If Len(Dir(dbPfad & turnier & ".jpg")) > 0 Then
+        FileCopy dbPfad & turnier & ".jpg", dbPfad & "logo.jpg"
+    Else
+        dbPfad = getBaseDir()
+        Set db = CurrentDb
+        Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'Logo' and Bereich = 'Bild';")
+        ht.MoveFirst
+        Dateigroesse = Nz(LenB(ht!f3), 0)
+        BilddateiID = FreeFile
+        
+        ReDim Buffer(Dateigroesse)
+        Open dbPfad & Trim(ht!F1) For Binary Access Write As BilddateiID
+        Buffer = ht!f3.GetChunk(0, Dateigroesse)
+        Put BilddateiID, , Buffer
+        Close BilddateiID
+    End If
 End Sub
 
 Private Sub Befehl93_Click()

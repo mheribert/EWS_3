@@ -1,10 +1,10 @@
-var ver            = 'V3.2004';
+var ver = 'V3.2010';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
 var io             = require('socket.io').listen(server);
 var bodyParser     = require('body-parser');
-var session 	   = require('express-session');
+var session        = require('express-session');
 var conf           = require('./config.json');
 var ADODB          = require('node-adodb'), colors = require('colors/safe');
 var HTML_auswerten = require('./HTML_auswerten');
@@ -17,10 +17,10 @@ app.engine('html', require('ejs').renderFile);
 
 // app.use(session({ secret: 'ssshhhhh', saveUninitialized: true, resave: true, cookie: { maxAge: 6000 } }));
 var sec = Math.random().toString().substring(3);
-app.use(session({ secret: sec, saveUninitialized: true, resave: true}));
+app.use(session({ secret: sec, saveUninitialized: true, resave: true }));
 sec = '';
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(conf.pfad + '\\webserver\\views'));
 
 var connection = ADODB.open('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=' + conf.pfad + conf.db + ';');
@@ -48,9 +48,9 @@ var new_guidelines = true;
 
 server.listen(conf.port);
 
-app.post('/login',function(req,res){
+app.post('/login', function (req, res) {
     connection
-//        .query('SELECT * FROM (SELECT WR_kenn, WR_ID FROM wert_richter UNION SELECT PROP_VALUE, PROP_KEY FROM Properties WHERE val(PROP_KEY) > 9999) WHERE WR_ID="' + req.body.wr_id + '";')
+        //        .query('SELECT * FROM (SELECT WR_kenn, WR_ID FROM wert_richter UNION SELECT PROP_VALUE, PROP_KEY FROM Properties WHERE val(PROP_KEY) > 9999) WHERE WR_ID="' + req.body.wr_id + '";')
         .query('SELECT * FROM wert_richter WHERE WR_ID=' + req.body.wr_id)
         .on('done', function (data) {
             if (req.body.passwort === data[0].WR_kenn) {
@@ -79,12 +79,12 @@ app.get('/judge', function (req, res) {
 });
 
 app.get('/', function (req, res) {
-	sess=req.session;
-	if(sess.user_id) {
-		res.redirect('/judge');
-	} else {
-		res.send(Index_Seite);
-	}
+    sess = req.session;
+    if (sess.user_id) {
+        res.redirect('/judge');
+    } else {
+        res.send(Index_Seite);
+    }
 });
 
 app.get("/cgi-bin", function (req, res) {
@@ -92,9 +92,9 @@ app.get("/cgi-bin", function (req, res) {
 });
 
 app.get("/beamer", function (req, res) {
-    res.send(HTML_beamer.beamer_seite());
+    res.send(HTML_beamer.beamer_seite(req.query.b));
     setTimeout(function () {
-        io.emit('chat', HTML_beamer.inhalt());
+        HTML_beamer.inhalt(io);
     }, 500);
 });
 
@@ -109,16 +109,16 @@ app.get("/login", function (req, res) {
     res.redirect('/');
 });
 
-app.get('/logout', function(req, res) {
-	req.session.destroy(function(err) {
-		if(err){
-			console.log(err);
-		} else {
-			res.redirect('/');
-		}
-	});
+app.get('/logout', function (req, res) {
+    req.session.destroy(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.redirect('/');
+        }
+    });
 });
- 
+
 app.get('/hand', function (req, res) {
     var n;
     var i;
@@ -137,7 +137,6 @@ app.get('/hand', function (req, res) {
                             runden_info = data;		// Rundeninfo laden
                             last_rt_id = runden_info[0].RT_ID;
                             runde = 1;
-                            var HTML_Kopf = runden_info[0].Turnier_Name + '<br>' + runden_info[0].Tanzrunde_Text;
                             connection
                                 .query('SELECT * FROM wert_richter ORDER BY WR_Kuerzel;')
                                 .on('done', function (data) {
@@ -183,7 +182,7 @@ app.get('/hand', function (req, res) {
                                             wertungsrichter[data[i].WR_ID].WR_func = "";
                                             wr_func = "";
                                             wertungsrichter[data[i].WR_ID].WR_status = "";
-                                        }   
+                                        }
                                         // zähle WR und Observer
                                         if (wr_func !== "") {
                                             anz_wr++;
@@ -205,7 +204,9 @@ app.get('/hand', function (req, res) {
                                         }
                                         verteilen(wertungsrichter[w].WR_ID);
                                     }
-                                    io.emit('chat', { msg: 'beamer', kopf: HTML_Kopf, inhalt: '<tr><td>&nbsp;</td></tr>' });
+                                    var HTML_Kopf = runden_info[0].Turnier_Name + '<br>' + runden_info[0].Tanzrunde_Text;
+                                    io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
+                                    io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: '<tr><td>&nbsp;</td></tr>' });
                                     HTML_moderator.runde(io, runden_info, runde);
                                 });
 
@@ -217,18 +218,21 @@ app.get('/hand', function (req, res) {
                                         akrobatiken[data[i].Akrobatik] = data[i];
                                     }
                                 });
-                        res.send('gestartet ' + req.query.text);
+                            res.send('gestartet ' + req.query.text);
                         });
                 });
             break;
+
         case "storage_clear":
-            io.sockets.emit('chat', { msg: 'mehrkampf', storage_clear : ' ' });
+            io.sockets.emit('chat', { msg: 'mehrkampf', storage_clear: ' ' });
             res.send(req.query.msg + req.query.text);
             break;
+
         case "storage_send_mk":
             io.sockets.emit('chat', { msg: 'mehrkampf', send_mk: req.query.WR_ID });
             res.send(req.query.msg + req.query.WR_ID);
             break;
+
         case "eingriff":
             if (req.query.text === 'runde_mi') {
                 runde--;
@@ -240,7 +244,25 @@ app.get('/hand', function (req, res) {
             }
             res.send(req.query.msg + req.query.text);
             break;
+
+        case "Runde_freigeben":
+            res.send(req.query.msg + req.query.WR_ID);
+            for (var i in wertungsrichter) {
+                if (wertungsrichter[i].WR_func !== "") {
+                    wertungsrichter[i].WR_status = 'werten';
+                    verteilen(i);
+                }
+            }
+            io.sockets.emit('chat', { zeit: new Date(), msg: 'aufWRwartenweiter', text: '' });
+            break;
+
         case "Runde_starten":
+            var rd_ind = 0;
+            for (i = 0; i < runden_info.length; i++) {
+                if (runden_info[i].Rundennummer < runde) {
+                    rd_ind++;
+                }
+            }
             if (runden_info[0].Tanzrunde_MAX >= runde) {
                 for (i in wertungsrichter) {
                     if (wertungsrichter[i].WR_func !== "") {
@@ -257,10 +279,11 @@ app.get('/hand', function (req, res) {
                 }
             }
             io.sockets.emit('chat', { zeit: new Date(), msg: 'judgetool', text: 'toRoot' });
-            HTML_beamer.beamer_runde(io, runden_info, runde, 0);
+            HTML_beamer.beamer_runde(io, runden_info, runde, rd_ind);
             HTML_moderator.runde(io, runden_info, runde);
             res.send("Runde auswerten");
             break;
+
         case "Runde_auswerten":
             if (rundenende === true) {
                 HTML_auswerten.berechne_punkte(wertungen, runden_info, runde, wertungsrichter, conf.pfad + turnier_nr + runden_info[0].RT_ID + '.txt');
@@ -278,8 +301,10 @@ app.get('/hand', function (req, res) {
             }
             res.send("Runde starten");
             break;
+
         case "Runde_beenden":
-            io.emit('chat', { msg: 'beamer', kopf: ' ', inhalt: ' ' });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: '' });
+            io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: '' });
             HTML_moderator.zeitplan(io, connection);
             to_Root();
             res.send("runde beendet");
@@ -345,37 +370,58 @@ app.get('/hand', function (req, res) {
             console.log('__________________');
             res.send("log geschrieben");
             break;
+
         case "wiederherstellen":
             res.send(req.query.msg + req.query.text);
             runde_wiederherstellen(runden_info);
             break;
+
         case "beamer_zeitplan":
             res.send(req.query.msg + req.query.text);
             HTML_beamer.beamer_zeitplan(io, connection, req.query.text);
             break;
+
         case "beamer_ranking":
             res.send(req.query.msg + req.query.text);
             HTML_beamer.beamer_ranking(io, runden_info, runde);
             break;
+
         case "beamer_runde":
             res.send(req.query.msg + req.query.text);
             HTML_beamer.beamer_runde(io, runden_info, runde, 0);
             break;
+
         case "beamer_siegerehrung":
             res.send(req.query.msg + req.query.text);
             connection = ADODB.open('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=' + conf.pfad + req.query.mdb + '_TDaten.mdb;');
             HTML_beamer.beamer_siegerehrung(io, connection, req.query.text, req.query.Platz);
             HTML_moderator.siegerehrung(io, connection, req.query.text);
             break;
-        case "beamer":
-            res.send(req.query.msg);
-            io.emit('chat', { msg: req.query.msg, seite: req.query.seite, inhalt: req.query.inhalt, kopf: req.query.kopf, wr_info: req.query.wr_info });
+
+        case "beamer_stellprobe":
+            res.send(req.query.msg + req.query.text);
+            connection = ADODB.open('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=' + conf.pfad + req.query.mdb + '_TDaten.mdb;');
+            HTML_beamer.beamer_stellprobe(io, connection, req.query.cont, title);
             break;
+
+        case "beamer":
+        case "beamer2":
+        case "beamer3":
+            res.send(req.query.msg);
+            io.emit('chat', { msg: req.query.msg, bereich: req.query.bereich, cont: req.query.cont });
+            break;
+
+        case "allranking":
+            res.send(req.query.msg);
+            HTML_beamer.beamer_allranking(io, 0);
+            break;
+
         case "moderator_vorstellung":
             connection = ADODB.open('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=' + conf.pfad + req.query.mdb + '_TDaten.mdb;');
             HTML_moderator.vorstellung(io, connection, req.query.text);
-             res.send(req.query.msg + req.query.text);
+            res.send(req.query.msg + req.query.text);
             break;
+
         case "WR-Simulate":
             var cgivar = "";
             for (var el in req.query) {
@@ -386,10 +432,17 @@ app.get('/hand', function (req, res) {
             res.send(req.query.msg + cgivar);
             io.emit('chat', { msg: req.query.msg, text: cgivar.substr(1) });
             break;
+
+        case "setWert":
+            res.send(req.query.msg);
+            io.emit('chat', { msg: req.query.msg, WR: req.query.WR_ID, fld: req.query.fld, val: req.query.val});
+            break;
+
         default:
             res.send(req.query.msg + req.query.text);
             io.emit('chat', { msg: req.query.msg, text: req.query.text });
-            io.emit('chat', { msg: 'beamer', kopf: '', inhalt: '' });
+//            io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: '' });
+//            io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: '' });
             HTML_moderator.runde(io, runden_info, runde);
     }
     function uebertrage(quelle) {
@@ -449,7 +502,7 @@ function insert_differences(body, wertungen) {
 // Websocket
 io.sockets.on('connection', function (socket) {
     socket.on('chat', function (data) {
-//        console.log('msg: ' + data.msg + '   text:' + data.text);
+        //        console.log('msg: ' + data.msg + '   text:' + data.text);
         switch (data.msg) {
             case "nothing":
                 break;
@@ -469,7 +522,7 @@ io.sockets.on('connection', function (socket) {
                 break;
 
             case "WR-Info2":
-                WR_Info2 = { zeit: new Date(), msg: data.msg, text: data.text };   	
+                WR_Info2 = { zeit: new Date(), msg: data.msg, text: data.text };
                 io.sockets.emit('chat', WR_Info2);		// dieser Text wird an alle anderen WR gesendet
                 break;
 
@@ -525,13 +578,21 @@ io.sockets.on('connection', function (socket) {
             case "get_mk_paare":
                 storage_send(data.text);
                 break;
-          default:
+            case "reise_fill":
+                if (runden_info[0] !== undefined) {
+                    HTML_Seite = HTML_erstellen.reisekosten( runden_info, data.text, io, connection);
+                }
+                break;
+            case "reise_schreib":
+                fs.appendFileSync(conf.pfad + turnier_nr + '_Reisekosten.txt', data.text + '\r\n', encoding = 'utf8');
+                break;
+            default:
                 io.sockets.emit('chat', { zeit: new Date(), msg: data.msg, text: data.text });		// dieser Text wird an alle anderen WR gesendet
                 break;
         }
     });
     socket.on('disconnect', function () {
-//       console.log('disconnect : ' + socket.id);
+        //       console.log('disconnect : ' + socket.id);
     });
     socket.on('connect', function (client) {
         console.log(client);
@@ -670,11 +731,12 @@ function verteilen(WR_ID) {
 
                 case "Ft":
                     st_kl = runden_info[0].Startklasse;
+                    var rde = runden_info[0].Runde.substr(0, 4);
                     switch (st_kl.substring(0, 3)) {
                         case "RR_":
-                            if (st_kl === "RR_S1" || st_kl === " RR_S2") {
+                            if (st_kl === "RR_S1" || st_kl === "RR_S2" || rde === "MK_1" || rde === "MK_2" || rde === "MK_3" || rde === "MK_4") {
                                 HTML_Seite = HTML_erstellen.MK_WB_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io, wertungsrichter[WR_ID].WR_func);
-                           } else {
+                            } else {
                                 HTML_Seite = HTML_erstellen.RR_Seite(rd_ind, runden_info, akrobatiken, "Ft", wr_name, WR_ID, io);
                             }
                             break;
@@ -721,6 +783,7 @@ function verteilen(WR_ID) {
             st_kl = runden_info[0].Startklasse;
             switch (st_kl.substring(0, 3)) {
                 case "BW_":
+                    HTML_auswerten.berechne_punkte(wertungen, runden_info, runde, wertungsrichter, conf.pfad + turnier_nr + 'tmp.txt');
                     HTML_Seite = HTML_erstellen.BW_ObsCheck(rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, WR_ID, io, new_guidelines);
                     break;
                 case "F_B":
@@ -778,7 +841,7 @@ function storage_send(WR_ID) {
         });
 }
 
-function auswerten(cgivar) {
+ function auswerten(cgivar) {
     var temp = new Object();
     var wtext;
     var i;
@@ -937,12 +1000,12 @@ function render_WR_status() {
     var content = "";
     var wr;
     for (var i in wertungsrichter) {
-//        wr = wertungsrichter[i].WR_Vorname.substring(0, 1) + wertungsrichter[i].WR_Nachname.substring(0, 2);
+        //        wr = wertungsrichter[i].WR_Vorname.substring(0, 1) + wertungsrichter[i].WR_Nachname.substring(0, 2);
         wr = wertungsrichter[i].WR_Kuerzel;
         switch (wertungsrichter[i].WR_status) {
             case "werten":
             case "runde":
-               content = content + '<div class="wertung_offen">' + wr + '</div>';
+                content = content + '<div class="wertung_offen">' + wr + '</div>';
                 break;
             case "checken":
                 content = content + '<div class="wertung_check">' + wr + '</div>';
@@ -954,16 +1017,17 @@ function render_WR_status() {
             default:
         }
     }
-//    io.emit('chat', { msg: 'aufWRwarten', text: content });
-    io.emit('chat', { msg: 'beamer', wrstatus: content });
+    //    io.emit('chat', { msg: 'aufWRwarten', text: content });
+    io.emit('chat', { msg: 'beamer', bereich: 'beamer_wrinfo', cont: content });
     wr_status = content;
     return content;
 }
 
 function to_Root() {
     setTimeout(function () {
-        io.emit('chat', { msg: 'beamer', kopf:'', inhalt:'' });
-        io.emit('chat', { msg: 'judgetool', text:  'toRoot' });
+        io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: '' });
+        io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: '' });
+        io.emit('chat', { msg: 'judgetool', text: 'toRoot' });
     }, 500);
 }
 
@@ -1040,4 +1104,3 @@ turnier_titel();
 console.log('App Started on PORT ' + conf.port + '.');
 console.log('Version ' + ver);
 to_Root();
-

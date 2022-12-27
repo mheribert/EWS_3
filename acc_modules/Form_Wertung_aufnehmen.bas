@@ -145,6 +145,7 @@ Private Sub mehrkampf_einlesen_Click()
         tr = Replace(Tanzrunde.Column(4), "klasse", "")
     End If
     lese_Auswerteunterlagen tr, Tanzrunde.Column(3)
+    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Sheets einlesen gestartet', '" & Time & "')"
         
 '    Debug.Print tr
 End Sub
@@ -165,6 +166,7 @@ Private Sub mehrkampf_von_tablett_Click()
      
         re.MoveNext
     Loop
+    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Tabletts einlesen gestartet', '" & Time & "')"
 End Sub
 
 Private Sub Wertung_aufnehmen1_Unterformular_Enter()

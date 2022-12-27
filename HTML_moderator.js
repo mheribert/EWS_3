@@ -1,4 +1,4 @@
-var ver              = 'V3.2004';
+var              ver = 'V3.2010';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -11,8 +11,8 @@ exports.mod_seite = function() {
     HTML_Seite += '<head><title>moderator</title><meta http-equiv="expires" content="0">';
     HTML_Seite += '<link rel="stylesheet" href="EWS3.css">' + '\r\n';
     HTML_Seite += '<script src="socket.io/socket.io.js"></script>' + '\r\n';
-    HTML_Seite += '<script src="EWS3.js"></script></head>' + '\r\n';
-    HTML_Seite += '<body><mod_header><table id="kopf_mod" style="width:100%; position:fixed; ">' + '\r\n';
+    HTML_Seite += '<script src="beamod.js"></script></head>' + '\r\n';
+    HTML_Seite += '<body><mod_header><table id="kopf_mod" style="width:99%; position:fixed; ">' + '\r\n';
     HTML_Seite += '<tbody><tr><td class="mod_kopf">Runde</td><td class="mod_kopf">WR</td><td class="mod_kopf">Zeitplan</td></tr>' + '\r\n';
     HTML_Seite += '</tbody></table></mod_header><form name="Formular" style="padding: 7vw 0 0 0;"><center><table border="1" rules="rows" width="100%">' + '\r\n';
     HTML_Seite += '<tr><td colspan="8"><table id="mod_inhalt" width="100%"></table></td></tr>' + '\r\n';
@@ -31,8 +31,8 @@ exports.runde = function (io, runden_info, runde) {
             }
         }
 
-        HTML_Inhalt = '<tr><td class="mod_m" style="background-color:#ff8">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td>';
-        HTML_Inhalt += '<td class="mod_m" colspan ="3" style="background-color:#ff8">' + runden_info[rd_ind].Tanzrunde_Text + '</td></tr>';
+        HTML_Inhalt = '<tr><td class="mod_m" style="background-color:#ffa">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td>';
+        HTML_Inhalt += '<td class="mod_m" colspan ="3" style="background-color:#ffa">' + runden_info[rd_ind].Tanzrunde_Text + '</td></tr>';
         if (typeof runden_info[rd_ind].berechnet !== "undefined") {
             HTML_Inhalt += add_platz(runden_info, rd_ind);
         }
@@ -46,7 +46,7 @@ exports.runde = function (io, runden_info, runde) {
         HTML_Inhalt += '<tr><td class="wr_status" id="content1" colspan="4" align="center"></td></tr>';
         rd_ind += runden_info[rd_ind].PpR;
         if (typeof runden_info[rd_ind] !== "undefined") {
-            HTML_Inhalt += '<tr><td class="mod_m" colspan ="3" style="background-color:#ff8">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
+            HTML_Inhalt += '<tr><td class="mod_m" colspan ="3" style="background-color:#ffa">' + runden_info[rd_ind].Rundennummer + '/' + runden_info[rd_ind].Tanzrunde_MAX + '</td></tr>';
             HTML_Inhalt += make_paar(runden_info, rd_ind, 'mod_mk');
             if (runden_info[rd_ind].PpR === 2) {
                 HTML_Inhalt += make_paar(runden_info, rd_ind + 1, 'mod_mk');
@@ -96,7 +96,7 @@ exports.zeitplan = function (io, connection, ab_rtid) {
                 }
                 if (beginn === true && data[i].Rundentext !== "Letzte Startkartenabgabe") {
                     HTML_Inhalt += '<tr><td class="mod_z" width=18%>' + data[i].Zeit + '</td>';
-                    if (data[i].Rundentext === "Vorstellung der Tanzpaare") {
+                    if (data[i].Rundentext === "Vorstellung der Tanzpaare" || data[i].Rundentext === "Vorstellung der Formationen") {
                         HTML_Inhalt += '<td class="mod_nb" width=80% id="rt0">';
                     } else if (data[i].Rundentext === "Siegerehrung" && data[i].WB > 0) {
                         HTML_Inhalt += '<td class="mod_ns" width=80% id="rt' + data[i].RT_ID + '" rtid="' + data[i].WB + '">';
@@ -185,8 +185,8 @@ exports.siegerehrung = function (io, connection, rt_id) {
                 } else {
                     HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
-                punkte = fix2(data[p].jetztRunde);
-                HTML_Inhalt += '<td class="mod_s">' + punkte + '</td></tr>';
+                punkte = data[p].jetztRunde.toFixed(2);
+                HTML_Inhalt += '<td class="mod_pkte">' + punkte + '</td></tr>';
             }
             HTML_Inhalt += '</tbody>';
 

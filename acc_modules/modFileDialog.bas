@@ -187,20 +187,25 @@ End Function
 Public Sub Bilderspeichern()
     Dim db As Database
     Dim ht As Recordset
+'    Dim BilddateiID As Long
+'    Dim Dateigroesse As Long
     Dim out
-    Dim BilddateiID As Long
-    Dim Buffer() As Byte
-    Dim Dateigroesse As Long
+'    Dim Buffer() As Byte
     Dim tr_nr As String
     Dim base As String
     Dim t As Integer
     
     Set db = CurrentDb
-    Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and Bereich = 'Bild';")
 
-    If get_properties("EWS") <> "EWS3" Then
+    If get_properties("EWS") = "EWS3" Then
+        base = getBaseDir & "webserver\views"
+        Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and F1 = 'favicon.ico';")
+        ht.MoveFirst
+        out_bild ht, base
+    Else
         base = getBaseDir & "Apache2\htdocs\"
-        BilddateiID = FreeFile
+        Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and Bereich = 'Bild';")
+        ht.MoveFirst
         gen_default base
         gen_Ordner base & "gifs"
         gen_Ordner base & "beamer"
@@ -209,18 +214,10 @@ Public Sub Bilderspeichern()
         gen_default base & "moderator\"
         gen_Ordner base & "observer"
         gen_default base & "observer\"
-        ht.MoveFirst
     
-On Error Resume Next
 
         Do Until ht.EOF
-            Dateigroesse = Nz(LenB(ht!f3), 0)
-        
-            ReDim Buffer(Dateigroesse)
-            Open base & Trim(ht!F1) For Binary Access Write As BilddateiID
-            Buffer = ht!f3.GetChunk(0, Dateigroesse)
-            Put BilddateiID, , Buffer
-            Close BilddateiID
+            out_bild ht, base
             ht.MoveNext
         Loop
         
@@ -228,9 +225,69 @@ On Error Resume Next
         Set ht = open_re("All", "Zahl")
         For t = 1 To 7
             Set out = file_handle(base & tr_nr & "_" & t & ".html")
-            out.writeline Replace(ht!F1, "x__zahl", t)
+            out.writeline Replace(ht!f1, "x__zahl", t)
         Next t
     End If
 
 End Sub
 
+Function out_bild(ht, base)
+    Dim BilddateiID As Long
+    Dim Dateigroesse As Long
+    Dim Buffer() As Byte
+On Error Resume Next
+    
+    BilddateiID = FreeFile
+    Dateigroesse = Nz(LenB(ht!f3), 0)
+
+    ReDim Buffer(Dateigroesse)
+    Open base & Trim(ht!f1) For Binary Access Write As BilddateiID
+    Buffer = ht!f3.GetChunk(0, Dateigroesse)
+    Put BilddateiID, , Buffer
+    Close BilddateiID
+
+ End Function
+
+Function sp_mk()
+    Dim db As Database
+    Dim re As Recordset
+    Dim lngDateigroesse As Long
+    Dim Buffer() As Byte
+    Dim dateiID As Integer
+    Dim mkPfad As String
+    Dim mkFile As String
+    Dim mkArt As String
+    Dim i As Integer
+    
+    Set db = CurrentDb
+    Set re = db.OpenRecordset("analyse")
+    mkArt = get_mk()
+    mkPfad = getBaseDir & "Turn und Athletik-WB\"
+    If mkArt = "Bodenturnen und Trampolin" Then
+        mkFile = Dir(mkPfad & "1*.xlsx")
+    ElseIf mkArt = "Kondition und Koordination" Then
+        mkFile = Dir(mkPfad & "2*.xlsx")
+    End If
+    
+    Do While mkFile <> ""
+        re.FindFirst "CGI_Input = '" & mkFile & "'"
+        If re.NoMatch Then
+            re.AddNew
+        Else
+            re.Edit
+        End If
+        re!Cgi_Input = mkFile
+        dateiID = FreeFile
+        Open mkPfad & mkFile For Binary Access Read Lock Read Write As dateiID
+        lngDateigroesse = FileLen(mkPfad & mkFile)
+        ReDim Buffer(lngDateigroesse)
+        re!datei = Null
+        Get dateiID, , Buffer
+        Close dateiID
+        re!datei.AppendChunk Buffer
+
+        re.Update
+        mkFile = Dir
+    Loop
+
+End Function

@@ -987,6 +987,8 @@ Public Sub UpdateAnzahl_Paare(RT_ID As Integer)
         rstAnzahlPaare!stichr = Anzahl
     ElseIf (Runde = "Stich_r_1pl") Then
         rstAnzahlPaare!stichr1pl = Anzahl
+    ElseIf left(Runde, 4) = "MK_5" Then
+        rstAnzahlPaare!mk = Anzahl
     ElseIf (Runde = "End_r" Or Runde = "End_r_Akro" Or Runde = "End_r_2" Or Runde = "End_r_schnell") Then
         rstAnzahlPaare!er = Anzahl
     End If

@@ -2,6 +2,9 @@ Option Compare Database
 Option Explicit
     Const seku = 1.15740740740741E-05
     Dim count_down As Integer
+    Dim stpr As Recordset
+    Dim st As String
+    Dim HTML As String
 
 Private Sub Kombinationsfeld53_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
@@ -90,10 +93,18 @@ Private Sub stell_starten_Click()
     If Me.stell_starten Then
         Me.stell_starten.Caption = "Stop"
         count_down = Me!vorgabe
-        Folie_anzeigen_Click
+        If get_properties("EWS") = "EWS3" Then
+            Set stpr = Me.RecordsetClone
+            stpr.Bookmark = Me.Bookmark
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_kopf&cont=Stellprobe")
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_stellprobe&&mdb=" & get_TerNr & "&cont=" & make_inhalt(stpr))
+
+        Else
+            Folie_anzeigen_Click
+            Me.Folie_anzeigen.Enabled = False
+            Me.next_rec.Enabled = False
+        End If
         Me.TimerInterval = 1000
-        Me.Folie_anzeigen.Enabled = False
-        Me.next_rec.Enabled = False
     Else
         Me.TimerInterval = 0
         Me.stell_starten.Caption = "Starten"
@@ -109,19 +120,35 @@ Private Sub Form_Timer()
         Me.stell_starten.SetFocus
         count_down = Me!vorgabe
         next_rec_Click
-        Folie_anzeigen_Click
+            If get_properties("EWS") = "EWS3" Then
+                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_stellprobe&&mdb=" & get_TerNr & "&cont=" & make_inhalt(stpr))
+            Else
+                Folie_anzeigen_Click
+            End If
         If Me!Jetzt = "Pause" Then
             stell_starten_Click
         End If
     Else
         count_down = count_down - 1
-        If Me!vorgabe > 225 And count_down < Me!vorgabe - 225 Then
-            Me.verkürzen.Visible = True
+        If get_properties("EWS") = "EWS3" Then
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
         Else
-            Me.verkürzen.Visible = False
+            If Me!vorgabe > 225 And count_down < Me!vorgabe - 225 Then
+                Me.verkürzen.Visible = True
+            Else
+                Me.verkürzen.Visible = False
+            End If
         End If
-     End If
+    End If
 End Sub
+
+Function make_inhalt(re)
+    HTML = re!Stell_TP_ID & ";"
+    re.MoveNext
+    HTML = HTML & re!Stell_TP_ID
+    make_inhalt = HTML
+     
+End Function
 
 Private Sub Stellprobe_drucken__Aktualisieren_Click()
     DoCmd.OpenReport "Stellprobe", acViewPreview

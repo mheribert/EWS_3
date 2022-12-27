@@ -2,7 +2,7 @@ Option Compare Database
 
 Private Sub Report_Load()
 
-Dim X As String
+Dim x As String
 
 'x = Get_Akroname(45, "Vor_r", 6)
 End Sub
