@@ -123,8 +123,6 @@ Function post_url_string()
     winHttpReq.setRequestHeader "User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)"
     winHttpReq.setRequestHeader "Content-type", "application/x-www-form-urlencoded"
     winHttpReq.send ("wr_id=4&passwort=1234")
-    Debug.Print winHttpReq.responseText
-    
 
 End Function
 
@@ -243,7 +241,6 @@ Private Sub DRBV_Musik_herunterladen()
                     gen_Ordner (getBaseDir() & "Musik")
                     dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(5) & da(8)) & "\" & da(4) & " - " & da(3) & ".mp3"
                     If InStr(da(1), "&") Then
-'                        Debug.Print
                         da(1) = Replace(da(1), "&", "&teil2=")
                     End If
                     file_URL = "http://www.drbv.de/turniermusik/musikdb.php?pfad=/" & da(2) & "&file=" & da(1)
@@ -256,7 +253,6 @@ Private Sub DRBV_Musik_herunterladen()
         Loop
         Close #1
     End If
-    Debug.Print "Fertig " & takte
 End Sub
 
 Private Sub Musik_prüfen()

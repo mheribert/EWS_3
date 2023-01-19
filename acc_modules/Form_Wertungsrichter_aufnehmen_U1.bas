@@ -149,9 +149,11 @@ On Error GoTo Fehlerout
         End If
     Next
     If KeyCode = 32 Or KeyCode = 46 Then
+        DoCmd.CancelEvent
         dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
     End If
     If i <= UBound(wr_art) Then
+        DoCmd.CancelEvent
         If Screen.ActiveControl = "MA" Then i = i + 1
         dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
         dbs.Execute "INSERT into Startklasse_wertungsrichter( WR_ID, startklasse, WR_function)" & _
@@ -169,6 +171,7 @@ On Error GoTo Fehlerout
         DoCmd.GoToRecord , , acPrevious
         KeyCode = 0
     End If
+
 Fehlerout:
     If err = 2105 Then Resume Next
 End Function

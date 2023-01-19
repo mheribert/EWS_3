@@ -57,7 +57,10 @@ Function fill_akro()
     Set db = CurrentDb
     Tanzrunde = Right(Me.ActiveControl.Name, 2)
     For i = 1 To 8
-        a_id = Mid(Me("Akro" & i & "_" & Tanzrunde).Column(1), 2, 1)
+        For j = 1 To 3
+            a_id = Mid(Me("Akro" & i & "_" & Tanzrunde).Column(1), j, 1)
+            If IsNumeric(a_id) Then Exit For
+        Next j
         If IsNumeric(a_id) Then
             Me("ID" & i & "_" & Tanzrunde) = a_id
             If Not IsNull(a_id) Then
@@ -107,7 +110,7 @@ Function check_doppelte(max, Gruppen_ID)
     check_doppelte = False
     For i = 0 To max - 1
         For j = i + 1 To max - 1
-            Debug.Print Gruppen_ID(i), Gruppen_ID(j)
+'            Debug.Print Gruppen_ID(i), Gruppen_ID(j)
             If Gruppen_ID(i) = Gruppen_ID(j) Then
                 check_doppelte = True
                 Exit Function

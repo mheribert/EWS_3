@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2010';
+﻿var ver = 'V3.2011';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {

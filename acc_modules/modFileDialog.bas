@@ -187,10 +187,7 @@ End Function
 Public Sub Bilderspeichern()
     Dim db As Database
     Dim ht As Recordset
-'    Dim BilddateiID As Long
-'    Dim Dateigroesse As Long
     Dim out
-'    Dim Buffer() As Byte
     Dim tr_nr As String
     Dim base As String
     Dim t As Integer

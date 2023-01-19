@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2010';
+﻿var ver = 'V3.2011';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -163,18 +163,22 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         sei = s;
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-        if (st_kl.substr(0,6) === "BS_RR_") {
+        // Technik Herr
+        if (st_kl.substr(0, 6) === "BS_RR_") {
             HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik Herr', st_kl) + '\r\n';
         } else {
             HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik', st_kl) + '\r\n';
         }
+        // Technik Dame
         if (st_kl.substr(0, 6) === "BS_RR_") {
             HTML_Seite += make_bs_inp('td' + sei, 10, 'Technik Dame', st_kl) + '\r\n';
         } else {
             HTML_Seite += '<tr><td class="bs_ersatz"><input name="wtd' + sei + '" id="wtd' + sei + '" type="hidden" value="0"></td></tr>';
         }
+        // Tanz
         HTML_Seite += make_bs_inp('ta' + sei, 10, 'Tanz', st_kl) + '\r\n';
         HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
+        // Akro
         if (st_kl === "BS_RR_E1" || st_kl === "BS_RR_J2") {
             HTML_Seite += make_bs_inp('ak' + sei, 10, 'Akrobatik', st_kl) + '\r\n';
         } else {

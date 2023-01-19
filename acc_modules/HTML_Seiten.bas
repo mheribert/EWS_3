@@ -471,7 +471,7 @@ Sub build_html(pr, RT_nr, Runde)
     'Schreibe vbs zur Seite
     Set out = file_handle(vb_pfad & "page.vbs")
     Set ht = open_re("All", "Script")
-    line = Replace(ht!F1, "x_url", IpAddrs)
+    line = Replace(ht!f1, "x_url", IpAddrs)
     line = Replace(line, "x_pfad", vb_pfad)
     out.writeline (line)
     out.Close
@@ -490,7 +490,7 @@ Function make_beobachter(pr, stkl_rde, tr_nr, RT_ID)
     Set re = pr.OpenRecordset
     Set out = file_handle(getBaseDir & "Apache2\htdocs\" & tr_nr & "B99.html")
     Set ht = open_re("All", "Beobachter")
-    line = ht!F1
+    line = ht!f1
     re.MoveFirst
     opt = Space(25) & "<option value=""0"">&nbsp;&nbsp;</option>" & vbCrLf
     Do Until re.EOF
@@ -717,7 +717,7 @@ Function get_line(cl, ber, ppr)
     
     Set ht = db.OpenRecordset("SELECT * FROM HTML_Block WHERE Seite='" & cl & "' AND Bereich='" & ber & "';", DB_OPEN_DYNASET)
     If ppr = 1 Then
-        get_line = ht!F1
+        get_line = ht!f1
     Else
         get_line = ht!F2
     End If
@@ -828,7 +828,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Set out = file_handle(ht_pfad & "index.html")
     wr.MoveFirst
     Set ht = open_re("All", "WR_Select")
-    line = Replace(ht!F1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
+    line = Replace(ht!f1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
     
     i = 1
     kw = "'0'"
@@ -858,7 +858,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Do Until wr.EOF
         Set out = file_handle(ht_pfad & tr_nr & "S" & wr!WR_Lizenznr & ".html")
         re.MoveFirst
-        line = Replace(ht!F1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+        line = Replace(ht!f1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
         line = Replace(line, "wr_k", wr!WR_Kuerzel)
         line = Replace(line, "wr_n", wr!Ausdr1)
         out.writeline (line)
@@ -1026,7 +1026,7 @@ Public Sub pg_platzieren(RT_ID, WR_ID, mehrfach, pg_id, s_kl)
             fld = Array("x_wth", "x_wak")
             
     End Select
-    html_page = fill_platzieren(ht_t!F1, re, mehrfach, fld)
+    html_page = fill_platzieren(ht_t!f1, re, mehrfach, fld)
     html_page = Replace(html_page, "x_ck1", Mid(a_check, 3))
     re.MoveFirst
     html_page = Replace(html_page, "x_title", Forms![A-Programmübersicht]!Turnierbez)
@@ -1200,7 +1200,7 @@ Public Function make_wr_zeitplan()
         Print #1, "</head><body style=""height: 98%; font-family: Verdana;"" id=""beamer_seite"">"
         Print #1, "<table cellpadding=""0"" frame=""void"" class=""tb1""><tr height=""20%""><td><table width=""100%"">"
         Print #1, "<tr><td class=""kopf"" width=""300px""><img src=""Logo.jpg"" width=""290"" height=""180"" alt=""DRBV""></td>"
-        Print #1, "<td class=""kopf"" width=""auto"" id=""beamer_kopf"">" & Forms![A-Programmübersicht]!Turnierausw & "</td ></tr></table></td></tr>"
+        Print #1, "<td class=""kopf"" width=""auto"" id=""beamer_kopf"">" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierausw) & "</td ></tr></table></td></tr>"
         Print #1, "<tr height=""80%""><td><table style=""width: 100%; float: left; "" id=""beamer_inhalt""><tr><td>&nbsp;</td></tr>"
         
         Print #1, "<tr height=""100%""><td><table style=""width: 100%; float: left; "">"

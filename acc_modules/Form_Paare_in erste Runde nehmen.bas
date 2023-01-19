@@ -50,7 +50,7 @@ Private Sub Befehl19_Click()
     '***** Mehrkampf ******
     If left(Me!nächste_Runde, 4) = "MK_5" Then
         Set rs = dbs.OpenRecordset("SELECT * FROM Rundentab WHERE startklasse = '" & sk & "' AND turniernr = " & Me!T_Nr & " AND runde LIKE 'MK_*' AND runde<>'MK_5_TNZ'")
-        rs.MoveFirst
+        If Not rs.EOF Then rs.MoveFirst
         Do Until rs.EOF()
             sqlString = "select * from paare p1 where startkl='" & sk & "' and turniernr=" & T_Nr & " and (Anwesent_Status = 1 Or Anwesent_Status = 2)"
             sqlString = sqlString & " and not exists (select 1 from paare_rundenqualifikation pr where pr.rt_id=" & rs!RT_ID & " AND pr.tp_id=p1.tp_id)"
@@ -141,5 +141,10 @@ Private Sub Startklasse_AfterUpdate()
     DoCmd.RepaintObject acForm, "Paare_in erste Runde nehmen"
     DoCmd.GoToRecord , "", acFirst
     Me.Refresh
+    If Me!nächste_Runde.ListCount = 1 Then
+        Me!nächste_Runde = Me!nächste_Runde.Column(0, 0)
+        Call nächste_Runde_Change
+    End If
+    
     
 End Sub

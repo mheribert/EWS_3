@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2010';
+﻿    var ver =  'V3.2011';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -318,12 +318,12 @@ function paint_bar(tar) {
     switch (ausw) {
         case "MK_T":
             ke = tar.value.replace(',', '.');
-/*            if (isNaN(ke)) {
+            if (isNaN(ke)) {
                 var we = ke;
                 i = we.length - 1;
                 tar.value = we.substr(0, i);
                 return false;
-            }*/
+            }
             tar.value=tar.value.replace('.', ',');
             couple = t.parentNode.classList[1];
             s = document.getElementsByClassName(couple);

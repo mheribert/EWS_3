@@ -339,7 +339,8 @@ Public Sub Startklasse_Change()
         Me!Ko_Sieger.Visible = False
         Me!Feld112.Visible = False
     End If
-    If (Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" Or Startklasse.Column(7) = "End_r_2") And get_properties("EWS") = "EWS3" Then
+    If (Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" _
+        Or Startklasse.Column(7) = "End_r_2" Or Startklasse.Column(7) = "MK_5_TNZ") And get_properties("EWS") = "EWS3" Then
         Me!btn_ausw_1.Visible = True
     Else
         Me!btn_ausw_1.Visible = False

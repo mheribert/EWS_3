@@ -197,9 +197,9 @@ Public Sub start_config_webserver()
     Dim nodePfad As String
     Dim retVal
     
-    neuPfad = getBaseDir & "Apache2"
     Call Bilderspeichern
-    If Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
+    If get_properties("EWS") = "EWS1" And Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
+        neuPfad = getBaseDir & "Apache2"
         Open neuPfad & "\conf\httpd.conf.original" For Input As #1          ' original
         Open neuPfad & "\conf\httpd.conf" For Output As #2                  ' in conf mit akt. pfad
         Do While Not EOF(1)
@@ -210,15 +210,8 @@ Public Sub start_config_webserver()
         Loop
         Close #1
         Close #2
-        Open neuPfad & "\conf\user.txt" For Output As #3
-             Print #3, "ews2:" & get_properties("EWS20_Password")
-        Close #3
-        If get_properties("EWS") <> "EWS3" Then
-            retVal = Shell(neuPfad & "\bin\apache.exe", vbMinimizedNoFocus)
-            If retVal = 0 Then MsgBox "Der WebServer konnte nicht gestartet werden!"
-        End If
-'    Else
-'        MsgBox "Apacheserver ist nicht im Ordner installiert!"
+        retVal = Shell(neuPfad & "\bin\apache.exe", vbMinimizedNoFocus)
+        If retVal = 0 Then MsgBox "Der WebServer konnte nicht gestartet werden!"
     End If
     If get_properties("EWS") = "EWS3" Then
         make_wr_zeitplan

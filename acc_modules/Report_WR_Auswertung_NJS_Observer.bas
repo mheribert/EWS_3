@@ -7,7 +7,6 @@ Private Sub Detailbereich_Format(Cancel As Integer, FormatCount As Integer)
     Set vars = zerlege(Me!Cgi_Input)
     
     For Each ctrl In Controls
-        Debug.Print ctrl.Name
         i = eins_zwei(Me!PR_ID, vars)
 
         If left(ctrl.Name, 4) = "wsbs" Then

@@ -1,4 +1,4 @@
-var ver = 'V3.2010';
+var ver = 'V3.2011';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -210,7 +210,7 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
                     HTML_Inhalt += '<td>' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
                 punkte = data[p].jetztRunde.toFixed(2);
-                HTML_Inhalt += '<td class="pkte">' + punkte + '</td></tr>';
+                HTML_Inhalt += '<td class="pkte">' + punkte.replace('.', ',') + '</td></tr>';
             }
             HTML_Inhalt += '</tbody>';
 
@@ -242,8 +242,8 @@ exports.beamer_allranking = function (io, runde) {
         if (allranking[p].ersteRunde !== null) {
             HTML_Seite += '<td style="font-size:1.6vw;">' + allranking[p].ersteRunde.toFixed(2) + ' + ' + allranking[p].Punkte.toFixed(2) + '</td>';
         }
-        punkte = (allranking[p].summe).toFixed(2).replace('.', ',');
-        HTML_Seite += '<td>' + punkte + '</td></tr>';
+        punkte = (allranking[p].summe).toFixed(2);
+        HTML_Seite += '<td>' + punkte.replace('.', ',') + '</td></tr>';
     }
     HTML_Seite += '</tbody>';
 

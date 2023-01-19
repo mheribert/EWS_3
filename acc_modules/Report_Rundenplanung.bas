@@ -27,7 +27,6 @@ End Sub
 
 Private Function tst_fl(fld, re As Recordset)
     On Error GoTo open_err
-    Debug.Print re(fld)
     tst_fl = True
 open_err:
 End Function

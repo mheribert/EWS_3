@@ -138,16 +138,17 @@ End Sub
 
 Private Sub mehrkampf_einlesen_Click()
     If tanzrunde_selected Then Exit Sub
-    
+    Dim db As Database
     Dim tr As String
+    Set db = CurrentDb
+    
     tr = Tanzrunde.Column(4)
     If InStr(7, tr, "klasse") Then
         tr = Replace(Tanzrunde.Column(4), "klasse", "")
     End If
     lese_Auswerteunterlagen tr, Tanzrunde.Column(3)
-    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Sheets einlesen gestartet', '" & Time & "')"
-        
-'    Debug.Print tr
+    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Sheets einlesen " & Tanzrunde.Column(4) & "', '" & Time & "')"
+
 End Sub
 
 Private Sub mehrkampf_von_tablett_Click()

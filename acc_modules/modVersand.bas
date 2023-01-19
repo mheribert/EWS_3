@@ -1,11 +1,7 @@
 Option Compare Database
 Option Explicit
-    
-    #If Win64 And VBA7 Then
-         Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
-    #Else
-        Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
-    #End If
+        
+    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 
     
 Sub send_zeitplan(Turniernr)
@@ -85,7 +81,7 @@ Sub Gen_Mail()
         zip_file ZipFileName, FileToZip, i
 
         Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
-            Case "SL"
+            Case "BW"
                 empf = "breitensport@bwrrv.de"
                 tur_ber = False
             Case Else

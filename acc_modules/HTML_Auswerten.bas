@@ -487,6 +487,7 @@ Function zerlege(inp)
         If InStr(1, vars(i), "wertung_in") = 0 Then
             var = Split(vars(i), "=")
             back.Add var(0), Replace(var(1), ".", ",")
+'            Debug.Print var(0) & " = " & vars.Item(""" & var(0) & """)"
         End If
     Next
     Set zerlege = back

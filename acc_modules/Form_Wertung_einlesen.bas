@@ -118,7 +118,6 @@ Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, x As 
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Runde_auswerten&text=")
         Me!Umschaltfläche147.Caption = "Runde starten"
     End If
-    Debug.Print st
 End Sub
 
 Public Sub Runde_starten_Click()
@@ -136,22 +135,24 @@ Public Sub Runde_starten_Click()
     Me!Umschaltfläche147.Caption = "Runde starten"
     Set re = db.OpenRecordset("SELECT s.Startklasse_text, t.Rundentext, r.* FROM (rundentab r INNER JOIN Startklasse s ON r.Startklasse = s.Startklasse) INNER JOIN Tanz_Runden_fix t ON r.Runde =t.Runde WHERE (r.gestartet=True AND r.getanzt=False);")
     
-    If re.RecordCount > 0 Then
-        If re!RT_ID = Me!RT_ID Then
-            retl = MsgBox(re!Rundentext & " in der " & re!Startklasse_text & " läuft bereits!" & vbCrLf & "Wirklich nochmal starten?", vbYesNo + vbCritical + vbDefaultButton2)
-        Else
-            retl = MsgBox("Es läuft gerade die " & re!Rundentext & " in der " & re!Startklasse_text & " Klasse!" & _
-                    vbCrLf & vbCrLf & "Soll die " & Me!Feld138 & " wirklich gestartet werden!", vbYesNo + vbCritical)
-            If retl = vbYes Then
-                db.Execute "UPDATE rundentab SET getanzt = true WHERE (gestartet=True AND getanzt=False);"
+    If get_properties("CheckRundenStart") Then
+        If re.RecordCount > 0 Then
+            If re!RT_ID = Me!RT_ID Then
+                retl = MsgBox(re!Rundentext & " in der " & re!Startklasse_text & " läuft bereits!" & vbCrLf & "Wirklich nochmal starten?", vbYesNo + vbCritical + vbDefaultButton2)
+            Else
+                retl = MsgBox("Es läuft gerade die " & re!Rundentext & " in der " & re!Startklasse_text & " Klasse!" & _
+                        vbCrLf & vbCrLf & "Soll die " & Me!Feld138 & " wirklich gestartet werden!", vbYesNo + vbCritical)
+                If retl = vbYes Then
+                    db.Execute "UPDATE rundentab SET getanzt = true WHERE (gestartet=True AND getanzt=False);"
+                End If
             End If
-        End If
-    Else
-        Set re = db.OpenRecordset("SELECT r.RT_ID, [gestartet] And [getanzt] AS Ausdr1 FROM rundentab AS r WHERE r.RT_ID=" & Me!RT_ID & ";")
-        If re!Ausdr1 Then
-            retl = MsgBox("Runde wurde bereits gewertet!" & vbCrLf & "Wirklich nochmal starten?", vbYesNo + vbCritical + vbDefaultButton2)
         Else
-            retl = MsgBox("Runde starten?", vbYesNo)
+            Set re = db.OpenRecordset("SELECT r.RT_ID, [gestartet] And [getanzt] AS Ausdr1 FROM rundentab AS r WHERE r.RT_ID=" & Me!RT_ID & ";")
+            If re!Ausdr1 Then
+                retl = MsgBox("Runde wurde bereits gewertet!" & vbCrLf & "Wirklich nochmal starten?", vbYesNo + vbCritical + vbDefaultButton2)
+            Else
+                retl = MsgBox("Runde starten?", vbYesNo)
+            End If
         End If
     End If
     If retl = vbNo Then Exit Sub
@@ -180,9 +181,10 @@ Private Sub Runde_beenden_Click()
     
     Dim re As Recordset
     Dim st As String
+    Dim retl
         
     Set db = CurrentDb
-    Wertungen_einlesen_Click
+    retl = get_wertungen(Me!Tanzrunde, Me!Tanzrunde.Column(3), Me!Tanzrunde.Column(6))
     AuswertenundPlatzieren Me.Tanzrunde, Me.Tanzrunde.Column(3), Me.Tanzrunde.Column(17), Me.Tanzrunde.Column(6), Me.Tanzrunde.Column(7)
     If get_properties("EWS") = "EWS3" Then
         Set re = db.OpenRecordset("Select* from Rundentab Where RT_ID =" & Me!Tanzrunde & ";")

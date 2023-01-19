@@ -674,27 +674,19 @@ Function qr_gen(ptext As String, poptions As String) As String
       ecx_cnt(1) = 0
       ecx_cnt(2) = 0
     End If
-    'Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
-        ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
-         " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
-         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
   Next
   ebcnt = ebcnt - 1
   ' Check that eb() rows are non-overlapping
   For j = 1 To ebcnt
 
-'     Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
   Next j
   i = 1
   While i < (ebcnt - 1)
     If eb(i, 2) + eb(i, 3) <> eb(i + 1, 2) Then
         ' oops, this should not happen. First document it:
-        Debug.Print ("eb() rows " & i & " and " & i + 1 & " are overlapping:")
         For j = 1 To ebcnt
             If i = j Then
-                Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3)) & " :-("
             Else
-                Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
             End If
         Next j
         ' Now Lets see if we can fix it:
@@ -710,9 +702,8 @@ Function qr_gen(ptext As String, poptions As String) As String
                 Next j
                 ebcnt = ebcnt - (i - k + 1) ' and correcting the total rowcount
                 wasfixed = True
-                Debug.Print ("... this should be fixed now::")
                 For j = 1 To ebcnt
-                    Debug.Print (j & ". (" & eb(j, 1) & "): " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
+'                    Debug.Print (j & ". (" & eb(j, 1) & "): " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
                 Next j
                 Exit For
             End If
