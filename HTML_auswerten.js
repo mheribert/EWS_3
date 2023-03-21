@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2011';
+﻿var ver = 'V3.2010';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -34,7 +34,6 @@ function rechne_wertungen(body, seite, runden_info) {
             } else {        // Auswertung für NewGuidelines
                 if (typeof body["wng_tth" + seite] !== "undefined") {
                     var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
-                    kl_punkte = Punkteverteilung("BW_NG", "", "");
                     for (var k = 0; k < wr_kr.length; k++) {
                         Punkte += parseFloat(body["w" + wr_kr[k] + seite]) * kl_punkte[k];
                     }
@@ -81,13 +80,11 @@ function rechne_wertungen(body, seite, runden_info) {
             }
             break;
         case "F_B":
-            if (typeof body['wtk' + seite] !== "undefined") {
-                Punkte = parseFloat(body["wtk" + seite]) * kl_punkte[0] / 10;
-                Punkte += parseFloat(body["wch" + seite]) * kl_punkte[1] / 10;
-                Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;
-                Punkte += parseFloat(body["wab" + seite]) * kl_punkte[4] / 10;
-                Punkte += parseFloat(body["waw" + seite]) * kl_punkte[5] / 10;
-                Punkte += parseFloat(body["waf" + seite]) * kl_punkte[6] / 10;
+            if (typeof body["wng_tth" + seite] !== "undefined") {
+                var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+                for (var k = 0; k < wr_kr.length; k++) {
+                    Punkte += parseFloat(body["w" + wr_kr[k] + seite]) * kl_punkte[k];
+                }
             } else {
                 verst = new Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw");
                 for (x = 0; x < verst.length; x++) {
@@ -363,7 +360,7 @@ function get_mittel(avr, wertungen, st_kl) {
             }
             return pu / (max - min + 1);
         } else {                     // ab hier Kategorien streichverfahren
-            var kl_punkte = Punkteverteilung("BW_NG", "", "");
+            var kl_punkte = Punkteverteilung(st_kl, "", "");
             var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
             for (var kat = 0; kat < 11; kat++) {
                 var kat_name = "w" + wr_kr[kat] + avr[0][5];
@@ -445,7 +442,7 @@ function Punkteverteilung(Startklasse, trunde, rd) {
             punkte_verteilung = Array(20, 20, 20, 0, 10, 10, 20);
             break;
         case "F_BW_M":         //  Master BW
-            punkte_verteilung = Array(25, 25, 25, 0, 9, 8, 8);
+            punkte_verteilung = Array(1, 1, 2, 2, 2, 1.5, 1.5, 1.5, 2, 2, 2);
             break;
         // RR-Einzel
         case "RR_S":
@@ -472,22 +469,21 @@ function Punkteverteilung(Startklasse, trunde, rd) {
             break;
         // Boogie
         case "BW_MA":
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         case "BW_MB":
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         case "BW_JA":
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         case "BW_SA":
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         case "BW_SB":
-            punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5);
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         case "BW_NG":
-//            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3);
             punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 2.5, 2.5, 2.5);
             break;
         // Breitensport Bayern Boogie

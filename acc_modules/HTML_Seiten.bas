@@ -1,17 +1,11 @@
 Option Compare Database
 Option Explicit
 
-'    #If Win64 And VBA7 Then
-        Private Declare PtrSafe Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As LongPtr, ByVal bOrder As LongPtr) As Long
-'    #Else
-'        Private Declare Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As Long, ByVal bOrder As Long) As Long
-'    #End If
+    Private Declare PtrSafe Function GetIpAddrTable_API Lib "IpHlpApi" Alias "GetIpAddrTable" (pIPAddrTable As Any, pdwSize As LongPtr, ByVal bOrder As LongPtr) As Long
 
     Public Const tr = "                   <tr>"
     Public Const trn = "                   </tr>"
     Dim a_check As String
-
-    
 
 Sub build_html(pr, RT_nr, Runde)
     Dim out
@@ -1162,6 +1156,8 @@ Public Function ch_runde(rd)  'Hier wird ausgewählt welche Akrobatiken verwendet
         ch_runde = "ER"
     ElseIf rd = "Stich_r" Then
         ch_runde = "ZR"
+    ElseIf InStr(1, rd, "MK_5") Then
+        ch_runde = "ER"
     ElseIf rd = "Semi" Then
         ch_runde = "ER"
     ElseIf InStr(1, rd, "End_") Then

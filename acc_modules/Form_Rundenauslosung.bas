@@ -199,27 +199,29 @@ Private Sub HTML_Seiten_Click()
         If Me.RecordsetClone.RecordCount = 0 Then
             MsgBox "Es gibt keine Paare in dieser Runde"
         Else
-            Me!Runde_suchen.Locked = True
-            rde = Mid(Me!Runde_suchen.Column(4), 1, 6)
-            If InStr(1, Me!Runde_suchen.Column(4), "_Akro") > 0 And Me!Runde_suchen.Column(2) = False Then 'Hier wird bei A/B Fuﬂ und Akro erstellt
-                Set re = get_rde(Me!Runde_suchen.Column(6), rde & "Fuﬂ")
-                'dbs.OpenRecordset("SELECT * from RundenTab WHERE Startklasse = '" & Me!Runde_suchen.Column(6) & "' AND Runde = '" & rde & "Fuﬂ';", DB_OPEN_DYNASET)
-                If re.EOF Then 'keine Runde vorhanden
-                    MsgBox "Es fehlt die Fuﬂtechnikrunde!"
-                Else
-                    rde = re!Runde
-                    f_rt = re!RT_ID
-                    rd = re!Rundentext
-                    Set re = Me.RecordsetClone
-                    Call build_html(re, f_rt, rde)
-                    make_a_round Me.RecordsetClone, Me!Runde_suchen.Column(7), rd, f_rt
+            If get_properties("EWS") <> "EWS3" Then
+                Me!Runde_suchen.Locked = True
+                rde = Mid(Me!Runde_suchen.Column(4), 1, 6)
+                If InStr(1, Me!Runde_suchen.Column(4), "_Akro") > 0 And Me!Runde_suchen.Column(2) = False Then 'Hier wird bei A/B Fuﬂ und Akro erstellt
+                    Set re = get_rde(Me!Runde_suchen.Column(6), rde & "Fuﬂ")
+                    'dbs.OpenRecordset("SELECT * from RundenTab WHERE Startklasse = '" & Me!Runde_suchen.Column(6) & "' AND Runde = '" & rde & "Fuﬂ';", DB_OPEN_DYNASET)
+                    If re.EOF Then 'keine Runde vorhanden
+                        MsgBox "Es fehlt die Fuﬂtechnikrunde!"
+                    Else
+                        rde = re!Runde
+                        f_rt = re!RT_ID
+                        rd = re!Rundentext
+                        Set re = Me.RecordsetClone
+                        Call build_html(re, f_rt, rde)
+                        make_a_round Me.RecordsetClone, Me!Runde_suchen.Column(7), rd, f_rt
+                    End If
                 End If
+                'normale Runden erstellen
+                Set re = Me.RecordsetClone
+                Call build_html(re, Me!Runde_suchen.Column(0), Me!Runde_suchen.Column(4))
+                make_a_round Me.RecordsetClone, Me!Runde_suchen.Column(7), Me!Runde_suchen.Column(8), Me!Runde_suchen.Column(0)
+                Me!Runde_suchen.Locked = False
             End If
-            'normale Runden erstellen
-            Set re = Me.RecordsetClone
-            Call build_html(re, Me!Runde_suchen.Column(0), Me!Runde_suchen.Column(4))
-            make_a_round Me.RecordsetClone, Me!Runde_suchen.Column(7), Me!Runde_suchen.Column(8), Me!Runde_suchen.Column(0)
-            Me!Runde_suchen.Locked = False
         End If
     End If
     DoCmd.Requery

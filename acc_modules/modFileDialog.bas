@@ -274,6 +274,7 @@ Function sp_mk()
             re.Edit
         End If
         re!Cgi_Input = mkFile
+        re!zeit = Time
         dateiID = FreeFile
         Open mkPfad & mkFile For Binary Access Read Lock Read Write As dateiID
         lngDateigroesse = FileLen(mkPfad & mkFile)
