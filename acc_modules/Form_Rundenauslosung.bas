@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 Private Sub Befehl2_Click()
-    DoCmd.Close
+    DoCmd.close
 End Sub
 
 Private Sub Befehl43_Click()
@@ -165,6 +165,10 @@ Private Sub Form_Load()
             If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
                 Me!Übertrag_EXCEL.Visible = True
             End If
+            If get_properties("EWS") = "EWS3" Then
+                Me!Befehl47.Visible = False
+                Me!HTML_Seiten.Visible = False
+            End If
         Case "SL"
             Me!FolieRunden.Visible = True
             Me!Rechteck47.Visible = True
@@ -182,6 +186,11 @@ Private Sub Form_Load()
             Me!Rechteck47.Visible = False
             Me!Übertrag_EXCEL.Visible = False
     End Select
+
+End Sub
+
+Private Sub Form_Resize()
+    Me!Text162.Width = Me.InsideWidth - 10
 
 End Sub
 
@@ -242,7 +251,7 @@ Private Sub Kombinationsfeld32_AfterUpdate()
             rst.Update
             rst.MoveNext
         Loop
-        rst.Close
+        rst.close
     End If
     If Me!Kombinationsfeld32 = 2 Then
         Me!Runde = Null
@@ -285,7 +294,7 @@ Private Sub Runde_suchen_AfterUpdate()
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
     InRundeneinteilung = rs!InRundeneinteilung
-    rs.Close
+    rs.close
     
     If (InRundeneinteilung = 2) Then
         Dim MasterRunde As Integer
@@ -305,12 +314,12 @@ Private Sub Runde_suchen_AfterUpdate()
             sqlstr = "select * from Rundentab where Turniernr=" & Turniernr & " and Runde='" & MasterRunde_Text & "' and Startklasse='" & Startklasse & "'"
             Set rs = dbs.OpenRecordset(sqlstr)
             If (rs.NoMatch) Then
-                MsgBox ("Ed wurde die dazugehörige Akrobatikrunde nicht gefunden!")
-                rs.Close
+                MsgBox ("Es wurde die dazugehörige Akrobatikrunde nicht gefunden!")
+                rs.close
                 Exit Sub
             End If
             MasterRunde = rs!RT_ID
-            rs.Close
+            rs.close
             Call UpdateRundenqualifikation(MasterRunde, Runde_suchen, False)
         End If
     End If
@@ -320,6 +329,11 @@ Private Sub Runde_suchen_AfterUpdate()
 End Sub
 
 Private Sub Auslosung_Click()
+    If Me!Anz_Paare = 0 Then
+        MsgBox "Die Anzahl der Paare pro Runde darf nicht 0 betragen!"
+        Exit Sub
+    End If
+    
     If Me!Feld52 = 1 Or Me!Feld52 = 5 Then
         zufallszahl
     Else
@@ -418,7 +432,7 @@ Private Sub umgekehrte_Reihenfolge()
     Tanzrunde = rs!Runde
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
-    rs.Close
+    rs.close
     
     'Wenn es sich nicht um eine Endrunde handelt, dann kann keine Auslosung in umgekehrter Reihenfolge gemacht werden
     'hier in Zukunft eventuell Abzweig möglich wenn Auslosung erster gegen letzte stattfinden soll
@@ -433,13 +447,13 @@ Private Sub umgekehrte_Reihenfolge()
     
     ' Abbruch, wenn keine Daten vorhanden sind
     If (rstauslosung.EOF) Then
-        rstauslosung.Close
+        rstauslosung.close
         Exit Sub
     End If
     
     'Abbruch, wenn keine Rock'n'Roll Turnierklasse
     If Not Startklasse Like "RR*" And Not Startklasse Like "BW*" Then
-        rstauslosung.Close
+        rstauslosung.close
         Exit Sub
     End If
     
@@ -461,7 +475,7 @@ Private Sub umgekehrte_Reihenfolge()
             End If
         End If
     End If
-    rs.Close
+    rs.close
     
     
     If Fußtechnik_checken Then
@@ -483,7 +497,7 @@ Private Sub umgekehrte_Reihenfolge()
     
     If (rstauslosung.EOF) Then
         MsgBox "Noch keine Ergebnisse in der vorher getanzten Runde vorhanden!", vbOKOnly
-        rstauslosung.Close
+        rstauslosung.close
         Exit Sub
     End If
     
@@ -501,7 +515,7 @@ Private Sub umgekehrte_Reihenfolge()
         rstauslosung.MoveNext
         trunde = trunde + 1
     Loop
-    rstauslosung.Close
+    rstauslosung.close
     
 
 
@@ -522,13 +536,13 @@ Private Sub umgekehrte_Reihenfolge()
             GoTo BW_RR_Error
         End If
         rt_id_er_fuss = rstr!RT_ID
-        rstr.Close
+        rstr.close
         
         Call UpdateRundenqualifikation(Runde_suchen, rt_id_er_fuss, True)
     End If
     
 BW_RR_Error:
-    dbs.Close
+    dbs.close
     
     Me.Requery
     DoCmd.RepaintObject , ""
@@ -560,13 +574,13 @@ Private Sub zufallszahl()
     Tanzrund = rs!Runde
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
-    rs.Close
+    rs.close
     sqlstr = "select * from Paare_Rundenqualifikation where RT_ID= " & Runde_suchen
     Set rstauslosung = dbs.OpenRecordset(sqlstr)
     
     ' Abbruch, wenn keine Daten vorhanden sind
     If (rstauslosung.EOF) Then
-        rstauslosung.Close
+        rstauslosung.close
         Exit Sub
     End If
     
@@ -582,7 +596,7 @@ Private Sub zufallszahl()
         rstauslosung.Update
         rstauslosung.MoveNext
     Loop
-    rstauslosung.Close
+    rstauslosung.close
     
     If Me!Feld52 = 1 Then
         sqlstr = "SELECT * FROM Paare_Rundenqualifikation WHERE RT_ID= " & Runde_suchen & " ORDER BY auslosung;"
@@ -599,7 +613,7 @@ Private Sub zufallszahl()
     
     Do While Not rstauslosung.EOF()
         rstauslosung.Edit
-        If was > Anz_Paare Then
+        If was > Me!Anz_Paare Then
             trunde = trunde + 1
             was = 1
         End If
@@ -613,18 +627,18 @@ Private Sub zufallszahl()
         rstauslosung.Update
         rstauslosung.MoveNext
     Loop
-    rstauslosung.Close
+    rstauslosung.close
     '  Anfang
     '  verhindern, dass mehrere Paare aus dem gleichen Verein in der gleichen Runde tanzen
     '
-    If Me!Feld52 = 1 Then Call Rundenauslosung(Runde_suchen, Anz_Paare)
+    If Me!Feld52 = 1 Then Call Rundenauslosung(Runde_suchen, Me!Anz_Paare)
     ' getrennte Auslosung ?
     If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Or Tanzrund = "MK_5_TNZ" Then
     
         Runde_übertragen Tanzrund, Startklasse
     End If
 BW_RR_Error:
-    dbs.Close
+    dbs.close
     
     Me.Requery
     DoCmd.RepaintObject , ""

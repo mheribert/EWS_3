@@ -152,13 +152,16 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
     Select Case left(s_kl, 3)
     
         Case "F_B"
-            Punkte = CSng(vars.Item("Punkte_err" & i))     ' newGuidelines         Kategorien-Streichverfahren
-'            If vars.Item("wtk1") <> "" Then
-'                kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-'                Punkte = Punkte + CSng(vars.Item("wtk1")) * kl_punkte(0) / 10 + CSng(vars.Item("wch1")) * kl_punkte(1) / 10
-'                Punkte = Punkte + CSng(vars.Item("wtf1")) * kl_punkte(2) / 10 + CSng(vars.Item("wab1")) * kl_punkte(4) / 10
-'                Punkte = Punkte + CSng(vars.Item("waw1")) * kl_punkte(5) / 10 + CSng(vars.Item("waf1")) * kl_punkte(6) / 10
-'            End If
+            If vars.exists("wng_ttd" & i) Then   ' newGuidelines         Kategorien-Streichverfahren
+                Punkte = CSng(vars.Item("Punkte_err" & i))
+            Else        ' alte Bewertung
+                If vars.Item("wtk1") <> "" Then
+                    kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
+                    Punkte = Punkte + CSng(vars.Item("wtk1")) * kl_punkte(0) / 10 + CSng(vars.Item("wch1")) * kl_punkte(1) / 10
+                    Punkte = Punkte + CSng(vars.Item("wtf1")) * kl_punkte(2) / 10 + CSng(vars.Item("wab1")) * kl_punkte(4) / 10
+                    Punkte = Punkte + CSng(vars.Item("waw1")) * kl_punkte(5) / 10 + CSng(vars.Item("waf1")) * kl_punkte(6) / 10
+                End If
+            End If
         Case "F_R"
             If vars.Item("tfl" & i & "a20") <> "" Then
                 Punkte = Punkte + CSng(vars.Item("wfl" & i & "a20"))

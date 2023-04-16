@@ -307,7 +307,10 @@ Function make_rde(klasse, rde, Startklasse_text) As Boolean
             rst!Turniernr = get_aktTNr
             rst!Startklasse = klasse
             rst!Runde = rde(j)
-            rst!Anz_Paare = IIf(InStr(1, rde(j), "End_r") > 0, 1, 2)
+            rst!Anz_Paare = 2
+            If InStr(1, rde(j), "End_r") > 0 Or left(rde(j), 3) = "MK_" Or rde(j) = "Startbuchabgabe" Or rde(j) = "Sieger" Then
+                rst!Anz_Paare = 1
+            End If
             rst.Update
             
             make_rde = True

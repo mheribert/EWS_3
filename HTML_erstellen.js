@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2010';
+﻿var ver = 'V3.2012';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -254,7 +254,7 @@ exports.BW_NG_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io)
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BW_NG' });
 };
 
-exports.BW_Form = function (rd_ind, runden_info, akrobatiken, wr_func, wr_name, wr_id, io) {
+exports.BW_Form_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_name, wr_id, io) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].RundeArt;
     sei = 1;

@@ -300,11 +300,3 @@ Function Doc_btn(nr)
         End If
     End If
 End Function
-
-'
-'    If InStr(doc, ".pdf") > 0 Then
-'        Call showDocument(doc)
-'    Else
-'        DoCmd.OpenReport doc, acViewPreview
-'    End If
-'

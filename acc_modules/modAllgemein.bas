@@ -198,8 +198,8 @@ Public Sub start_config_webserver()
     Dim retVal
     
     Call Bilderspeichern
+    neuPfad = getBaseDir & "Apache2"
     If get_properties("EWS") = "EWS1" And Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
-        neuPfad = getBaseDir & "Apache2"
         Open neuPfad & "\conf\httpd.conf.original" For Input As #1          ' original
         Open neuPfad & "\conf\httpd.conf" For Output As #2                  ' in conf mit akt. pfad
         Do While Not EOF(1)
@@ -264,7 +264,7 @@ Public Sub Print_Givaway(RundenTab_ID, Runde)
     Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null AND Runde_Report=1;")
 '*****AB***** V13.05 - falls es sich um eine Endrunde handelt andere Abfrage ohne Runde_Report
 '*****HM 14.07 ***** - auf geteilte Endrunden erweitert
-    If Runde = "Endrunde" Or Runde = "Endrunde Akrobatik" Or Runde = "Schnelle Endrunde" Then
+    If Runde = "Endrunde" Or Runde = "Endrunde Akrobatik" Or Runde = "Schnelle Endrunde" Or Runde = "Endrunde 2" Then
         Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null;")
     End If
     If re.RecordCount = 0 Then

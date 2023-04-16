@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2010';
+﻿var ver = 'V3.2012';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -80,16 +80,28 @@ function rechne_wertungen(body, seite, runden_info) {
             }
             break;
         case "F_B":
+            // new guidelines
             if (typeof body["wng_tth" + seite] !== "undefined") {
                 var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
                 for (var k = 0; k < wr_kr.length; k++) {
                     Punkte += parseFloat(body["w" + wr_kr[k] + seite]) * kl_punkte[k];
                 }
             } else {
-                verst = new Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw");
-                for (x = 0; x < verst.length; x++) {
-                    if (body[verst[x] + seite] !== "") {
-                        Punkte = Punkte + parseFloat(body[verst[x] + seite]);
+                if (typeof body['wtk' + seite] !== "undefined") {
+                    // wie RR Formationen
+                    Punkte = parseFloat(body["wtk" + seite]) * kl_punkte[0] / 10;
+                    Punkte += parseFloat(body["wch" + seite]) * kl_punkte[1] / 10;
+                    Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;
+                    Punkte += parseFloat(body["wab" + seite]) * kl_punkte[4] / 10;
+                    Punkte += parseFloat(body["waw" + seite]) * kl_punkte[5] / 10;
+                    Punkte += parseFloat(body["waf" + seite]) * kl_punkte[6] / 10;
+                } else {
+                    // Boogie Observer
+                    verst = new Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw");
+                    for (x = 0; x < verst.length; x++) {
+                        if (body[verst[x] + seite] !== "") {
+                            Punkte = Punkte + parseFloat(body[verst[x] + seite]);
+                        }
                     }
                 }
             }

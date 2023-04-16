@@ -58,7 +58,7 @@ Private Sub Form_Close()
     Dim re As Recordset
     Dim vars
     Dim fehler As String
-    Dim i, anzWR As Integer
+    Dim i, anzWR, anzMK As Integer
     Set re = Forms![Turnier aufnehmen]![Startklasse_Turnier Unterformular].Form.RecordsetClone
     If re.RecordCount <> 0 Then re.MoveFirst
     fehler = "Bei " & vbCrLf
@@ -73,10 +73,20 @@ Private Sub Form_Close()
         End If
         re.MoveNext
     Loop
+
     If Len(fehler) > 6 Then
-        MsgBox fehler & "stimmt die Anzahl der Wertungsrichter nicht!" & vbCrLf & "Bitte neu eingeben!", , "Achtung!"
+        MsgBox fehler & "stimmt die Anzahl der Wertungsrichter nicht!" & vbCrLf & "Bitte neu eingeben!", vbInformation, "Achtung!"
     End If
-    
+    vars = Array("MK_11", "MK_12", "MK_13", "MK_21", "MK_22", "MK_23")
+    anzMK = 0
+    For i = 0 To 5
+        If Nz(Me(vars(i))) <> "" Then
+            anzMK = anzMK + 1
+        End If
+    Next
+    If (anzMK < 4 Or (anzMK Mod 2) = 1) And InStr(Me!MehrkampfStationen, "Koordi") > 0 Then
+        MsgBox "Die Anzahl der Mehrkampfstationen stimmt nicht", vbInformation, "Achtung!"
+    End If
 End Sub
 
 Private Sub Form_Current()
@@ -137,6 +147,19 @@ Function mk_visible(vi)
     Me!MK_21.Visible = vi
     Me!MK_22.Visible = vi
     Me!MK_23.Visible = vi
+End Function
+
+Function MK_test(fld)
+    Dim flds, i
+    flds = Array("MK_11", "MK_12", "MK_13", "MK_21", "MK_22", "MK_23")
+
+    For i = 0 To 5
+        If flds(i) <> "mk_" & fld Then
+            If Me(flds(i)) = Me("mk_" & fld) Then
+                MsgBox "Station ist schon vorhanden!"
+            End If
+        End If
+    Next
 End Function
 
 Private Sub TurnierAnlegen_Click()

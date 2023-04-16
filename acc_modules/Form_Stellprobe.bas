@@ -44,6 +44,10 @@ End Sub
 
 Private Sub Form_Current()
     Dim re As Recordset
+    If get_properties("EWS") = "EWS3" Then
+        Me!Folie_anzeigen.Visible = False
+    End If
+    
     If Not Me.NewRecord Then
 
         Set re = Me.RecordsetClone
@@ -74,7 +78,8 @@ End Sub
 
 Private Sub next_rec_Click()
 On Error Resume Next
-    DoCmd.GoToRecord , , acNext
+'    DoCmd.GoToRecord , , acNext
+    count_down = 0
 End Sub
 
 Private Sub RegisterStr87_Click()
@@ -119,7 +124,7 @@ Private Sub Form_Timer()
     If count_down = 0 Then
         Me.stell_starten.SetFocus
         count_down = Me!vorgabe
-        next_rec_Click
+        DoCmd.GoToRecord , , acNext
             If get_properties("EWS") = "EWS3" Then
                 st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_stellprobe&&mdb=" & get_TerNr & "&cont=" & make_inhalt(stpr))
             Else
@@ -131,10 +136,14 @@ Private Sub Form_Timer()
     Else
         count_down = count_down - 1
         If get_properties("EWS") = "EWS3" Then
-            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
+            If count_down > 239 Then
+                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=4:00")
+            Else
+                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
+            End If
         Else
             If Me!vorgabe > 225 And count_down < Me!vorgabe - 225 Then
-                Me.verkürzen.Visible = True
+'                Me.verkürzen.Visible = True
             Else
                 Me.verkürzen.Visible = False
             End If

@@ -259,7 +259,7 @@ Function make_beamer_platzierung(RT_ID As Integer, Optional sieger)
     Tanzrunde.MoveFirst
     Startklasse_Txt = Umlaute_Umwandeln(Tanzrunde!Startklasse_text)
     
-    Set Paare_weiter = db.OpenRecordset("SELECT RT.RT_ID, RT.Rundenreihenfolge, S.Startklasse_text, RT.Paare FROM (Rundentab AS RT INNER JOIN Startklasse AS S ON RT.Startklasse = S.Startklasse) INNER JOIN Tanz_Runden_fix AS TR ON RT.Runde = TR.Runde WHERE (((S.Startklasse_text)='" & Tanzrunde!Startklasse_text & "')) ORDER BY RT.Rundenreihenfolge;")
+    Set Paare_weiter = db.OpenRecordset("SELECT RT.RT_ID, RT.Rundenreihenfolge, S.Startklasse_text, RT.Paare FROM (Rundentab AS RT INNER JOIN Startklasse AS S ON RT.Startklasse = S.Startklasse) INNER JOIN Tanz_Runden_fix AS TR ON RT.Runde = TR.Runde WHERE (((S.Startklasse_text)='" & Tanzrunde!Startklasse_text & "')) ORDER BY RT.Rundenreihenfolge, TR.Rundenreihenfolge;")
     
     Paare_weiter.FindFirst "RT_ID = " & RT_ID
     Paare_weiter.MoveNext

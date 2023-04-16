@@ -62,14 +62,16 @@ Public Function updateTLP(dl_data, rmldg)
         
             If cnt <> 0 And dl_data Then   'nichts heruntergeladen
                 ' Check neues TLP
-                aktVersion = Replace(db_Ver, "-", ".")
-                Version = get_url_to_string("http://www.drbv.de/cms/index.php/aktivenportal/downloads/turnierprogramm")
-                off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V20/")
-                If off <> 0 Then
-                    Version = Replace(Mid(Version, off + 53, Len(aktVersion)), "-", ".")
-                    If Version - aktVersion > 0 Then
-                        If Len(fMsg) > 1 Then fMsg = vbCrLf + fMsg
-                        fMsg = "Es gibt eine neue Version (" & Version & ") des Turnierprogramms." & fMsg
+                If get_properties("LAENDER_VERSION") = "D" Then
+                    aktVersion = Replace(db_Ver, "-", ".")
+                    Version = get_url_to_string("http://www.drbv.de/cms/index.php/aktivenportal/downloads/turnierprogramm")
+                    off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V20/")
+                    If off <> 0 Then
+                        Version = Replace(Mid(Version, off + 53, Len(aktVersion)), "-", ".")
+                        If Version - aktVersion > 0 Then
+                            If Len(fMsg) > 1 Then fMsg = vbCrLf + fMsg
+                            fMsg = "Es gibt eine neue Version (" & Version & ") des Turnierprogramms." & fMsg
+                        End If
                     End If
                 End If
             End If

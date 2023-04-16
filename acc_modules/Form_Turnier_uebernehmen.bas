@@ -1,7 +1,7 @@
 Option Compare Database
 
 Private Sub btnAbbrechen_Click()
-    DoCmd.Close acForm, "Turnier_uebernehmen"
+    DoCmd.close acForm, "Turnier_uebernehmen"
 End Sub
 
 Private Sub btnOK_Click()
@@ -48,6 +48,15 @@ Private Sub btnOK_Click()
         End If
         Land = get_properties("LAENDER_VERSION")
         rst!BS_Erg = Land
+        ' Falls Mehrkampf vorhanden, eintragen
+        If (InStr(ListeTurnierdaten.Column(14), "Turnen")) > 0 Then
+            rst!MehrkampfStationen = "Bodenturnen und Trampolin"
+        End If
+        If (InStr(ListeTurnierdaten.Column(14), "Konditio")) > 0 Then
+            rst!MehrkampfStationen = "Kondition und Koordination"
+            MsgBox "Die Mehrkampfstationen müssen noch eingetragen werden. Ansonsten Fehlfunktionen möglich", vbInformation
+        End If
+
         rst.Update
         dbs.Execute "DELETE * FROM Startklasse WHERE Land<>'" & Land & "';"
         dbs.Execute "DELETE * FROM Tanz_Runden_fix WHERE Land<>'" & Land & "';"
@@ -64,7 +73,7 @@ Private Sub btnOK_Click()
             ziel!Art = "TL"
             ziel.Update
         End If
-        rst.Close
+        rst.close
         btnAbbrechen_Click
     End If
 End Sub
@@ -72,10 +81,10 @@ End Sub
 Private Sub Form_Open(Cancel As Integer)
     If get_properties("LAENDER_VERSION") = "D" Then
         Me.ListeTurnierdaten.Height = 5900
-        Me!ListeTurnierdaten.RowSource = "SELECT TLP_TERMINE.Terminnummer AS Turniernr, TLP_TERMINE.Datum, TLP_TERMINE.Bezeichnung, [PLZ] & "" "" & [Ort] AS Name, TLP_TERMINE.PLZ, TLP_TERMINE.Ort, TLP_TERMINE.Mitgliedsnr, TLP_TERMINE.Raum, TLP_TERMINE.Straße, TLP_TERMINE.Beginn, TLP_TERMINE.Ende, TLP_TERMINE.Clubname_kurz, Left([Terminnummer],1) AS Ausdr1, TLP_TERMINE.Turnierleiter FROM TLP_TERMINE WHERE (((TLP_TERMINE.Datum)>=Now()-1) AND ((Left([Terminnummer],1))=1)) ORDER BY TLP_TERMINE.Datum, [PLZ] & "" "" & [Ort], TLP_TERMINE.Bezeichnung;"
+        Me!ListeTurnierdaten.RowSource = "SELECT TLP_TERMINE.Terminnummer AS Turniernr, TLP_TERMINE.Datum, TLP_TERMINE.Bezeichnung, [PLZ] & "" "" & [Ort] AS Name, TLP_TERMINE.PLZ, TLP_TERMINE.Ort, TLP_TERMINE.Mitgliedsnr, TLP_TERMINE.Raum, TLP_TERMINE.Straße, TLP_TERMINE.Beginn, TLP_TERMINE.Ende, TLP_TERMINE.Clubname_kurz, Left([Terminnummer],1) AS Ausdr1, TLP_TERMINE.Turnierleiter, TLP_TERMINE.Wettbewerbsart FROM TLP_TERMINE WHERE (((TLP_TERMINE.Datum)>=Now()-1) AND ((Left([Terminnummer],1))=1)) ORDER BY TLP_TERMINE.Datum, [PLZ] & "" "" & [Ort], TLP_TERMINE.Bezeichnung;"
     Else
         Me.ListeTurnierdaten.Height = 2660
-        Me!ListeTurnierdaten.RowSource = "SELECT TLP_TERMINE.Terminnummer AS Turniernr, TLP_TERMINE.Datum, TLP_TERMINE.Bezeichnung, [PLZ] & "" "" & [Ort] AS Name, TLP_TERMINE.PLZ, TLP_TERMINE.Ort, TLP_TERMINE.Mitgliedsnr, TLP_TERMINE.Raum, TLP_TERMINE.Straße, TLP_TERMINE.Beginn, TLP_TERMINE.Ende, TLP_TERMINE.Clubname_kurz, Left([Terminnummer],1) AS Ausdr1, TLP_TERMINE.Turnierleiter FROM TLP_TERMINE WHERE (((TLP_TERMINE.Datum)>=Now()-1) AND ((Left([Terminnummer],1))=2)) ORDER BY TLP_TERMINE.Datum, [PLZ] & "" "" & [Ort], TLP_TERMINE.Bezeichnung;"
+        Me!ListeTurnierdaten.RowSource = "SELECT TLP_TERMINE.Terminnummer AS Turniernr, TLP_TERMINE.Datum, TLP_TERMINE.Bezeichnung, [PLZ] & "" "" & [Ort] AS Name, TLP_TERMINE.PLZ, TLP_TERMINE.Ort, TLP_TERMINE.Mitgliedsnr, TLP_TERMINE.Raum, TLP_TERMINE.Straße, TLP_TERMINE.Beginn, TLP_TERMINE.Ende, TLP_TERMINE.Clubname_kurz, Left([Terminnummer],1) AS Ausdr1, TLP_TERMINE.Turnierleiter, TLP_TERMINE.Wettbewerbsart FROM TLP_TERMINE WHERE (((TLP_TERMINE.Datum)>=Now()-1) AND ((Left([Terminnummer],1))=2)) ORDER BY TLP_TERMINE.Datum, [PLZ] & "" "" & [Ort], TLP_TERMINE.Bezeichnung;"
     End If
 End Sub
 

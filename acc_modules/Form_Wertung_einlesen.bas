@@ -26,9 +26,11 @@ Private Sub Form_Load()
     Form_Resize
     If get_properties("EWS") = "EWS3" Then
         Me!Runde_starten.Visible = True
+        Me!Platzierungsliste.Visible = False
 '        Me!nochmal_starten.Visible = True
    Else
         Me!Runde_starten.Visible = False
+        Me!Platzierungsliste.Visible = True
 '        Me!nochmal_starten.Visible = False
     End If
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
@@ -243,7 +245,11 @@ Sub Tanzrunde_AfterUpdate()
                     Me!Runde_starten.Visible = False
                 Else
                     where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
-                    Me!Runde_starten.Visible = True
+                    If get_properties("EWS") = "EWS3" Then
+                        Me!Runde_starten.Visible = True
+                    Else
+                        Me!Runde_starten.Visible = False
+                    End If
                 End If
             End If
             Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE " & where_part & " ORDER BY Wert_Richter.WR_Kuerzel;")
@@ -299,7 +305,7 @@ Sub Tanzrunde_AfterUpdate()
                     Call UpdateRundenqualifikation(rt_id_endr, Tanzrunde, True)
                 End If
             End If
-            If (left(Me!Tanzrunde.Column(3), 3) = "BS_" Or left(Me!Tanzrunde.Column(5), 3) = "MK_") And get_properties("EWS") = "EWS3" Then
+            If (Not (Me!Tanzrunde.Column(19) = "Ob")) And get_properties("EWS") = "EWS3" Then
                 Me!Umschaltfläche147.Visible = True
                 Me!Umschaltfläche147.Caption = "Runde starten"
             Else

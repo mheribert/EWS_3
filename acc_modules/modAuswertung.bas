@@ -34,7 +34,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='Ft' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm) 'Fußtechnik Runde
         If Not ft_ak.EOF Then
-            ft_pu = get_mittel(ft_ak, Runde)
+            ft_pu = get_mittel(ft_ak, Runde, st_kl)
             is_wertung = True
         End If
     
@@ -42,7 +42,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='Ak' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm) ' Akrorunde
         If Not ft_ak.EOF Then
-            ak_pu = get_mittel(ft_ak, Runde)
+            ak_pu = get_mittel(ft_ak, Runde, st_kl)
             is_wertung = True
         End If
         
@@ -50,7 +50,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='X' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm)    'NewJudgingSystem
         If Not ft_ak.EOF Then
-            bw_pu = get_mittel(ft_ak, Runde)
+            bw_pu = get_mittel(ft_ak, Runde, st_kl)
             If InStr(1, Runde, "schnell") > 0 Then bw_pu = bw_pu * 1.1
             is_wertung = True
         End If
@@ -67,12 +67,12 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
         Set ft_ak = db.OpenRecordset(sqlstm)    'Mehrkampf MA
         If Not ft_ak.EOF Then
             If InStr(ft_ak!Cgi_Input, "w_dis=1") > 0 Then w_dis = 1
-            bw_pu = get_mittel(ft_ak, Runde)
+            bw_pu = get_mittel(ft_ak, Runde, st_kl)
             sqlstm = "SELECT Wert_Richter.WR_Kuerzel, Auswertung.* FROM Startklasse_Wertungsrichter INNER JOIN (Wert_Richter INNER JOIN Auswertung ON Wert_Richter.WR_ID = Auswertung.WR_ID) ON Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID " & _
                      "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='MB' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
             Set ft_ak = db.OpenRecordset(sqlstm)    'Mehrkampf MB
             If ft_ak.RecordCount > 0 Then
-                bw_pu = bw_pu + get_mittel(ft_ak, Runde)
+                bw_pu = bw_pu + get_mittel(ft_ak, Runde, st_kl)
             End If
 '            bw_pu = bw_pu * 2 + 0.000000001
 '            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
@@ -297,7 +297,7 @@ Public Sub RR_KO_Sieger_ermitteln(rt)
 End Sub
 
 ' Neu wegen möglicher 6 oder 8 FT-WR
-Function get_mittel(avr, Runde)
+Function get_mittel(avr, Runde, st_kl)
     Dim i(8) As Double
     Dim min As Integer
     Dim max As Integer
@@ -317,10 +317,12 @@ Function get_mittel(avr, Runde)
             min = 1
             max = 2
         Case 3
+            min = 1
             If left(Runde, 3) = "MK_" Then
                 min = 2
-            Else
-                min = 1
+                If Runde = "MK_5_TNZ" And (st_kl = "RR_S" Or st_kl = "RR_J") Then
+                    min = 1
+                End If
             End If
             max = 3
         Case 4

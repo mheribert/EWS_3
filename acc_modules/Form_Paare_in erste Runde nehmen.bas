@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 Private Sub schliessen_Click()
-    DoCmd.Close
+    DoCmd.close
 End Sub
 
 Private Sub Befehl19_Click()
@@ -136,6 +136,9 @@ Private Sub nächste_Runde_Change()
 End Sub
 
 Private Sub Startklasse_AfterUpdate()
+    Dim i As Integer
+    Dim only_mk As Boolean
+    Dim mk_index As Integer
     
     Me!nächste_Runde = Null
     DoCmd.RepaintObject acForm, "Paare_in erste Runde nehmen"
@@ -146,5 +149,17 @@ Private Sub Startklasse_AfterUpdate()
         Call nächste_Runde_Change
     End If
     
-    
+    only_mk = True
+    For i = 0 To Me!nächste_Runde.ListCount - 1
+        If left(Me!nächste_Runde.Column(1, i), 3) <> "MK_" Then
+            only_mk = False
+        End If
+        If Me!nächste_Runde.Column(1, i) = "MK_Tanz" Then
+            mk_index = i
+        End If
+    Next
+    If only_mk = True Then
+        Me!nächste_Runde = Me!nächste_Runde.Column(0, mk_index)
+        Call nächste_Runde_Change
+    End If
 End Sub

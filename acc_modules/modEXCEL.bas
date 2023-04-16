@@ -24,8 +24,8 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     oXLSApp.DisplayAlerts = False
     If get_mk() = "Kondition und Koordination" Then
         Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 3)
-    Else
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodenturnen-Trampolin.xlsx", 3)
+    Else                                                                                            ' nicht ändern wegen verknüpfungen
+        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 3)
     End If
 
     

@@ -9,6 +9,10 @@ Private Sub Report_Open(Cancel As Integer)
     Dim fld As String
     Dim retl As Integer
     
+    If get_properties("LAENDER_VERSION") = "D" Then
+        Me!Mehrkampf_Bezeichnungsfeld.Visible = True
+    End If
+    
     Set dbs = CurrentDb()
     fld = Replace(Me.RecordSource, "[Formulare]![A-Programmübersicht]![akt_Turnier]", [Forms]![A-Programmübersicht]![Akt_Turnier])
     Set re = dbs.OpenRecordset(fld)
@@ -17,10 +21,11 @@ Private Sub Report_Open(Cancel As Integer)
         If ctlC.ControlType = acTextBox And Mid(ctlC.Name, 1, 2) = "f_" Then
             fld = Mid(ctlC.Name, 3)
             If tst_fl(fld, re) Then
-                ctlC.ControlSource = IIf(fld = "Vorrunde" Or fld = "Endrunde", "=[" & fld & "] & [" & fld & " Akrobatik]", fld)
+'                ctlC.ControlSource = IIf(fld = "Vorrunde" Or fld = "Endrunde", "=[" & fld & "] & [" & fld & " Akrobatik]", fld)
             End If
         End If
     Next ctlC
+
 
 
 End Sub

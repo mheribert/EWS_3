@@ -5,7 +5,7 @@ Private Sub Befehl27_Click()
 On Error GoTo Err_Befehl27_Click
 
 
-    DoCmd.Close
+    DoCmd.close
 
 Exit_Befehl27_Click:
     Exit Sub
@@ -77,7 +77,7 @@ Sub Tanzrunde_AfterUpdate()
           End If
     End If
     AnzahlWRVorgabe = rs!AnzahlWR
-    rs.Close
+    rs.close
     
     If (Not [Form_A-Programmübersicht]!Getrennte_Auslosung) Then
      '*****AB***** V13.02 if-Clause um neue Boogie Startklassen erweitert
@@ -156,18 +156,20 @@ Private Sub mehrkampf_von_tablett_Click()
     Dim re As Recordset
     Dim st As String
     Dim wa As Double
+    DoCmd.Hourglass True
     Set db = CurrentDb
     Set re = db.OpenRecordset("SELECT DISTINCT WR_ID FROM Startklasse_Wertungsrichter WHERE WR_function = 'MA' OR wr_function = 'MB';")
     re.MoveFirst
     Do Until re.EOF()
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=storage_send_mk&WR_ID=" & re!WR_ID)
-        wa = Time
-        Do Until CDbl(Time) - wa > 0.000005787
-        Loop
+            wa = Time
+            Do Until CDbl(Time) - wa > 0.00000347
+            Loop
      
         re.MoveNext
     Loop
     db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Tabletts einlesen gestartet', '" & Time & "')"
+    DoCmd.Hourglass False
 End Sub
 
 Private Sub Wertung_aufnehmen1_Unterformular_Enter()
@@ -212,7 +214,7 @@ Public Sub Wertung_aufnehmen1_Unterformular_Exit(Cancel As Integer)
     Set rstauswertung = dbs.OpenRecordset(stmt)
     Dim Count As Integer
     Count = rstauswertung!anz
-    rstauswertung.Close
+    rstauswertung.close
     If (Count > 0) Then
         Exit Sub
     End If
@@ -327,7 +329,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         rsAddWertung.MoveNext
     Loop
     
-    rsAddWertung.Close
+    rsAddWertung.close
     
     ' Wertungen löschen, die nicht rein gehören
     sqlcmd = "select distinct pr.pr_id from Paare_Rundenqualifikation pr, Auswertung a where a.pr_id=pr.pr_id and pr.rt_id=" & rtid & " and anwesend_Status<>1"
@@ -341,7 +343,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         Qualifikation.MoveNext
     Loop
     
-    Qualifikation.Close
+    Qualifikation.close
     
     ' Wertungen noch in die richtige Reihenfolge bringen
     sqlcmd = "select * from Paare_Rundenqualifikation pr where rt_id=" & rtid & " and anwesend_Status=1 and rundennummer is not null"
@@ -357,7 +359,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         rstauswertung.MoveNext
     Loop
     
-    rstauswertung.Close
+    rstauswertung.close
     
     [Form_Wertung aufnehmen1 Unterformular].Requery
     Form_Paare_ohne_Punkte_UF.Requery

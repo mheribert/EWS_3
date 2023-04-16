@@ -42,6 +42,9 @@ Public Function rep_fill_fields(beName, fld, PR_ID, Cgi_Input, rde)
                 If Right(str, 3) = " / " Then
                     str = left(str, Len(str) - 3)
                 End If
+                If cgivar.exists("wak" & i) Then
+                    str = cgivar.Item("wak" & i)
+                End If
             Case "Ob"
                 verstoss = fill_verstoss
                 For t = 0 To 7

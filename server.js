@@ -1,4 +1,4 @@
-var ver = 'V3.2011';
+var ver = 'V3.2012';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -686,7 +686,8 @@ function verteilen(WR_ID) {
                             }, 500);
                             break;
                         case "F_B":
-                            HTML_Seite = HTML_erstellen.BW_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
+                            HTML_Seite = HTML_erstellen.RR_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
+//                            HTML_Seite = HTML_erstellen.BW_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
                             break;
                     }
                     break;
