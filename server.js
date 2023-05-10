@@ -1,4 +1,4 @@
-var ver = 'V3.2012';
+var ver = 'V3.2014';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -53,6 +53,9 @@ app.post('/login', function (req, res) {
         //        .query('SELECT * FROM (SELECT WR_kenn, WR_ID FROM wert_richter UNION SELECT PROP_VALUE, PROP_KEY FROM Properties WHERE val(PROP_KEY) > 9999) WHERE WR_ID="' + req.body.wr_id + '";')
         .query('SELECT * FROM wert_richter WHERE WR_ID=' + req.body.wr_id)
         .on('done', function (data) {
+            if (data[0].WR_kenn === null || data[0].WR_kenn === "") {
+                data[0].WR_kenn = data[0].WR_Lizenznr;
+            }
             if (req.body.passwort === data[0].WR_kenn) {
                 sess = req.session;
                 sess.user_id = req.body.wr_id;
@@ -61,7 +64,7 @@ app.post('/login', function (req, res) {
             } else {
                 res.redirect('/');
             }
-        });
+    });
 });
 
 app.get('/judge', function (req, res) {
@@ -650,13 +653,13 @@ function verteilen(WR_ID) {
                     switch (st_kl.substring(0, 3)) {
                         case "BS_":
                             switch (st_kl) {
-                                case "BS_BY_BJ":
+                                case "BS_BY_BJ":        // BRBV
                                 case "BS_BY_BE":
                                 case "BS_BY_BS":
                                 case "BS_BY_S1":
                                     HTML_Seite = HTML_erstellen.BS_BY_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
-                                case "BS_BW_BW":
+                                case "BS_BW_BW":        // BWRRV
                                 case "BS_BW_SH":
                                 case "BS_F_BW_FO":
                                 case "BS_F_RR_EF":
@@ -668,6 +671,28 @@ function verteilen(WR_ID) {
                                 case "BS_RR_S1":
                                 case "BS_RR_S2":
                                     HTML_Seite = HTML_erstellen.BS_BW_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
+                                    break;                                   
+                                case "BS_GR_GS":        //Schulsport Saarland
+                                case "BS_GR_GSV":
+                                case "BS_GR_SV":
+                                case "BS_GR_TAG":
+                                case "BS_KG_GS":
+                                case "BS_KG_GSV":
+                                case "BS_KG_SV":
+                                case "BS_KG_TAG":
+                                case "BS_PT_GS1":
+                                case "BS_PT_GS2":
+                                case "BS_PT_GV1":
+                                case "BS_PT_GV2":
+                                case "BS_PT_SV1":
+                                case "BS_PT_SV2":
+                                case "BS_PT_TA2":
+                                case "BS_PT_TAG":
+                                case "BS_SO_GS":
+                                case "BS_SO_GSV":
+                                case "BS_SO_SV":
+                                case "BS_SO_TAG":
+                                    HTML_Seite = HTML_erstellen.BS_SL_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
                                 default:
                                     HTML_Seite = HTML_erstellen.BS_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);

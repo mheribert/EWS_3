@@ -201,7 +201,7 @@ Public Function btn_Ausdr(nr)
     End If
 End Function
 
-Private Sub btn_Ausdrucke_213_Click()
+Private Sub btn_Ausdrucke_213_Click()       ' Akrobatiken je Tanzrunde für den Observer
     If Not Forms![Ausdrucke]![Runde_einstellen] = " " Then
         stDocName = "ObserverWertungsbogen"
         DoCmd.OpenReport stDocName, acPreview, , "Startkl = '" & Me.Startklasse_einstellen & "' AND RT_ID = " & Me.Runde_auswaehlen.Column(2) & ""
@@ -287,7 +287,7 @@ Private Sub btnReisekostenabrechnung2_Click()
     DoCmd.OpenForm stDocName, acNormal
 End Sub
 
-Private Sub btnUrkundendaten_Click()
+Private Sub btn_Ausdrucke_210_Click()       ' Daten für Urkunden ausgeben
     If Not Forms![Ausdrucke]![Runde_einstellen] = " " Then
         Dim sFilters As String
         sFilters = "Microsoft Excel-Dateien (*.xls)" & vbNullChar & "*.xls" & vbNullChar & vbNullChar
@@ -336,7 +336,7 @@ Private Sub CD_Einleger_Click()
     DoCmd.OpenReport stDocName, acPreview
 End Sub
 
-Private Sub Giveaway_Click()
+Private Sub btn_Ausdrucke_211_Click()        ' Giveaway
     
     If Nz(Me![Startklasse_einstellen]) = "" Or Nz(Me!Runde_auswaehlen) = "" Then
         MsgBox ("Bitte Startklasse und Runde auswählen!")
@@ -419,7 +419,7 @@ Private Sub Startklasse_einstellen_AfterUpdate()
     Runde_einstellen = Null
 End Sub
 
-Private Sub Wertungsbögen_Startklasse_Click()
+Private Sub btn_Ausdrucke_212_Click()       ' Wertungsbögen_Startklasse
     Dim dbs As Database
     Dim re As Recordset
     Dim fil As String

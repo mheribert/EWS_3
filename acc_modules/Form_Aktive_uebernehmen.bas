@@ -203,13 +203,13 @@ Private Sub btn_aktive_1_Click()    ' paare xls-datei laden
                 !Turniernr = Akt_Turnier
                 !Startkl = rstimport!Startkl
                 !Startnr = rstimport!Startnr
-                !Da_Vorname = left(rstimport!Da_Vorname, 50)
-                !Da_NAchname = left(rstimport!Da_NAchname, 50)
-                !He_Vorname = left(rstimport!He_Vorname, 50)
-                !He_Nachname = left(rstimport!He_Nachname, 50)
+                If Nz(rstimport!Da_Vorname) <> "" Then !Da_Vorname = left(rstimport!Da_Vorname, 50)
+                If Nz(rstimport!Da_NAchname) <> "" Then !Da_NAchname = left(rstimport!Da_NAchname, 50)
+                If Nz(rstimport!He_Vorname) <> "" Then !He_Vorname = left(rstimport!He_Vorname, 50)
+                If Nz(rstimport!He_Nachname) <> "" Then !He_Nachname = left(rstimport!He_Nachname, 50)
                 !Verein_nr = Nz(rstimport!Verein_nr)
                 !Verein_Name = left(rstimport!Verein_Name, 50)
-                !Name_Team = Nz(left(rstimport!Name_Team, 50))
+                If Nz(rstimport!Name_Team) <> "" Then !Name_Team = Nz(left(rstimport!Name_Team, 50))
                 !Startbuch = rstimport!Startbuch
                 !Boogie_Startkarte_H = rstimport!Boogie_Startkarte_H
                 !Boogie_Startkarte_D = rstimport!Boogie_Startkarte_D
@@ -376,7 +376,7 @@ End Sub
 
 Private Sub btnDeletePaar_Click()
     Dim res As Integer
-    Dim strSQL As String
+    Dim strsql As String
     If (IsNull(Me!STBuchnum)) Then
         Exit Sub
     End If
@@ -387,9 +387,9 @@ Private Sub btnDeletePaar_Click()
         Dim dbs As Database
         ' Bezug auf aktuelle Datenbank zurückgeben.
         Set dbs = CurrentDb
-        strSQL = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
+        strsql = "delete from paare where Startbuch=" & Me!STBuchnum & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strSQL)
+        dbs.Execute (strsql)
         Me!STBuchnum = ""
         Me!VName_Dame = ""
         Me!NName_Dame = ""
@@ -405,7 +405,7 @@ End Sub
 
 Private Sub btnFormationDelete_Click()
     Dim res As Integer
-    Dim strSQL As String
+    Dim strsql As String
     If (IsNull(Me!FBuch)) Then
         Exit Sub
     End If
@@ -416,9 +416,9 @@ Private Sub btnFormationDelete_Click()
     If (res = vbYes) Then
         Dim dbs As Database
         Set dbs = CurrentDb
-        strSQL = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
+        strsql = "delete from paare where Startbuch=" & Me!FBuch & " and Turniernr=" & get_aktTNr
         
-        dbs.Execute (strSQL)
+        dbs.Execute (strsql)
         Me!formationsname = ""
         Me!Clubname_kurz = ""
         Me!FBuch = ""

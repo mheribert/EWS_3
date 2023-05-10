@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2012';
+﻿var ver = 'V3.2014';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -148,7 +148,31 @@ function rechne_wertungen(body, seite, runden_info) {
                     Punkte += parseFloat(body["wak" + seite]);
                     Punkte -= parseFloat(body["wfe" + seite]);  
                     break;
-                default:                //  DRBV
+                case "BS_GR_GS":        //Schulsport Saarland
+                case "BS_GR_GSV":
+                case "BS_GR_SV":
+                case "BS_GR_TAG":
+                case "BS_KG_GS":
+                case "BS_KG_GSV":
+                case "BS_KG_SV":
+                case "BS_KG_TAG":
+                case "BS_PT_GS1":
+                case "BS_PT_GS2":
+                case "BS_PT_GV1":
+                case "BS_PT_GV2":
+                case "BS_PT_SV1":
+                case "BS_PT_SV2":
+                case "BS_PT_TA2":
+                case "BS_PT_TAG":
+                case "BS_SO_GS":
+                case "BS_SO_GSV":
+                case "BS_SO_SV":
+                case "BS_SO_TAG":
+                    Punkte = parseFloat(body["wth" + seite]);
+                    Punkte += parseFloat(body["wtd" + seite]);
+                    Punkte += parseFloat(body["wta" + seite]);
+                    break;
+                default:               //  DRBV
                     Punkte = parseFloat(body["wgs" + seite]);
                     break;
             }

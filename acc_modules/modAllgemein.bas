@@ -49,7 +49,7 @@ Public Function setzte_buttons(frm, btns, Land)
             Forms(frm)(re!btn).Visible = False
         Else
             Forms(frm)(re!btn).Visible = True
-            If Not re!bef Then Forms(frm)(re!btn).Caption = re(Land & "_Caption")
+            If Not re!Bef Then Forms(frm)(re!btn).Caption = re(Land & "_Caption")
         End If
         re.MoveNext
     Loop
@@ -133,7 +133,7 @@ Public Sub make_new_TDaten(T_Nr)
     Dim dbnew As Database
     Dim re As Recordset
     Dim cm As Recordset
-    Dim strSQL As String
+    Dim strsql As String
     Dim nTurnier As String
     Dim i As Integer
     
@@ -264,7 +264,7 @@ Public Sub Print_Givaway(RundenTab_ID, Runde)
     Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null AND Runde_Report=1;")
 '*****AB***** V13.05 - falls es sich um eine Endrunde handelt andere Abfrage ohne Runde_Report
 '*****HM 14.07 ***** - auf geteilte Endrunden erweitert
-    If Runde = "Endrunde" Or Runde = "Endrunde Akrobatik" Or Runde = "Schnelle Endrunde" Or Runde = "Endrunde 2" Then
+    If Runde = "Endrunde" Or Runde = "Endrunde Akrobatik" Or Runde = "Schnelle Endrunde" Or Runde = "Endrunde 2" Or Runde = "MK_Tanz" Then
         Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null;")
     End If
     If re.RecordCount = 0 Then

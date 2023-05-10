@@ -47,16 +47,30 @@ Function WR_Anzeige(Startkl, sle)
     Dim re As Recordset
     Dim anzeige As String
     Set dbs = CurrentDb
-    
-    Set re = dbs.OpenRecordset("SELECT Count(WR_ID) AS Ak_WR FROM Startklasse_wertungsrichter WHERE Startklasse = '" & Startkl & "' AND (WR_function = 'Ak' OR WR_function = 'X');", DB_OPEN_DYNASET)
+    Set re = dbs.OpenRecordset("SELECT Count([Startklasse_wertungsrichter].[WR_ID]) AS Ak_WR FROM Wert_Richter INNER JOIN Startklasse_wertungsrichter ON Wert_Richter.WR_ID = Startklasse_wertungsrichter.WR_ID WHERE (Startklasse='" & Startkl & "' AND (WR_function='Ak' Or WR_function='X') AND WR_Azubi=False);")
     If re.RecordCount > 0 Then
         anzeige = re!Ak_WR
-        Set re = dbs.OpenRecordset("SELECT Count(WR_ID) AS Ft_WR FROM Startklasse_wertungsrichter WHERE Startklasse = '" & Startkl & "' AND (WR_function = 'Ft');", DB_OPEN_DYNASET)
+        Set re = dbs.OpenRecordset("SELECT Count([Startklasse_wertungsrichter].[WR_ID]) AS Ft_WR FROM Wert_Richter INNER JOIN Startklasse_wertungsrichter ON Wert_Richter.WR_ID = Startklasse_wertungsrichter.WR_ID WHERE (Startklasse='" & Startkl & "' AND WR_function='Ft' AND WR_Azubi=False);")
         If re.RecordCount > 0 And (InStr(1, Startkl, "BW") = 0 And InStr(1, Startkl, "BS") = 0) Then
             anzeige = re!Ft_WR & " + " & anzeige
         End If
     End If
+'    Set re = dbs.OpenRecordset("SELECT Count([Startklasse_wertungsrichter].[WR_ID]) AS Ob_WR FROM Wert_Richter INNER JOIN Startklasse_wertungsrichter ON Wert_Richter.WR_ID = Startklasse_wertungsrichter.WR_ID WHERE (Startklasse='" & Startkl & "' AND WR_function='Ob' AND WR_Azubi=False);")
+'    If re.RecordCount > 0 Then
+'        anzeige = anzeige & " / " & re!Ob_WR
+'    End If
     WR_Anzeige = anzeige
+End Function
+
+Function Ob_Anzeige(Startkl, sle)
+    Dim re As Recordset
+    Dim anzeige As String
+    Set dbs = CurrentDb
+    Set re = dbs.OpenRecordset("SELECT Count([Startklasse_wertungsrichter].[WR_ID]) AS Ob_WR FROM Wert_Richter INNER JOIN Startklasse_wertungsrichter ON Wert_Richter.WR_ID = Startklasse_wertungsrichter.WR_ID WHERE (Startklasse='" & Startkl & "' AND WR_function='Ob' AND WR_Azubi=False);")
+    If re.RecordCount > 0 Then
+        anzeige = "/ " & re!Ob_WR
+    End If
+    Ob_Anzeige = anzeige
 End Function
 
 Private Sub CTRL01_KeyDown(KeyCode As Integer, Shift As Integer)

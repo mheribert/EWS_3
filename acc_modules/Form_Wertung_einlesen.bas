@@ -25,7 +25,7 @@ End Sub
 Private Sub Form_Load()
     Form_Resize
     If get_properties("EWS") = "EWS3" Then
-        Me!Runde_starten.Visible = True
+'        Me!Runde_starten.Visible = True
         Me!Platzierungsliste.Visible = False
 '        Me!nochmal_starten.Visible = True
    Else
@@ -35,7 +35,7 @@ Private Sub Form_Load()
     End If
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "SL"
-            'Me!Wertung_drucken.Visible = False
+            Me!Wertung_drucken.Visible = False
         Case "D"
             Me!Wertung_drucken.Visible = False
         Case Else
@@ -199,8 +199,10 @@ Private Sub Runde_beenden_Click()
     End If
     db.Execute ("UPDATE rundentab SET [HTML] = 0 WHERE RT_ID =" & Me!Tanzrunde & ";")
     db.Execute "INSERT INTO Analyse (CGI_Input, zeit, RT_ID) VALUES ('" & Me!Tanzrunde.Column(1) & " beendet', '" & Time & "', '" & Me!Tanzrunde & "')"
-    Start_Seite "T" & Forms![A-Programmübersicht]!Turnier_Nummer
-    make_a_schedule
+    If get_properties("EWS") = "EWS1" Then
+        Start_Seite "T" & Forms![A-Programmübersicht]!Turnier_Nummer
+        make_a_schedule
+    End If
 End Sub
 
 Private Sub sende_msg_Click()
@@ -399,7 +401,8 @@ Private Sub Wertungen_einlesen_Click()
         End If
         Set ausw = db.OpenRecordset("Auswertung", DB_OPEN_DYNASET)
         '****AB**** V13_04 HTML Seite für den Observer bereitstellen
-        ObserverHTML (Me!Tanzrunde.Column(6))
+        If get_properties("EWS") = "EWS1" Then _
+            ObserverHTML (Me!Tanzrunde.Column(6))
     End If
     Requery
 End Sub
@@ -586,15 +589,15 @@ Public Function Wertung_check(WR_ID, spalte)
 '         .MoveNext
 '        Loop
     End With
-    If (IsEndrunde) And left(Me!Tanzrunde.Column(3), 3) <> "RR_" And left(Me!Tanzrunde.Column(3), 3) <> "F_R" Then
-        rstauswertung.MoveFirst
+'    If (IsEndrunde) And left(Me!Tanzrunde.Column(3), 3) <> "RR_" And left(Me!Tanzrunde.Column(3), 3) <> "F_R" Then
+'        rstauswertung.MoveFirst
 '        If mehrfach(0) = 1 And (Me!Tanzrunde.Column(6) <> "End_r_Fuß") Then
 '            Call pg_platzieren(Tanzrunde, rstauswertung!WR_ID, mehrfach, rstauswertung.RecordCount, Me!Tanzrunde.Column(3))
-'            'End
+'            End
 '        Else
-            Call no_plazieren(Tanzrunde, rstauswertung!WR_ID, mehrfach, rstauswertung.RecordCount, Me!Tanzrunde.Column(3))
+'            Call no_plazieren(Tanzrunde, rstauswertung!WR_ID, mehrfach, rstauswertung.RecordCount, Me!Tanzrunde.Column(3))
 '        End If
-    End If
+'    End If
     
     stmt = "SELECT Count(*) AS anz from Auswertung a"
     stmt = stmt & " where a.wr_id=" & WR_ID & "  AND ((IsNull([Cgi_Input]))=False) AND exists (select 1 from Paare_Rundenqualifikation pr where pr.pr_id=a.pr_id and pr.rt_id=" & Tanzrunde & ")"
@@ -720,7 +723,7 @@ Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Singl
     Dim Runde As String
     If no_runde_selected Then Exit Sub
     Runde = Me!Tanzrunde.Column(6)
-    If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Then
+    If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Or Runde = "MK_5_TNZ" Then
         If get_properties("EWS") = "EWS3" Then
             st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Tanzrunde & "&mdb=" & get_TerNr)
         Else

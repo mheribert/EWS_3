@@ -290,9 +290,15 @@ Private Sub btn_ausw_1_Click()
     Runde = Me!Startklasse.Column(7)
     If Runde = "End_r_Akro" Or Runde = "End_r_schnell" Or Runde = "End_r" Or Runde = "End_r_2" Or Runde = "MK_5_TNZ" Then
         If Me!btn_ausw_2 = "Siegerehrung starten" Then
-            Me!btn_ausw_2 = Me.RecordsetClone.RecordCount
-            Me!btn_ausw_1.Caption = "Platz " & Me!btn_ausw_2 & " anzeigen"
-            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2 + 1)
+            If get_properties("EWS") = "EWS1" Then
+                Beamer_generieren
+                Me!Feld138.SetFocus
+                Me!btn_ausw_1.Visible = False
+            Else
+                Me!btn_ausw_2 = Me.RecordsetClone.RecordCount
+                Me!btn_ausw_1.Caption = "Platz " & Me!btn_ausw_2 & " anzeigen"
+                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2 + 1)
+            End If
         Else
             st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_siegerehrung&text=" & Startklasse & "&mdb=" & get_TerNr & "&Platz=" & Me!btn_ausw_2)
             If st = "beamer_siegerehrung" & Startklasse And Me!btn_ausw_2 > 0 Then
@@ -340,7 +346,7 @@ Public Sub Startklasse_Change()
         Me!Feld112.Visible = False
     End If
     If (Startklasse.Column(7) = "End_r" Or Startklasse.Column(7) = "End_r_Akro" Or Startklasse.Column(7) = "End_r_schnell" _
-        Or Startklasse.Column(7) = "End_r_2" Or Startklasse.Column(7) = "MK_5_TNZ") And get_properties("EWS") = "EWS3" Then
+        Or Startklasse.Column(7) = "End_r_2" Or Startklasse.Column(7) = "MK_5_TNZ") Then '  And get_properties("EWS") = "EWS3" Then
         Me!btn_ausw_1.Visible = True
     Else
         Me!btn_ausw_1.Visible = False

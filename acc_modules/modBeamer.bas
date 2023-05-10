@@ -18,15 +18,23 @@ Public Function get_Filename(fenst)
 End Function
 
 Sub Beamer_generieren(Optional ausw)
+    
+    If get_properties("EWS") <> "EWS1" Then Exit Sub
+    
     Dim out As Object
     Dim RT_ID As Integer
     Dim line As String
     Dim auswahl As Integer
     Dim ht_pfad As String
-    
+ 
     If IsMissing(ausw) Then
-        auswahl = Nz(Forms!Wertung_einlesen!HTML_Select)
-        RT_ID = Forms!Wertung_einlesen!Tanzrunde
+        If Screen.ActiveControl.Name = "btn_ausw_1" Then
+            auswahl = 6
+            RT_ID = Forms!Majoritaet_ausrechnen!Startklasse
+        Else
+            auswahl = Nz(Forms!Wertung_einlesen!HTML_Select)
+            RT_ID = Forms!Wertung_einlesen!Tanzrunde
+        End If
     Else
         auswahl = ausw
     End If

@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2012';
+﻿var ver = 'V3.2014';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -46,7 +46,7 @@ exports.mkPage = function (rd_ind, wr_name, wr_id, runden_info, res, func) {
 
 exports.wait = function (rd_ind, runden_info, text, wr_name, wr_id, io) {
     var HTML_Seite = make_kopf(rd_ind, runden_info, 0, wr_name) + '\r\n';
-    HTML_Seite += '<tr><td height="450px" align="center"><div class="wr_status" id="content1">' + text + '</div></td></tr>';
+    HTML_Seite += '<tr><td height="400px" align="center"><div class="wr_status" id="content1">' + text + '</div></td></tr>';
     HTML_Seite += make_absenden(false, false);
     HTML_Seite += '</table></center></form>';
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite });
@@ -99,7 +99,7 @@ exports.BS_BY_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
     }
     HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
 
-    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_'});
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
 };
 
 exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io, wr_func) {
@@ -163,7 +163,7 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         sei = s;
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-        if (st_kl.substr(0,6) === "BS_RR_") {
+        if (st_kl.substr(0, 6) === "BS_RR_") {
             HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik Herr', st_kl) + '\r\n';
         } else {
             HTML_Seite += make_bs_inp('th' + sei, 10, 'Technik', st_kl) + '\r\n';
@@ -182,7 +182,33 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         }
         HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
         HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
-        HTML_Seite += make_bs_feh(sei) + '</table></td> ' + '\r\n';
+        HTML_Seite += make_bs_feh(sei, 1) + '</table></td> ' + '\r\n';
+    }
+    HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
+
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
+};
+
+exports.BS_SL_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
+    var st_kl = runden_info[0].Startklasse;
+    var trunde = runden_info[0].RundeArt;
+    var sei;
+
+    HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, tausch) + '\r\n';
+    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
+    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
+        sei = s;
+        if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
+        HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
+        HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
+        HTML_Seite += make_bs_inp('th' + sei, 10, 'Takt, Rhythmus', st_kl) + '\r\n';
+        HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
+        HTML_Seite += make_bs_inp('td' + sei, 10, 'Bewegung, Balancen', st_kl) + '\r\n';
+        HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
+        HTML_Seite += make_bs_inp('ta' + sei, 10, 'Präsentation, Charakteristik, Synchronität', st_kl) + '\r\n';
+        HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
+        HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
+        HTML_Seite += make_bs_feh(sei, 0) + '</table></td> ' + '\r\n';
     }
     HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
 
@@ -291,9 +317,9 @@ exports.BW_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
         HTML_Seite += '<td align="center" id="couple' + s + '" width="450px"><table border="0" cellpadding="1" cellspacing="5">';
         if (runden_info[0].Startkl.substring(0, 3) === "BS_") {
             HTML_Seite += '<tr id="seite' + s + '">' + '\r\n';
-            HTML_Seite += '<td height="170px"></td></tr>';
+            HTML_Seite += '<td height="140px"></td></tr>';
             HTML_Seite += '<tr><td class="bs_text">Wenn Runde beendet ist, absenden.</td></tr> ';
-            HTML_Seite += '<td height="170px"></td></tr>';
+            HTML_Seite += '<td height="140px"></td></tr>';
         } else {
             for (var i = 0; i < krit.length; i = i + 3) {
                 HTML_Seite += '<tr id="' + krit[i] + s + '"><td class="spalte">-</td><td class="spalte_br"><table width ="100%">' + '\r\n';
@@ -994,7 +1020,7 @@ function make_kopf(rd_ind, runden_info, seiten, wr_name, tausch, switch_TP) {
         HTML_kopf += '<td class="kopf_1" width="50"></td>';
         HTML_kopf += '<td class="runden" width="400"></td>' + '\r\n';
         HTML_kopf += HTML_nav + '\r\n';
-        HTML_kopf += '<td style="padding-left: 10px;" onclick="return p_logout()" width="300">Logout ' + wr_name + '</td>' + '\r\n';
+        HTML_kopf += '<td style="padding-left: 10px;" onclick="return p_logout()" style="padding-left: 10px;" width="300">Logout ' + wr_name + '</td>' + '\r\n';
         HTML_kopf += '<td class="kopf_1" width="50"></td>' + '\r\n';
     } else {
         if (switch_TP === true) {
@@ -1005,7 +1031,7 @@ function make_kopf(rd_ind, runden_info, seiten, wr_name, tausch, switch_TP) {
         HTML_kopf += '<input type="hidden" name=rh1 value="' + runden_info[sei1].Rundennummer + '"><input name="rt_ID" value="' + runden_info[sei1].RT_ID + '" type="hidden"></td>' + '\r\n';
         HTML_kopf += '<td class="runden" width="400">' + runden_info[sei1].Tanzrunde_Text + '</td>' + '\r\n';
         HTML_kopf += HTML_nav + '\r\n';
-        HTML_kopf += '<td onclick="return p_logout()" width="350">Logout ' + wr_name + '</td>' + '\r\n';
+        HTML_kopf += '<td onclick="return p_logout()" style="padding-left: 10px;" width="350">Logout ' + wr_name + '</td>' + '\r\n';
         if (runden_info[sei1].PpR === 2 && seiten === 2) {
             HTML_kopf += '<td class="kopf_1" width="50">' + runden_info[sei2].Startnr + '<input type="hidden" name=TP_ID' + (sei2 - rd_ind + 1) + ' value="' + runden_info[sei2].TP_ID + '"></td>' + '\r\n';
         } else {
@@ -1120,23 +1146,29 @@ function make_bs_inp(fName, max, aName, st_kl) {
     return inp;
 }
 
-function make_bs_feh(seite) {
+function make_bs_feh(seite, mit_fehler) {
     var bsfl;
     var t;
-    bsfl  = '<tr><td class="bs_schmal"></td></tr><tr><td colspan="14"><table>';
-    bsfl += '<tr class="bs_head"><td colspan="6"><b>Abz&#252;ge</b> kleiner Fehler</td><td colspan="5">gro&#223;er Fehler</td></tr>';
-    bsfl += '<tr id="fe' + seite + '" class="bs_mist_list" couple="' + seite + '">';
-    for (t = 0; t < 5; t++) {
-        bsfl += '<td class="bs_mist" max="2">&nbsp;</td>';
+    if (mit_fehler) {
+        bsfl = '<tr><td class="bs_schmal"></td></tr><tr><td colspan="14"><table>';
+        bsfl += '<tr class="bs_head"><td colspan="6"><b>Abz&#252;ge</b> kleiner Fehler</td><td colspan="5">gro&#223;er Fehler</td></tr>';
+        bsfl += '<tr id="fe' + seite + '" class="bs_mist_list" couple="' + seite + '">';
+        for (t = 0; t < 5; t++) {
+            bsfl += '<td class="bs_mist" max="2">&nbsp;</td>';
+        }
+        bsfl += '<td style="visibility: hidden; width:18px;">&nbsp;</td>';
+        for (t = 0; t < 5; t++) {
+            bsfl += '<td class="bs_mist" max="5">&nbsp;</td>';
+        }
+        bsfl += '<td class="bs_mist" style="visibility: hidden;">&nbsp;</td>';
+        bsfl += '<input name="wfe' + seite + '" id="wfe' + seite + '" type="hidden" value="0">';
+        bsfl += '<input name="tfe' + seite + '" id="tfe' + seite + '" type="hidden"></tr></table>';
+    } else {
+        bsfl = '<tr><td class="bs_schmal"></td></tr><tr><td  style="height:60px;" colspan="14">';
+        bsfl += '<input name="wfe' + seite + '" id="wfe' + seite + '" type="hidden" value="0">';
+        bsfl += '<input name="tfe' + seite + '" id="tfe' + seite + '" type="hidden"></td>';
     }
-    bsfl += '<td style="visibility: hidden; width:18px;">&nbsp;</td>';
-    for (t = 0; t < 5; t++) {
-        bsfl += '<td class="bs_mist" max="5">&nbsp;</td>';
-    }
-    bsfl += '<td class="bs_mist" style="visibility: hidden;">&nbsp;</td>';
-    bsfl += '<input name="wfe' + seite + '" id="wfe' + seite + '" type="hidden" value="0">';
-    bsfl += '<input name="tfe' + seite + '" id="tfe' + seite + '" type="hidden"></tr>';
-    bsfl += '</table></td><td colspan="3"><b>Punkte<br>gesamt</b></td><td colspan="4" id="punktefe' + seite + '" class="bs_points">0</td></tr>';
+    bsfl += '</td><td colspan="3"><b>Punkte<br>gesamt</b></td><td colspan="4" id="punktefe' + seite + '" class="bs_points">0</td></tr>';
     bsfl += '<tr><td class="bs_schmal"></td></tr>';
 
     return bsfl;

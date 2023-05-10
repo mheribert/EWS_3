@@ -34,11 +34,7 @@ Sub build_html(pr, RT_nr, Runde)
     
     Set db = CurrentDb
     pr.MoveLast
-'    If Left(rde, 3) = "BW_" Then
-        Set wr = db.OpenRecordset("SELECT Rundentab.RT_ID, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Wert_Richter.WR_Lizenznr, Left([WR_Nachname],1) & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_tausch, WR_function, Startklasse.Startklasse_text, Startklasse.Startklasse, Rundentab.Anz_Paare, Tanz_Runden.Rundentext, Wert_Richter.WR_AzuBi FROM Wert_Richter LEFT JOIN (Startklasse RIGHT JOIN (Tanz_Runden RIGHT JOIN (Startklasse_Wertungsrichter LEFT JOIN Rundentab ON Startklasse_Wertungsrichter.Startklasse = Rundentab.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde) ON Startklasse.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Rundentab.RT_ID=" & RT_nr & " OR Wert_Richter.WR_AzuBi=True);", DB_OPEN_DYNASET)
-'    Else
-'        Set wr = db.OpenRecordset("SELECT Rundentab.RT_ID, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Wert_Richter.WR_Lizenznr, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_tausch, WR_function, Startklasse.Startklasse_text, Startklasse.Startklasse, Rundentab.Anz_Paare, Tanz_Runden.Rundentext, Wert_Richter.WR_AzuBi FROM Wert_Richter LEFT JOIN (Startklasse RIGHT JOIN (Tanz_Runden RIGHT JOIN (Startklasse_Wertungsrichter LEFT JOIN Rundentab ON Startklasse_Wertungsrichter.Startklasse = Rundentab.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde) ON Startklasse.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE ((Rundentab.RT_ID=" & RT_nr & "  AND Startklasse_Wertungsrichter.WR_function<>'Ob') OR Wert_Richter.WR_AzuBi=True);", DB_OPEN_DYNASET)
-'    End If
+    Set wr = db.OpenRecordset("SELECT Rundentab.RT_ID, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Wert_Richter.WR_Lizenznr, Left([WR_Nachname],1) & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_tausch, Startklasse_Wertungsrichter.WR_function, Startklasse.Startklasse_text, Startklasse.Startklasse, Rundentab.Anz_Paare, tanz_runden_fix.Rundentext, Wert_Richter.WR_AzuBi FROM Wert_Richter LEFT JOIN (Startklasse RIGHT JOIN (tanz_runden_fix RIGHT JOIN (Startklasse_Wertungsrichter LEFT JOIN Rundentab ON Startklasse_Wertungsrichter.Startklasse = Rundentab.Startklasse) ON tanz_runden_fix.Runde = Rundentab.Runde) ON Startklasse.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (Rundentab.RT_ID=" & RT_nr & ");", DB_OPEN_DYNASET)
     If wr.RecordCount = 0 Then
         MsgBox "Die Wertungsrichtereinteilung ist noch nicht erfolgt!"
         Exit Sub
@@ -151,9 +147,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__ck", ", " & left(a_check, Len(a_check) - 2))
                 
                 Case "RR_"   ' alle RR einzel
-                    ' ***** HM14.05 *****
-                    ' kurze Wertung hinzugefügt
-                    If a_paare = 1 Or wr!Rundentext = "Semifinale" Then
+                    If InStr(wr!Rundentext, "Endrunde") > 0 Or wr!Rundentext = "Semifinale" Then
                         line = get_line("RR", "Seite", ppr)
                     Else
                         line = get_line("RR", "Seite_k", ppr)
@@ -465,7 +459,7 @@ Sub build_html(pr, RT_nr, Runde)
     'Schreibe vbs zur Seite
     Set out = file_handle(vb_pfad & "page.vbs")
     Set ht = open_re("All", "Script")
-    line = Replace(ht!f1, "x_url", IpAddrs)
+    line = Replace(ht!F1, "x_url", IpAddrs)
     line = Replace(line, "x_pfad", vb_pfad)
     out.writeline (line)
     out.Close
@@ -484,7 +478,7 @@ Function make_beobachter(pr, stkl_rde, tr_nr, RT_ID)
     Set re = pr.OpenRecordset
     Set out = file_handle(getBaseDir & "Apache2\htdocs\" & tr_nr & "B99.html")
     Set ht = open_re("All", "Beobachter")
-    line = ht!f1
+    line = ht!F1
     re.MoveFirst
     opt = Space(25) & "<option value=""0"">&nbsp;&nbsp;</option>" & vbCrLf
     Do Until re.EOF
@@ -711,7 +705,7 @@ Function get_line(cl, ber, ppr)
     
     Set ht = db.OpenRecordset("SELECT * FROM HTML_Block WHERE Seite='" & cl & "' AND Bereich='" & ber & "';", DB_OPEN_DYNASET)
     If ppr = 1 Then
-        get_line = ht!f1
+        get_line = ht!F1
     Else
         get_line = ht!F2
     End If
@@ -822,7 +816,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Set out = file_handle(ht_pfad & "index.html")
     wr.MoveFirst
     Set ht = open_re("All", "WR_Select")
-    line = Replace(ht!f1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
+    line = Replace(ht!F1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
     
     i = 1
     kw = "'0'"
@@ -852,7 +846,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Do Until wr.EOF
         Set out = file_handle(ht_pfad & tr_nr & "S" & wr!WR_Lizenznr & ".html")
         re.MoveFirst
-        line = Replace(ht!f1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+        line = Replace(ht!F1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
         line = Replace(line, "wr_k", wr!WR_Kuerzel)
         line = Replace(line, "wr_n", wr!Ausdr1)
         out.writeline (line)
@@ -1020,7 +1014,7 @@ Public Sub pg_platzieren(RT_ID, WR_ID, mehrfach, pg_id, s_kl)
             fld = Array("x_wth", "x_wak")
             
     End Select
-    html_page = fill_platzieren(ht_t!f1, re, mehrfach, fld)
+    html_page = fill_platzieren(ht_t!F1, re, mehrfach, fld)
     html_page = Replace(html_page, "x_ck1", Mid(a_check, 3))
     re.MoveFirst
     html_page = Replace(html_page, "x_title", Forms![A-Programmübersicht]!Turnierbez)

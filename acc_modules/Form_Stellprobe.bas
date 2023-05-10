@@ -87,7 +87,7 @@ Private Sub RegisterStr87_Click()
 End Sub
 
 Private Sub schliesssen_Click()
-    DoCmd.Close
+    DoCmd.close
 End Sub
 
 Private Sub btnAktualisieren_Click()
@@ -173,6 +173,8 @@ Private Sub vorgabe_AfterUpdate()
 End Sub
 
 Private Sub Folie_anzeigen_Click()
+
+    If get_properties("EWS") <> "EWS1" Then Exit Sub
     Dim re As Recordset
     Dim out
     Dim startHTML As String
@@ -194,7 +196,7 @@ Private Sub Folie_anzeigen_Click()
                      "st" & Format(re!Stell_Reihe, "00000") & ".html""><title></title></head><body></body></html>"
         Set out = file_handle(ht_pfad & "stellprobe.html")
         out.writeline (startHTML)
-        out.Close
+        out.close
         ' Countdownseite + Warteseite scheiben
         For i = 0 To 1
             line = get_line("Beamer", "Stellprobe", i)  'holt HTML-Seite aus HTML-Block
@@ -222,7 +224,7 @@ Private Sub Folie_anzeigen_Click()
             line = Replace(line, "x__html", next_HTML)
             
             out.writeline (line)
-            out.Close
+            out.close
         Next
     End If
     If re.RecordCount > 0 Then re.MoveFirst

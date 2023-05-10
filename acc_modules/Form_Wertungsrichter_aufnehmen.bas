@@ -114,11 +114,16 @@ Private Sub Form_Open(Cancel As Integer)
     Dim lo As Integer
 
     Set dbs = CurrentDb
-    Set re = dbs.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_ID, Wert_Richter.WR_func, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1 FROM Wert_Richter WHERE (Wert_Richter.Turniernr=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " AND WR_Azubi = false) ORDER BY Wert_Richter.WR_Kuerzel;")
+    Set re = dbs.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_ID, Wert_Richter.WR_func, WR_Azubi, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1 FROM Wert_Richter WHERE (Wert_Richter.Turniernr=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & ") ORDER BY Wert_Richter.WR_Kuerzel;")
 
     If Not re.EOF Then re.MoveFirst
     lo = 1
     Do Until (re.EOF Or lo = 18)
+        If re!WR_AzuBi = True Then
+            Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).BackStyle = 1
+        Else
+            Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).BackStyle = 0
+        End If
         Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).ControlTipText = re!Ausdr1
         Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).Caption = re!Ausdr1
         Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).Visible = True
@@ -188,24 +193,24 @@ Private Sub RegisterStr65_Change()
     Me.Requery
 
 End Sub
-
-Function Einteil()
-    Dim sqlcmd As String
-    Dim sel As String
-    
-    Set dbs = CurrentDb
-    
-    sel = Screen.ActiveControl.Name
-    If Screen.ActiveControl = "X" Then
-        Screen.ActiveControl = ""
-        sqlcmd = "delete from Startklasse_wertungsrichter skwr where (skwr.wr_id=" & Me.Controls("W" & left(sel, 1)).ControlTipText & " and skwr.startklasse=""" & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
-    Else
-        Screen.ActiveControl = "X"
-        sqlcmd = "insert into Startklasse_wertungsrichter( WR_ID, startklasse)"
-        sqlcmd = sqlcmd & " values(" & Me.Controls("W" & left(sel, 1)).ControlTipText & ", """ & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
-    End If
-    dbs.Execute (sqlcmd)
-End Function
+'
+'Function Einteil()
+'    Dim sqlcmd As String
+'    Dim sel As String
+'
+'    Set dbs = CurrentDb
+'
+'    sel = Screen.ActiveControl.Name
+'    If Screen.ActiveControl = "X" Then
+'        Screen.ActiveControl = ""
+'        sqlcmd = "delete from Startklasse_wertungsrichter skwr where (skwr.wr_id=" & Me.Controls("W" & left(sel, 1)).ControlTipText & " and skwr.startklasse=""" & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
+'    Else
+'        Screen.ActiveControl = "X"
+'        sqlcmd = "insert into Startklasse_wertungsrichter( WR_ID, startklasse)"
+'        sqlcmd = sqlcmd & " values(" & Me.Controls("W" & left(sel, 1)).ControlTipText & ", """ & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
+'    End If
+'    dbs.Execute (sqlcmd)
+'End Function
 
 Private Sub Wertungsrichterdeckblatt_Click()
     If Me!druck Then

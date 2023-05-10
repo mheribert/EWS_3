@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2012';
+﻿    var ver =  'V3.2014';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -28,6 +28,10 @@ function start() {
             }
             if (data.msg === 'setWert' && parseInt(data.WR) === WR_ID) {
                 btn = document.getElementById(data.fld);
+/*                data.val = parseFloat(data.val.replace(",", "."));
+                if (data.fld.substring(0, 2) === "ak" && parseFloat(data.val) > 0) {
+                    data.val = document.getElementById("w" + data.fld).max / parseFloat(data.val / 2);
+                }*/
                 btn = btn.children[data.val];
                 paint_bar(btn);
             }
@@ -318,7 +322,7 @@ function paint_bar(tar) {
     switch (ausw) {
         case "MK_T":
             ke = tar.value.replace(',', '.');
-            if (isNaN(ke)) {
+            if (isNaN(ke) && ke !== "-") {
                 var we = ke;
                 i = we.length - 1;
                 tar.value = we.substr(0, i);
@@ -350,6 +354,7 @@ function paint_bar(tar) {
                 if (erg.length > 0) { erg += '&'; }
                 erg += 'w' + s[i].id + '=' + s[i].lastChild.firstChild.value;
             }
+            check_mkpagefilled(); 
             localStorage.setItem('w_' + couple, erg);
             break;
         case "MK_B":
@@ -385,6 +390,7 @@ function paint_bar(tar) {
                 }
                 erg += 'w' + s[i].id + '=' + s[i].lastChild.firstChild.value
             }
+            check_mkpagefilled(); 
             localStorage.setItem('w_' + couple, erg);
             break;
         case "BS_":

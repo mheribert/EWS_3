@@ -6,13 +6,13 @@ Private Sub Berechnen_Click()   ' holt Anzahl Paare und trägt sie in die jeweils
     Dim re  As Recordset
     Dim res As Recordset
     Dim paa As Recordset
-    Dim strSQL As String
+    Dim strsql As String
     Dim anz As Integer
     Me.Requery
     Set dbs = CurrentDb
     Set re = Me.RecordsetClone
-    strSQL = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
-    Set res = dbs.OpenRecordset(strSQL)
+    strsql = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, MSys__Tanz_Runden_fix.InAuswertung FROM Rundentab INNER JOIN MSys__Tanz_Runden_fix ON Rundentab.Runde = MSys__Tanz_Runden_fix.Runde WHERE (((Rundentab.Turniernr)=1)) ORDER BY Rundentab.Rundenreihenfolge;"
+    Set res = dbs.OpenRecordset(strsql)
     re.MoveFirst
     Do Until re.EOF
         
@@ -59,15 +59,49 @@ End Sub
 
 Private Sub Form_Open(Cancel As Integer)
     Dim re As Recordset
-    If Not Forms![A-Programmübersicht]!Turnierausw.Column(8) = "D" Then
+    Dim sqlwhere, sqlstr As String
+    
+    Set dbs = CurrentDb
+    Set re = dbs.OpenRecordset("Startklasse_Turnier")
+    If re.RecordCount = 0 Then
+        MsgBox "Es wurden noch keine Startklassen definiert!"
+        Exit Sub
+    End If
+    
+    Set re = dbs.OpenRecordset("SELECT * FROM Turnier;")
+    
+    If Not re!BS_Erg = "D" Then
         Me.hochladen.Visible = False
         Me.Zeitplan.Visible = False
     End If
-    Set dbs = CurrentDb
-    Set re = dbs.OpenRecordset("Startklasse_Turnier")
-    If re.RecordCount = 0 Then _
-        MsgBox "Es wurden noch keine Startklassen definiert!"
-    Set re = Nothing
+    Select Case re!MehrkampfStationen
+        Case "Bodenturnen und Trampolin"
+            sqlwhere = " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE Runde Like 'MK_3*' Or Runde Like 'MK_4*' Or Runde Like 'MK_5*'"
+        Case "Kondition und Koordination"
+            Set re = dbs.OpenRecordset("SELECT * FROM (SELECT MK_11 FROM Turnier UNION  SELECT MK_12 FROM Turnier UNION SELECT MK_13 FROM Turnier UNION SELECT MK_21 FROM Turnier UNION SELECT MK_22 FROM Turnier UNION SELECT MK_23 FROM Turnier) WHERE NOT ISNULL([MK_11]) and [MK_11] <>'' ORDER BY MK_11;")
+            If re.RecordCount = 0 Then
+                sqlwhere = ""
+            Else
+                If re.RecordCount = 0 Then
+                    sqlwhere = ""
+                Else
+                    re.MoveFirst
+                    Do Until re.EOF
+                        sqlwhere = sqlwhere & IIf(Len(sqlwhere) > 0, " OR", "") & " Runde=""" & re!MK_11 & """"
+                        re.MoveNext
+                    Loop
+                    sqlwhere = " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE" & sqlwhere & " OR Runde =""MK_5_TNZ"""
+                End If
+            End If
+        Case ""
+            sqlwhere = ""
+    End Select
+    sqlstr = "SELECT Tanz_Runden_fix.Runde, Tanz_Runden_fix.Rundentext, Tanz_Runden_fix.Rundenreihenfolge, Tanz_Runden_fix.MitStartklasse, Tanz_Runden_fix.R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE Tanz_Runden_fix.Runde NOT LIKE 'MK_*'"
+    sqlstr = sqlstr & sqlwhere
+    sqlstr = sqlstr & " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_erg ORDER BY Rundenreihenfolge;"
+    
+    Me!Kombinationsfeld53.RowSource = sqlstr
+    
 End Sub
 
 Private Sub hochladen_Click()
@@ -418,12 +452,16 @@ Public Function get_mk(rnd)        ' Mehrkampfstationen sammeln
             rnd = rnd & ", MK_3_BOT, MK_4_TRA, MK_5_TNZ"
         Case "Kondition und Koordination"
             Set re = db.OpenRecordset("SELECT * FROM (SELECT MK_11 FROM Turnier UNION  SELECT MK_12 FROM Turnier UNION SELECT MK_13 FROM Turnier UNION SELECT MK_21 FROM Turnier UNION SELECT MK_22 FROM Turnier UNION SELECT MK_23 FROM Turnier) WHERE NOT ISNULL([MK_11]) and [MK_11] <>'' ORDER BY MK_11;")
-            re.MoveFirst
-            i = 0
-            Do Until re.EOF
-                rnd = rnd & IIf(Len(rnd) > 0, ", ", "") & re!MK_11
-                re.MoveNext
-            Loop
+            If re.RecordCount = 0 Then
+                get_mk = ""
+            Else
+                re.MoveFirst
+                i = 0
+                Do Until re.EOF
+                    rnd = rnd & IIf(Len(rnd) > 0, ", ", "") & re!MK_11
+                    re.MoveNext
+                Loop
+            End If
         Case ""
             get_mk = ""
     End Select

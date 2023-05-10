@@ -208,7 +208,7 @@ Private Sub HTML_Seiten_Click()
         If Me.RecordsetClone.RecordCount = 0 Then
             MsgBox "Es gibt keine Paare in dieser Runde"
         Else
-            If get_properties("EWS") <> "EWS3" Then
+            If get_properties("EWS") = "EWS1" Then
                 Me!Runde_suchen.Locked = True
                 rde = Mid(Me!Runde_suchen.Column(4), 1, 6)
                 If InStr(1, Me!Runde_suchen.Column(4), "_Akro") > 0 And Me!Runde_suchen.Column(2) = False Then 'Hier wird bei A/B Fuﬂ und Akro erstellt

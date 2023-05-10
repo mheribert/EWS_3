@@ -1,4 +1,4 @@
-var ver = 'V3.2012';
+var ver = 'V3.2014';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -145,7 +145,7 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var punkte = 0;
     var linie = false;
     var max_paare = 8;
-    HTML_Inhalt = make_thead() + '<tbody>';
+    HTML_Inhalt = make_thead('') + '<tbody>';
     allranking = ratings;
 
     for (p in ratings) {
@@ -195,7 +195,7 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
         .query('SELECT * FROM View_Rundenablauf WHERE RT_ID =' + rt_id + ' ORDER BY Platz, Startnr;')
         .on('done', function (data) {
             var HTML_Kopf = 'Siegerehrung<br>' + data[0].Tanzrunde_Text;
-            var HTML_Inhalt = make_thead() + '<tbody>';
+            var HTML_Inhalt = make_thead(data[0].Runde) + '<tbody>';
             var cl = '';
             for (var p in data) { 
                 if (Platz &&  parseInt(Platz) > data[p].Platz) { // für getaktetes Anzeigen
@@ -226,7 +226,7 @@ exports.beamer_allranking = function (io, runde) {
         io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
         return;
     }
-    var HTML_Seite = make_thead() + '<tbody>';
+    var HTML_Seite = make_thead('') + '<tbody>';
 
     for (p = runde; p < runde + 8; p++) {
         if (p + 1 > allranking.lenght) {
@@ -284,15 +284,14 @@ exports.beamer_stellprobe = function (io, connection, teams, title) {
         });
 };
 
-function make_thead() {
+function make_thead(rde) {
     var t_head = '<thead><tr><th style="width: 90px; font-size: 35px;" class="sorting text_center">Platz</th>';
     t_head += '<th style="width: 80px; font-size: 35px;" class="sorting text_center">&nbsp;StNr.&nbsp;</th>';
     t_head += '<th style="width: auto; font-size: 35px;" class="sorting">Paar</th>';
-    t_head += '<th style="width: auto; font-size: 35px;" class="sorting">Punkte</th></tr></thead>';
+    if (rde ==="MK_5_TNZ") {
+        t_head += '<th style="width: auto; font-size: 35px; text-align: center;" class="sorting">Summe aller<br>Pl&auml;tze</th></tr></thead>';
+    } else {
+        t_head += '<th style="width: auto; font-size: 35px; text-align: center;" class="sorting">Punkte</th></tr></thead>';
+    }
     return t_head;
-}
-
-function fix2(wert) {
-    var pu=  (Math.round(wert * 100) / 100).toString();
-    return pu.replace(".", ",");
 }

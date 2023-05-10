@@ -4,7 +4,9 @@ Option Explicit
 Public Sub make_a_startlist(RT_ID As Integer)
     'Const RT_ID = 11
     
+    If get_properties("EWS") <> "EWS1" Then Exit Sub
     If get_mod_on Then Exit Sub
+    
     gen_Ordner getBaseDir & "Apache2\htdocs\moderator"
 
     Dim db As Database
@@ -40,16 +42,16 @@ Public Sub make_a_startlist(RT_ID As Integer)
     Loop
     out.writeline (line)
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.Close
+    out.close
     
     Set re = db.OpenRecordset("SELECT Rundentab.* FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr & ") AND ((Rundentab.RT_ID)=" & RT_ID & "));")
     re.Edit
     re!RT_Stat = 1
     re.Update
     
-    re.Close
-    ht.Close
-    db.Close
+    re.close
+    ht.close
+    db.close
     make_a_schedule         'Zeiplan neu schreiben
     make_a_off              'Offiziellenliste schreiben
     make_a_wrlist           'WR-Einteilung schreiben
@@ -104,11 +106,11 @@ Public Sub make_a_Vorstellungslist()
     Loop
     out.writeline (line)
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.Close
+    out.close
     
-    re.Close
-    ht.Close
-    db.Close
+    re.close
+    ht.close
+    db.close
 End Sub
 
 Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, runde_id)
@@ -192,12 +194,13 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
         line = Replace(line, "rt__org", org)
         out.writeline (line)
         out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-        out.Close
+        out.close
     End If
 End Sub
 
 Public Sub make_a_siegerehrung(RT_ID As Integer)
     
+    If get_properties("EWS") <> "EWS1" Then Exit Sub
     If get_mod_on Then Exit Sub
 'Const RT_ID = 4
     Dim db As Database
@@ -246,7 +249,7 @@ Public Sub make_a_siegerehrung(RT_ID As Integer)
             t = t + 1
             wr.MoveNext
         Loop
-        out.Close
+        out.close
     End If
     make_a_schedule
     Start_Seite tr_nr
@@ -356,7 +359,7 @@ Public Sub make_a_schedule()
         re.MoveNext
     Loop
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.Close
+    out.close
 
 End Sub
 
@@ -410,7 +413,7 @@ Private Sub make_a_off()
     Loop
 
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.Close
+    out.close
 
 End Sub
 
@@ -470,7 +473,7 @@ Private Sub make_a_wrlist()
     Loop
     
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.Close
+    out.close
 
 End Sub
 
