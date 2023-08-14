@@ -202,6 +202,7 @@ Private Sub Runde_beenden_Click()
     If get_properties("EWS") = "EWS1" Then
         Start_Seite "T" & Forms![A-Programmübersicht]!Turnier_Nummer
         make_a_schedule
+        Call Zeitplan_MouseUp(0, 0, 0, 0)
     End If
 End Sub
 
@@ -212,7 +213,13 @@ Private Sub sende_msg_Click()
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&bereich=beamer_inhalt&cont=" & Me!sende_text)
     
     
-     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & Me!sende_text)
+'     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & Me!sende_text)
+
+'    ' Werte senden Achtung beiGrobfehler
+'     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=setWert&WR_ID=2&fld=ak13&val=9")
+     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=remSend&WR_ID=2")
+     
+     
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&kopf=Vorrunde&inhalt=<table style=""width: 100%; float: left; padding-left:100px"" id=""table_timetable""><thead><tr role=""row""><th style=""width: 250px;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Beginn</th><th style=""width: auto;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Runde</th></tr></thead><tbody style=""font-size: 1.8vw;""> <tr class=""odd""> <td>19:00</td><td>Vorrunde  Juniorenklasse</td> </tr> <tr class=""odd""><td>19:10</td><td>Endrunde  Schülerklasse</td></tr>")
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&seite=&inhalt=bodytext&kopf=heribert&wr_info=")
@@ -240,13 +247,13 @@ Sub Tanzrunde_AfterUpdate()
             '*****AB***** V13.02 Fehler es wurde noch auf das alte Feld WR_func im Recordset zugegriffen - hier geänder in: WR_function
             wr_tr = left(Me!Tanzrunde.Column(6), 4)
             If Right(Me!Tanzrunde.Column(6), 4) = "_Fuß" Then
-                where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
+                where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
             Else
                 If wr_tr = "MK_1" Or wr_tr = "MK_2" Or wr_tr = "MK_3" Or wr_tr = "MK_4" Then
-                    where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)='M' OR WR_function='Ob'))"
+                    where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)='M' OR WR_function='Ob'))"
                     Me!Runde_starten.Visible = False
                 Else
-                    where_part = "(Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
+                    where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
                     If get_properties("EWS") = "EWS3" Then
                         Me!Runde_starten.Visible = True
                     Else

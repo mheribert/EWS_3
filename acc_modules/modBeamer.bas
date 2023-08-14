@@ -285,7 +285,7 @@ Function make_beamer_platzierung(RT_ID As Integer, Optional sieger)
     Letzte_Runde_SQL = "SELECT AW.rh FROM Abgegebene_Wertungen AS AW INNER JOIN (Paare AS P INNER JOIN Majoritaet AS M ON P.TP_ID = M.TP_ID) ON (AW.Paar_ID = P.TP_ID) AND (AW.RundenTab_ID = M.RT_ID) GROUP BY M.RT_ID, AW.RundenTab_ID, AW.rh HAVING (((AW.RundenTab_ID)=" & RT_ID & ")) ORDER BY AW.rh DESC;"
     Set Letzte_Runde = db.OpenRecordset(Letzte_Runde_SQL)
     
-    getanztePaare_SQL = "SELECT M.RT_ID, M.TP_ID, M.WR7, M.Platz, M.KO_Sieger, P.Startkl, P.Startnr, P.Da_Vorname, P.Da_Nachname, P.He_Vorname, P.He_Nachname, P.Verein_Name, P.Name_Team, Paare_Rundenqualifikation.Rundennummer, m.DQ_ID, m.PA_ID FROM (Paare AS P INNER JOIN Majoritaet AS M ON P.TP_ID = M.TP_ID) INNER JOIN Paare_Rundenqualifikation ON (M.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (M.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (M.RT_ID=" & RT_ID & ") ORDER BY M.Platz;"
+    getanztePaare_SQL = "SELECT M.RT_ID, M.TP_ID, M.WR7, M.Platz, M.KO_Sieger, P.Startkl, P.Startnr, P.Da_Vorname, P.Da_Nachname, P.He_Vorname, P.He_Nachname, P.Verein_Name, P.Name_Team, Paare_Rundenqualifikation.Rundennummer, m.DQ_ID, m.PA_ID FROM (Paare AS P INNER JOIN Majoritaet AS M ON P.TP_ID = M.TP_ID) INNER JOIN Paare_Rundenqualifikation ON (M.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (M.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (M.RT_ID=" & RT_ID & " AND (Paare_Rundenqualifikation.PR_ID) In (SELECT [PR_ID] FROM [Auswertung] )) ORDER BY M.Platz;"
     Set getanztePaare = db.OpenRecordset(getanztePaare_SQL)
     
     If getanztePaare.RecordCount > 0 Then

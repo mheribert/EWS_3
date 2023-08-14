@@ -317,12 +317,12 @@ Sub build_html(pr, RT_nr, Runde)
                 Case "BWBS_"
                     '----BS Baden-Württemberg-------------------------------------------------------------------------------------
                     Select Case re!Startkl
-                        Case "BS_RR_E1", "BS_RR_J2"
-                            line = get_line("BS", "BW_RR_lang", ppr)
-                        
-                        Case "BS_RR_BB", "BS_RR_J1", "BS_RR_S1", "BS_RR_S2"
+                        Case "BS_RR_BB", "BS_RR_J1", "BS_RR_S1", "BS_RR_S2", "BS_BW_EI"
                                 line = get_line("BS", "BW_RR_kurz", ppr)
                             
+                        Case "BS_RR_E1", "BS_RR_J2", "BS_BW_FO", "BS_BW_HA"
+                            line = get_line("BS", "BW_RR_lang", ppr)
+                        
                         Case "BS_BW_BW", "BS_BW_SH", "BS_F_BW_FO", "BS_F_RR_EF", "BS_F_RR_JF"
                             line = get_line("BS", "BW_BW_form", ppr)
                         
@@ -446,7 +446,7 @@ Sub build_html(pr, RT_nr, Runde)
     Start_Seite tr_nr
     
     pr.Filter = "Anwesend_Status=1"
-    make_beobachter pr, rd_klasse, tr_nr, RT_nr
+'    make_beobachter pr, rd_klasse, tr_nr, RT_nr
     
     
     'Schreibe all_cgi
@@ -855,9 +855,9 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
             line = Replace(line, "rt_z", Format(re!Startzeit, "hh:mm"))
             ' NewJudgingSystem Observer bekommt Verwarungen.
             If left(re!Startklasse, 3) = "BW_" Or left(re!Startklasse, 3) = "RR_" Then
-                einsatz = (Nz(DLookup("[wr_id]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID=" & wr!WR_ID)) > 0)
+                einsatz = (Nz(DLookup("[wr_function]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID=" & wr!WR_ID)) > 0)
             Else
-                einsatz = (Nz(DLookup("[wr_id]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID=" & wr!WR_ID & " AND WR_function<>'Ob'")) > 0)
+                einsatz = (Nz(DLookup("[wr_function]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID=" & wr!WR_ID & " AND WR_function<>'Ob'")) > 0)
             End If
             If wr!WR_AzuBi Or einsatz Then
                 'ist in Einsatz

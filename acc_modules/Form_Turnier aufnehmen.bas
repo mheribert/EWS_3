@@ -3,13 +3,13 @@ Option Explicit
 
 Private Sub Befehl8_Click()
 
-    DoCmd.close
+    DoCmd.Close
     
 End Sub
 
 Private Sub Befehl9_Click()
     
-    DoCmd.close
+    DoCmd.Close
     
 End Sub
 
@@ -103,19 +103,18 @@ Sub Kombinationsfeld35_AfterUpdate()
 End Sub
 
 Private Sub MehrkampfStationen_AfterUpdate()
+    mk_visible False
     Select Case Me!MehrkampfStationen
         Case "Bodenturnen und Trampolin"
-            mk_visible False
             Me!Trampolin.Visible = True
             Me!Bodenturnen.Visible = True
         Case "Kondition und Koordination"
-            Me!Bodenturnen.Visible = False
-            Me!Trampolin.Visible = False
             mk_visible True
+        Case "Breitensportwettbewerb"
+            Me!Kraft.Visible = True
+            Me!Balance.Visible = True
+            Me!Kondition.Visible = True
         Case Else
-            Me!Bodenturnen.Visible = False
-            Me!Trampolin.Visible = False
-            mk_visible False
             Me!MK_11 = ""
             Me!MK_12 = ""
             Me!MK_13 = ""
@@ -132,6 +131,11 @@ Function mk_visible(vi)
     Me!MK_21.Visible = vi
     Me!MK_22.Visible = vi
     Me!MK_23.Visible = vi
+    Me!Bodenturnen.Visible = False
+    Me!Trampolin.Visible = False
+    Me!Kraft.Visible = False
+    Me!Balance.Visible = False
+    Me!Kondition.Visible = False
 End Function
 
 Function MK_test(fld)

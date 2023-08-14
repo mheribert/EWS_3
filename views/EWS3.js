@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2014';
+﻿    var ver =  'V3.2015';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -8,8 +8,11 @@ var drop_filled = new Object;
 function start() {
     socket.on('chat', function (data) {
         if (document.title === "judgetool") {
+            if (data.msg === 'judgetool' && data.text === 'toRoot') {
+                window.location.href = "/logout";
+            }
             if (data.msg === 'toRoot' && parseInt(data.WR) === WR_ID) {
-//                window.location.href = "/logout";
+                //                window.location.href = "/logout";
             }
             if (data.msg === 'WR-Info1') {
                 document.getElementById(data.msg).innerHTML = data.text;
@@ -35,7 +38,7 @@ function start() {
                 btn = btn.children[data.val];
                 paint_bar(btn);
             }
-            if (data.msg === 'remSend') {
+            if (data.msg === 'remSend' && parseInt(data.WR) === WR_ID) {
                 f_send();
             }
         }

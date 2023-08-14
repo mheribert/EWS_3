@@ -30,8 +30,8 @@ Public Function updateTLP(dl_data, rmldg)
         
         Select Case get_properties("LAENDER_VERSION")
             Case "SL"
-                dateien = Array("Termine-Start-Daten.txt", "WR-TL-Start-Daten.txt", "DRBV-Akrotabelle.txt")
-                tbls = Array("TLP_TERMINE", "TLP_OFFIZIELLE", "Akrobatiken")
+                dateien = Array("Termine-Start-Daten.txt", "WR-TL-Start-Daten.txt", "DRBV-Akrotabelle-12P.txt")
+                tbls = Array("TLP_TERMINE", "TLP_OFFIZIELLE", "MSys__Akrobatiken")
         
             Case Else
                 dateien = Array("BW-Start-Daten.txt", "RR-Start-Daten-Paare.txt", "Formationen.txt", "WR-TL-Start-Daten.txt", "Termine-Start-Daten.txt", "DRBV-Akrotabelle-12P.txt")

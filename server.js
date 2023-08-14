@@ -1,4 +1,4 @@
-var ver = 'V3.2014';
+var ver = 'V3.2015';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -70,7 +70,7 @@ app.post('/login', function (req, res) {
 app.get('/judge', function (req, res) {
     sess = req.session;
     if (sess.user_id) {
-        var wr_name = wertungsrichter[sess.user_id].WR_Nachname.substr(0, 1) + wertungsrichter[sess.user_id].WR_Vorname || "";
+        var wr_name = wertungsrichter[sess.user_id].WR_Nachname.substring(0, 1) + wertungsrichter[sess.user_id].WR_Vorname || "";
         if (sess.user_func === "MA" || sess.user_func === "MB") {
             HTML_erstellen.mkPage(0, wr_name, sess.user_id, runden_info, res, sess.user_func);
         } else {
@@ -159,7 +159,7 @@ app.get('/hand', function (req, res) {
                                         st_kl = runden_info[0].Startklasse;
                                         trunde = runden_info[0].RundeArt;
                                         rd = runden_info[0].Runde;
-                                        v_mk = rd.substr(0, 4);
+                                        v_mk = rd.substring(0, 4);
                                     }
                                     var erster = false;
                                     observer = new Object;
@@ -281,7 +281,7 @@ app.get('/hand', function (req, res) {
                     }
                 }
             }
-            io.sockets.emit('chat', { zeit: new Date(), msg: 'judgetool', text: 'toRoot' });
+ //           io.sockets.emit('chat', { zeit: new Date(), msg: 'judgetool', text: 'toRoot' });
             HTML_beamer.beamer_runde(io, runden_info, runde, rd_ind);
             HTML_moderator.runde(io, runden_info, runde);
             res.send("Runde auswerten");
@@ -309,7 +309,6 @@ app.get('/hand', function (req, res) {
             io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: '' });
             io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: '' });
             HTML_moderator.zeitplan(io, connection);
-            to_Root();
             res.send("runde beendet");
             break;
 
@@ -433,7 +432,7 @@ app.get('/hand', function (req, res) {
                 }
             }
             res.send(req.query.msg + cgivar);
-            io.emit('chat', { msg: req.query.msg, text: cgivar.substr(1) });
+            io.emit('chat', { msg: req.query.msg, text: cgivar.substring(1) });
             break;
 
         case "setWert":
@@ -492,12 +491,12 @@ function runde_wiederherstellen(runden_info) {
 function insert_differences(body, wertungen) {
     var s;
     for (var i in body) {
-        if (i.substr(0, 3).indexOf("tfl") !== -1) {
+        if (i.substring(0, 3).indexOf("tfl") !== -1) {
             s = i.replace("ak", "");
-            s = s.substr(3, 1);
+            s = s.substring(3, 1);
             wertungen[body.WR_ID][body["TP_ID" + s]][i] = body[i];
             wertungen[body.WR_ID][body["TP_ID" + s]]["korr"] = "Ok";
-            wertungen[body.WR_ID][body["TP_ID" + s]]["w" + i.substr(1, 8)] = body["w" + i.substr(1, 8)];
+            wertungen[body.WR_ID][body["TP_ID" + s]]["w" + i.substring(1, 8)] = body["w" + i.substring(1, 8)];
         }
     }
 }
@@ -610,7 +609,7 @@ function verteilen(WR_ID) {
         }
     }
     var i;
-    var wr_name = wertungsrichter[WR_ID].WR_Nachname.substr(0, 1) + wertungsrichter[WR_ID].WR_Vorname || "";
+    var wr_name = wertungsrichter[WR_ID].WR_Nachname.substring(0, 1) + wertungsrichter[WR_ID].WR_Vorname || "";
     switch (wertungsrichter[WR_ID].WR_status) {
         case "start":		// allgemeines warten vor Rundenstart
             HTML_erstellen.wait(rd_ind, runden_info, '<div class="wertung_offen" align="center">Runde beginnt bald</div>', wr_name, WR_ID, io);
@@ -659,17 +658,11 @@ function verteilen(WR_ID) {
                                 case "BS_BY_S1":
                                     HTML_Seite = HTML_erstellen.BS_BY_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
-                                case "BS_BW_BW":        // BWRRV
-                                case "BS_BW_SH":
-                                case "BS_F_BW_FO":
-                                case "BS_F_RR_EF":
+                                case "BS_F_RR_EF":      // BWRRV
                                 case "BS_F_RR_JF":
-                                case "BS_RR_BB":
-                                case "BS_RR_E1":
-                                case "BS_RR_J1":
-                                case "BS_RR_J2":
-                                case "BS_RR_S1":
-                                case "BS_RR_S2":
+                                case "BS_BW_EI":
+                                case "BS_BW_FO":
+                                case "BS_BW_HA":
                                     HTML_Seite = HTML_erstellen.BS_BW_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;                                   
                                 case "BS_GR_GS":        //Schulsport Saarland
@@ -711,8 +704,8 @@ function verteilen(WR_ID) {
                             }, 500);
                             break;
                         case "F_B":
-                            HTML_Seite = HTML_erstellen.RR_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
-//                            HTML_Seite = HTML_erstellen.BW_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
+//                            HTML_Seite = HTML_erstellen.RR_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
+                            HTML_Seite = HTML_erstellen.BW_Form_Seite(rd_ind, runden_info, akrobatiken, "X", wr_name, WR_ID, io);
                             break;
                     }
                     break;
@@ -735,14 +728,17 @@ function verteilen(WR_ID) {
                             break;
                         case "BS_":
                             switch (st_kl) {
-                                case "BS_BY_BJ":
+                                case "BS_BY_BJ":        // BRBV
                                 case "BS_BY_BE":
                                 case "BS_BY_BS":
                                 case "BS_BY_S1":
                                     HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     break;
-                                case "BS_BW_BW":
-                                case "BS_BW_SH":
+                                case "BS_F_RR_JF":      // BWRRV
+                                case "BS_F_RR_EF":
+                                case "BS_BW_HA":
+                                case "BS_BW_FO":
+                                case "BS_BW_EI":
                                     HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     break;
                                 default:
@@ -757,7 +753,7 @@ function verteilen(WR_ID) {
 
                 case "Ft":
                     st_kl = runden_info[0].Startklasse;
-                    var rde = runden_info[0].Runde.substr(0, 4);
+                    var rde = runden_info[0].Runde.substring(0, 4);
                     switch (st_kl.substring(0, 3)) {
                         case "RR_":
                             if (st_kl === "RR_S1" || st_kl === "RR_S2" || rde === "MK_1" || rde === "MK_2" || rde === "MK_3" || rde === "MK_4") {
@@ -845,7 +841,7 @@ function storage_send(WR_ID) {
         //        .query('SELECT * FROM View_Rundenablauf WHERE Runde = "MK_3_BOT" ORDER BY Startklasse, Rundennummer, Startnr;')
         .on('done', function (data) {
             var s;
-            io.sockets.emit('chat', { msg: 'mehrkampf', turnier: data[0].RT_file.substr(0, 8) });
+            io.sockets.emit('chat', { msg: 'mehrkampf', turnier: data[0].RT_file.substring(0, 8) });
             for (var i in data) {
                 var mehrkampf = new Object;
                 if (data[i].Runde.substring(0, 4) !== "MK_5") {
@@ -863,7 +859,7 @@ function storage_send(WR_ID) {
                 }
             }
             io.sockets.emit('chat', { msg: 'mehrkampf', storage_load: WR_ID });
-            console.log("MK-Daten geschrieben " + wertungsrichter[WR_ID].WR_Nachname.substr(0, 1) + wertungsrichter[WR_ID].WR_Vorname);
+            console.log("MK-Daten geschrieben " + wertungsrichter[WR_ID].WR_Nachname.substring(0, 1) + wertungsrichter[WR_ID].WR_Vorname);
         });
 }
 
@@ -875,7 +871,7 @@ function storage_send(WR_ID) {
     var wr_name;
     var body = cgi_split(cgivar);
     if (cgivar.indexOf("NaN") > 0) {
-        wr_name = wertungsrichter[body.WR_ID].WR_Nachname.substr(0, 1) + wertungsrichter[body.WR_ID].WR_Vorname || "";
+        wr_name = wertungsrichter[body.WR_ID].WR_Nachname.substring(0, 1) + wertungsrichter[body.WR_ID].WR_Vorname || "";
         console.log('Tablett von ' + wr_name + ' liefert falsche Werte!' + '\r\n' + '\r\n' + '\r\n');
     } else {
         if (body.MK_check === "1") {
@@ -1014,7 +1010,7 @@ function refresh_wait() {
     render_WR_status();
     for (i in wertungsrichter) {
         if (wertungsrichter[i].WR_status === 'wait') {
-            var wr_name = wertungsrichter[i].WR_Nachname.substr(0, 1) + wertungsrichter[i].WR_Vorname || "";
+            var wr_name = wertungsrichter[i].WR_Nachname.substring(0, 1) + wertungsrichter[i].WR_Vorname || "";
             HTML_erstellen.wait(0, runden_info, wr_status, wr_name, i, io);
         }
     }

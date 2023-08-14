@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2014';
+﻿var ver = 'V3.2015';
 var fs = require('fs');
 
 exports.rechne_wertungen = function (body, seite, runden_info) {
@@ -131,17 +131,11 @@ function rechne_wertungen(body, seite, runden_info) {
                     Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
                     Punkte += parseFloat(body["win" + seite]) * kl_punkte[3] / 10;  // Interpretation (Figuren, spontane Interpretation)
                     break;
-                case "BS_BW_BW":        // BWRRV
-                case "BS_BW_SH":
-                case "BS_F_BW_FO":
+                case "BS_BW_EI":        // BWRRV
+                case "BS_BW_FO":
+                case "BS_BW_HA":
                 case "BS_F_RR_EF":
                 case "BS_F_RR_JF":
-                case "BS_RR_BB":
-                case "BS_RR_E1":
-                case "BS_RR_J1":
-                case "BS_RR_J2":
-                case "BS_RR_S1":
-                case "BS_RR_S2":
                     Punkte =  parseFloat(body["wth" + seite]);
                     Punkte += parseFloat(body["wtd" + seite]);
                     Punkte += parseFloat(body["wta" + seite]);   
@@ -223,12 +217,12 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                                         PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x].Punkte) * -1
                                     } else {
                                         for (var aewr in wertungen[i][x]) {
-                                            if ((aewr.substr(0, 4) === "tfl" + seite || aewr.substr(0, 6) === "tflak" + seite) && wertungen[i][x][aewr] != "") {
+                                            if ((aewr.substring(0, 4) === "tfl" + seite || aewr.substring(0, 6) === "tflak" + seite) && wertungen[i][x][aewr] != "") {
                                                 PunkteAe[aewr] = wertungen[i][x][aewr];
-                                                PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x]["w" + aewr.substr(1, 8)]);
+                                                PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x]["w" + aewr.substring(1, 8)]);
                                                 if (wertungen[i][x][aewr].indexOf("P0") != -1) {
-                                                    PunkteAe["w" + aewr.substr(3, 4)] = 0;
-                                                    wertungen[i][x]["w" + aewr.substr(3, 4)] = 0;
+                                                    PunkteAe["w" + aewr.substring(3, 4)] = 0;
+                                                    wertungen[i][x]["w" + aewr.substring(3, 4)] = 0;
                                                 }
                                             }
                                         }
@@ -246,19 +240,21 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                 PunkteAe = new Object();
                 for (x in wertungen[i]) {
                     if (parseInt(x) === runden_info[s].TP_ID) {
-                        wertungen[i][x].Punkte = rechne_wertungen(wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info);
-                        switch (wertungsrichter[i].WR_func) {
-                            case 'Ft':
-                            case 'X':
-                            case 'MB':
-                                PunkteFt.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
-                                break;
-                            case 'MA':
-                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
-                                break;
-                            case 'Ak':
-                                PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
-                                break;
+                        if (wertungsrichter[i].WR_Azubi === false) {
+                            wertungen[i][x].Punkte = rechne_wertungen(wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info);
+                            switch (wertungsrichter[i].WR_func) {
+                                case 'Ft':
+                                case 'X':
+                                case 'MB':
+                                    PunkteFt.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
+                                    break;
+                                case 'MA':
+                                    PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
+                                    break;
+                                case 'Ak':
+                                    PunkteAk.push([i, x, wertungen[i][x].Punkte, false, wertungen[i][x].cgi, wertungen[i][x].Seite, runden_info[0].Runde]);
+                                    break;
+                            }
                         }
                     }
                 }
@@ -310,11 +306,11 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                 if (wertungen[wr][pr].cgi.TP_ID1 === TP_ID || wertungen[wr][pr].cgi.TP_ID2 === TP_ID) {
                     for (p in PunkteAe) {
                         if (typeof wertungen[wr][pr].cgi[p] !== "undefined") {
-                            if (p.substr(0, 3) !== "wak") {
+                            if (p.substring(0, 3) !== "wak") {
                                 wertungen[wr][pr].cgi[p] = wertungen[i][TP_ID][p];
-                                wertungen[wr][pr].cgi["w" + p.substr(1, 10)] = to_zahl(wertungen[i][TP_ID]["w" + p.substr(1, 10)]);
+                                wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(wertungen[i][TP_ID]["w" + p.substring(1, 10)]);
                             } else {
-                                wertungen[wr][pr].cgi["w" + p.substr(1, 10)] = to_zahl(PunkteAe[p]);
+                                wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(PunkteAe[p]);
                             }
 
                         }

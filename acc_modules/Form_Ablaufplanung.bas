@@ -32,7 +32,7 @@ End Sub
 
 Private Sub Feld81_AfterUpdate()
     Const stklassen = "RR_J, RR_S, RR_S1, RR_S2"
-    If InStr(stklassen, Me!Feld81) > 0 Then
+    If InStr(stklassen, Me!Feld81) > 0 And DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
         Me!Mehrkampf_eintragen.Visible = True
     Else
         Me!Mehrkampf_eintragen.Visible = False
@@ -93,6 +93,8 @@ Private Sub Form_Open(Cancel As Integer)
                     sqlwhere = " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE" & sqlwhere & " OR Runde =""MK_5_TNZ"""
                 End If
             End If
+        Case "Breitensportwettbewerb"
+            sqlwhere = " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE Runde Like 'MK_6*' Or Runde Like 'MK_5*'"
         Case ""
             sqlwhere = ""
     End Select
@@ -123,17 +125,21 @@ Private Sub Mehrkampf_eintragen_Click()
         Set re = dbs.OpenRecordset("SELECT * FROM Turnier WHERE Turniernum=" & TNR & ";")
         Set neu = Me.RecordsetClone
         If Not re.EOF() Then
-            If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") = "Kondition und Koordination" Then
-                For i = 1 To 2
-                    For j = 1 To 3
-                        If re("MK_" & i & j) <> "" And Not IsNull(re("MK_" & i & j)) Then _
-                            Runde = Runde & re("MK_" & i & j) & ", "
+            Select Case DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1")
+                Case "Kondition und Koordination"
+                    For i = 1 To 2
+                        For j = 1 To 3
+                            If re("MK_" & i & j) <> "" And Not IsNull(re("MK_" & i & j)) Then _
+                                Runde = Runde & re("MK_" & i & j) & ", "
+                        Next
                     Next
-                Next
-                Runde = Runde & "MK_5_TNZ, End_r, Sieger"
-            Else
-                Runde = "MK_3_BOT, MK_4_TRA, MK_5_TNZ, End_r, Sieger"
-            End If
+                    Runde = Runde & "MK_5_TNZ, End_r, Sieger"
+                Case "Bodenturnen und Trampolin"
+                    Runde = "MK_3_BOT, MK_4_TRA, MK_5_TNZ, End_r, Sieger"
+                Case Else
+                    MsgBox "Diese Mehrkampfart wurde nicht definiert!"
+                    Exit Sub
+            End Select
             Runde = Split(Runde, ", ")
             make_rde Me!Feld81, Runde, ""
         End If
@@ -278,7 +284,7 @@ Private Sub runden_ergaenzen_Click()
                     
                 Case "RR_S1", "RR_S2"
                 '   Debug.Print DCount("TP_ID", "Paare", "Anwesent_Status<>0 AND Startkl='" & rde!Startklasse & "'")
-                    Runde = get_mk("Startbuchabgabe, MK_5_TNZ, Sieger")
+                    Runde = get_mk("Startbuchabgabe, Sieger")
                     
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
                      ' Löschen von End_r
@@ -399,9 +405,6 @@ Private Sub btnAblaufplanung_Click()
 End Sub
 
 Private Sub btnAktualisieren_Click()
-    If get_properties("check_runden") = 1 Then
-        runden_ergaenzen_Click
-    End If
     Me.Requery
 End Sub
 
@@ -433,7 +436,7 @@ Private Sub Zeitplan_Click()
         line = make_beamer_zeitplan(RT_ID)
         line = Replace(line, "x__zoom", "")                  ' "style=""padding:200px""")
         
-        Set out = file_handle(ht_pfad & "anzeige.html")
+        Set out = file_handle(ht_pfad & "index.html")
         out.writeline (line)
         out.Close
     Else
@@ -457,11 +460,14 @@ Public Function get_mk(rnd)        ' Mehrkampfstationen sammeln
             Else
                 re.MoveFirst
                 i = 0
+                rnd = rnd & ", MK_5_TNZ"
                 Do Until re.EOF
                     rnd = rnd & IIf(Len(rnd) > 0, ", ", "") & re!MK_11
                     re.MoveNext
                 Loop
             End If
+        Case "Breitensportwettbewerb"
+            rnd = rnd & ", MK_6_KFT, MK_6_BAL, MK_6_KON, MK_5_TNZ"
         Case ""
             get_mk = ""
     End Select

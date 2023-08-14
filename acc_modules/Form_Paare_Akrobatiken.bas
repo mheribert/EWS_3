@@ -12,7 +12,6 @@ Private Sub alle_Akrobatiken_Click()
         Me.alle_Akrobatiken.Caption = "alle Akrobatiken freischalten"
         Me.PaarAkrobatiken = True
     End If
-    
 
 End Sub
 
@@ -20,7 +19,7 @@ Private Sub Beenden_Click()
 On Error GoTo Err_Beenden_Click
 
 
-    DoCmd.Close
+    DoCmd.close
 
 Exit_Beenden_Click:
     Exit Sub
@@ -47,11 +46,15 @@ Function fill_akro()
     Dim i, j, gr_id As Integer
     Dim a_id As Variant
     Dim f_text As String
+    Dim ctl As Control
     Dim grid_text As String
     Dim Gruppen_ID(40)
-    Dim idcheck(10)
-    
+    Dim idcheck(12)     ' FD=11   FF=12
+    Dim alteWerte(2)
+
     fld = Replace(Me.ActiveControl.Name, "Akro", "Wert")
+    alteWerte(1) = Me.ActiveControl.OldValue
+    alteWerte(2) = Me(fld)
     Me(fld) = Me(ActiveControl.Name).Column(2)
     
     Set db = CurrentDb
@@ -62,12 +65,17 @@ Function fill_akro()
             If IsNumeric(a_id) Then Exit For
         Next j
         If IsNumeric(a_id) Then
+            If left(Me("Akro" & i & "_" & Tanzrunde), 2) = "FD" Then
+                idcheck(11) = idcheck(11) + 1
+            End If
+            If left(Me("Akro" & i & "_" & Tanzrunde), 2) = "FF" Then
+                idcheck(12) = idcheck(12) + 1
+            End If
             Me("ID" & i & "_" & Tanzrunde) = a_id
             If Not IsNull(a_id) Then
                 idcheck(a_id) = idcheck(a_id) + 1
                 Set re = db.OpenRecordset("SELECT * FROM Akrobatiken WHERE Akrobatik='" & Me("Akro" & i & "_" & Tanzrunde) & "';")
                 For j = 1 To 5
-                    
                     If re("Gruppen_ID_" & j) <> 0 Then
                         Gruppen_ID(gr_id) = re("Gruppen_ID_" & j)
                         grid_text = grid_text & re("Gruppen_ID_" & j) & " "
@@ -79,28 +87,52 @@ Function fill_akro()
             End If
         End If
     Next
-    If idcheck(0) = 0 Then
-        f_text = "Die Kategorie (0) Vorwärtselement ist nicht belegt worden!" & vbCrLf & vbCrLf
+    If Me!Startkl = "RR_A" Or Me!Startkl = "RR_B" Then
+        If idcheck(0) = 0 Then
+            f_text = "Die Kategorie (0) Rotationen ist nicht belegt worden!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(3) = 0 Then
+            f_text = f_text & "Die Kategorie (3) Vorwärtselement ist nicht belegt worden!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(4) = 0 Then
+            f_text = f_text & "Die Kategorie (4) Rückwärtselement ist nicht belegt worden!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(5) = 0 Then
+            f_text = f_text & "Die Kategorie (5) Kopfüberelement ist nicht belegt worden!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(5) > 3 Then
+            f_text = f_text & "Die max. Anzahl an Kopfüberelementen wurde überschritten!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(8) > 2 Then
+           f_text = f_text & "Die max. Anzahl der erlaubten Kombinationen (8) wurde überschritten!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(9) > 2 Then
+            f_text = f_text & "Die max. Anzahl der erlaubten Rotationen (9) wurde überschritten!" & vbCrLf & vbCrLf
+        End If
     End If
-    If idcheck(3) = 0 Then
-        f_text = f_text & "Die Kategorie (3) Rückwärtselement ist nicht belegt worden!" & vbCrLf & vbCrLf
+    If Me!Startkl = "F_RR_M" Then
+        If idcheck(11) > 2 Then
+            f_text = f_text & "Die max. Anzahl an Dualakrobatiken wurde überschritten!" & vbCrLf & vbCrLf
+        End If
+        If idcheck(12) > 2 Then
+            f_text = f_text & "Die max. Anzahl an formationsspezifischen Akrobatiken wurde überschritten!" & vbCrLf & vbCrLf
+        End If
     End If
-    If idcheck(4) = 0 Then
-        f_text = f_text & "Die Kategorie (4) Rotationen ist nicht belegt worden!" & vbCrLf & vbCrLf
+    If check_doppelte(gr_id, Gruppen_ID) Then f_text = f_text & "Es gibt min. 2 Akrobatiken mit gleicher Gruppen ID!" & vbCrLf & vbCrLf
+    If Me("Summe_" & Tanzrunde) > 70 Then
+        f_text = f_text & "Der max. zulässige akrobatische Vorwert wurde überschritten!"
     End If
-    If idcheck(5) = 0 Then
-        f_text = f_text & "Die Kategorie (5) Kopfüberelement ist nicht belegt worden!" & vbCrLf & vbCrLf
-    End If
-    If idcheck(8) >= 3 Then
-       f_text = f_text & "Die max. Anzahl der erlaubten Kombinationen (8) wurde überschritten!" & vbCrLf & vbCrLf
-    End If
-    If idcheck(9) >= 3 Then
-        f_text = f_text & "Die max. Anzahl der erlaubten Rotationen (9) wurde überschritten!" & vbCrLf & vbCrLf
-    End If
-    If check_doppelte(gr_id, Gruppen_ID) Then f_text = f_text & "Es gibt min 2 Akrobatiken mit gleicher Gruppen ID!" & vbCrLf & vbCrLf
     If f_text <> "" Then
         Me!Gruppen_ID.Visible = True
-        MsgBox f_text
+        MsgBox "Der Tausch ist nicht erlaubt!" & vbCrLf & vbCrLf & f_text, , "Achtung"
+        Me(ActiveControl.Name) = alteWerte(1)
+        Me(fld) = alteWerte(2)
+        For Each ctl In Controls
+            If (left(ctl.Name, 5) = "GR_ID" Or left(ctl.Name, 2) = "ID") And Right(ctl.Name, 3) = Right(fld, 3) Then
+                ctl.Value = ""
+            End If
+        Next
+        Me!Gruppen_ID.Visible = False
     End If
 
 End Function

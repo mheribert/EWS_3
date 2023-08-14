@@ -482,7 +482,7 @@ Function add_akro(scr_elem, i, t)
     add_akro = Punkte
 End Function
 
-Function zerlege(inp)
+Public Function zerlege(inp)
     Dim vars, var, back
     Dim i As Integer
     Set back = CreateObject("Scripting.Dictionary")
@@ -520,25 +520,30 @@ End Function
 
 '*****AB***** V13.02 neue Funktion zum Einlesen der RT_Daten
 Public Sub Import_RT_txt(RundenTab_ID)
-
-On Error GoTo RT_Import_Fehler_Err
 '*** benötigte Übergabewerte Runden_ID aus RTTabelle
 ' Parameter RundenTab_ID As Integer
+On Error GoTo RT_Import_Fehler_Err
 
-Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
-Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
-Dim n, Akrozähler As Integer
-Dim fs, inp, cgivar, Zeile, Testarray
-Dim anzahl_paare As Integer
-Dim AbgegebeneWertungen, rt, html_felder As Recordset
-Dim db As Database
+    If get_properties("EWS") <> "EWS1" Then Exit Sub
 
-Set db = CurrentDb()
-Set AbgegebeneWertungen = db.OpenRecordset("SELECT * from Abgegebene_Wertungen;", DB_OPEN_DYNASET)
-Set Werte_Assoz_Array = CreateObject("Scripting.Dictionary")
-Set rt = db.OpenRecordset("Select * from rundentab where rt_id = " & RundenTab_ID & ";", DB_OPEN_DYNASET)
-Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb =""" & left(rt!Startklasse, 3) & """;", DB_OPEN_DYNASET)
 
+    Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
+    Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
+    Dim n, Akrozähler As Integer
+    Dim fs, inp, cgivar, Zeile, Testarray
+    Dim anzahl_paare As Integer
+    Dim AbgegebeneWertungen, rt, html_felder As Recordset
+    Dim db As Database
+    
+    Set db = CurrentDb()
+    Set AbgegebeneWertungen = db.OpenRecordset("SELECT * from Abgegebene_Wertungen;", DB_OPEN_DYNASET)
+    Set Werte_Assoz_Array = CreateObject("Scripting.Dictionary")
+    Set rt = db.OpenRecordset("Select * from rundentab where rt_id = " & RundenTab_ID & ";", DB_OPEN_DYNASET)
+    If get_properties("EWS") = "EWS1" And left(rt!Startklasse, 3) = "BW_" Then
+        Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb ='DBW_alt';", DB_OPEN_DYNASET)
+    Else
+        Set html_felder = db.OpenRecordset("Select * from Wertungsbögen where wb ='D" & left(rt!Startklasse, 3) & "';", DB_OPEN_DYNASET)
+    End If
     fName = getBaseDir & get_TerNr & "_RT" & CInt(RundenTab_ID) & ".txt"   ' Dateiname erstellen
     
     If Len(Dir(fName)) > 0 Then
@@ -656,28 +661,43 @@ Public Sub ObserverHTML(trunde)
     Dim HTML_WR_Template As String
     Dim HTML_WR_Werte, sql, test, PaarLinks, PaarRechts As String
     Dim st_kl As String
+    Dim vars
     Dim AbgegebeneWertungen, Paar_Infos As Recordset
-    Dim WR_Zaehler, x, A_WR, T_WR, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim WR_Zaehler, x, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim Anz_Paare As Integer
+    Dim A_WR(2), T_WR(2) As Integer
     Dim i, t As Integer
+    Dim seite, seiten As Integer
     Dim T_WR_Reset, A_WR_Reset As Boolean
     Dim kl_punkte
     Dim db As Database
     Dim rd As String
     Dim GesamtPunkte As Double
     
-    '*** Checken ob Website neu aufgebaut oder nur aktualisiert werden muss
-    sql = "SELECT Abgegebene_Wertungen.RundenTab_ID, Abgegebene_Wertungen.rh, Abgegebene_Wertungen.Wertungsrichter_ID FROM Abgegebene_Wertungen;"
-    
     Set db = CurrentDb()
+    sql = "SELECT * FROM Auswertung ORDER BY AUS_ID DESC;"
     Set AbgegebeneWertungen = db.OpenRecordset(sql, DB_OPEN_DYNASET)
     rd = ch_runde(trunde)
-    AbgegebeneWertungen.MoveLast
+
+    Set vars = zerlege(Nz(AbgegebeneWertungen!Cgi_Input))
+
+    Letzte_Runde = CSng(vars.Item("rt_ID"))
+    letzte_Tanzrunde = CSng(vars.Item("rh1"))
     
-    Letzte_Runde = AbgegebeneWertungen!RundenTab_ID
-    letzte_Tanzrunde = AbgegebeneWertungen!rh
-    
-    Set AbgegebeneWertungen = db.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_Nachname, Startklasse_Wertungsrichter.WR_function, AW.* FROM (Startklasse_Wertungsrichter INNER JOIN (Rundentab INNER JOIN Abgegebene_Wertungen AS AW ON Rundentab.RT_ID = AW.RundenTab_ID) ON Startklasse_Wertungsrichter.Startklasse = Rundentab.Startklasse) INNER JOIN Wert_Richter ON (Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID) AND (AW.Wertungsrichter_ID = Wert_Richter.WR_ID) WHERE (((AW.rh)=" & letzte_Tanzrunde & ") AND ((AW.RundenTab_ID)=" & Letzte_Runde & ")) ORDER BY AW.Paar_ID, Wert_Richter.WR_Kuerzel;", DB_OPEN_DYNASET)
+    Set AbgegebeneWertungen = db.OpenRecordset("SELECT Wert_Richter.WR_Nachname, Wert_Richter.WR_func, Paare_Rundenqualifikation.TP_ID AS Paar_ID, Paare_Rundenqualifikation.PR_ID, Auswertung.Cgi_Input FROM (Auswertung INNER JOIN Wert_Richter ON Auswertung.WR_ID = Wert_Richter.WR_ID) INNER JOIN Paare_Rundenqualifikation ON Auswertung.PR_ID = Paare_Rundenqualifikation.PR_ID WHERE (((Auswertung.Cgi_Input) Like '*rh1=" & letzte_Tanzrunde & "*' AND (Auswertung.Cgi_Input) Like '*rt_ID=" & Letzte_Runde & "*'));", DB_OPEN_DYNASET)
+'    Set AbgegebeneWertungen = db.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_Nachname, Startklasse_Wertungsrichter.WR_function, AW.* FROM (Startklasse_Wertungsrichter INNER JOIN (Rundentab INNER JOIN Abgegebene_Wertungen AS AW ON Rundentab.RT_ID = AW.RundenTab_ID) ON Startklasse_Wertungsrichter.Startklasse = Rundentab.Startklasse) INNER JOIN Wert_Richter ON (Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID) AND (AW.Wertungsrichter_ID = Wert_Richter.WR_ID) WHERE (((AW.rh)=" & letzte_Tanzrunde & ") AND ((AW.RundenTab_ID)=" & Letzte_Runde & ")) ORDER BY AW.Paar_ID, Wert_Richter.WR_Kuerzel;", DB_OPEN_DYNASET)
     Set Paar_Infos = db.OpenRecordset("SELECT RT.RT_ID, PRQ.Rundennummer, PRQ.TP_ID, RT.Startklasse, Startklasse.Startklasse_text, RT.Runde, Paare.Startnr, Paare.Startnr, IIf([isTeam],[Name_Team],[Da_Nachname]) AS Ausdr1, Paare.He_Nachname FROM (Paare INNER JOIN (Rundentab AS RT INNER JOIN Paare_Rundenqualifikation AS PRQ ON RT.RT_ID = PRQ.RT_ID) ON Paare.TP_ID = PRQ.TP_ID) INNER JOIN Startklasse ON RT.Startklasse = Startklasse.Startklasse WHERE (((RT.RT_ID)=" & Letzte_Runde & ") AND ((PRQ.Rundennummer)=" & letzte_Tanzrunde & ")) ORDER BY RT.RT_ID, PRQ.Rundennummer, Paare.Startnr;", DB_OPEN_DYNASET)
+
+    A_WR(1) = 1
+    T_WR(1) = 1
+    A_WR(2) = 1
+    T_WR(2) = 1
+
+    T_WR_Reset = False
+    A_WR_Reset = False
+    Paar_ID = CSng(vars.Item("PR_ID1"))
+    st_kl = Paar_Infos!Startklasse
+
     
     HTML_Website = ""
     If left(Paar_Infos!Startklasse, 3) = "BW_" Then ' Or Left(Paar_Infos!Startklasse, 3) = "F_B" Then
@@ -698,135 +718,183 @@ Public Sub ObserverHTML(trunde)
     WR_Zaehler = AbgegebeneWertungen.RecordCount
     AbgegebeneWertungen.MoveFirst
     
-    A_WR = 1
-    T_WR = 1
-    T_WR_Reset = False
-    A_WR_Reset = False
-    Paar_ID = AbgegebeneWertungen!Paar_ID
-    st_kl = Paar_Infos!Startklasse
     
     For x = 1 To WR_Zaehler
-        HTML_WR_Werte = HTML_WR_Template
-    
-        Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
-    
-        If AbgegebeneWertungen!WR_function = "Ft" Or AbgegebeneWertungen!WR_function = "X" Then
-        
-            GesamtPunkte = 0
-            Select Case left(st_kl, 3)
-                Case "BW_"
-                    kl_punkte = Punkteverteilung(st_kl, rd, trunde)
-                    GesamtPunkte = CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
-                Case "BS_"
-                    GesamtPunkte = CSng(AbgegebeneWertungen!Herr_Grundtechnik)
-                Case "F_B"
-                    kl_punkte = Punkteverteilung(st_kl, rd, trunde)
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
-                Case "F_R"
-                    kl_punkte = Punkteverteilung(st_kl, rd, trunde)
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
-                Case Else
-                    GesamtPunkte = (CSng(AbgegebeneWertungen!Herr_Grundtechnik) / 2) + (CSng(Nz(AbgegebeneWertungen!Herr_Haltung_Drehtechnik)) / 2) + (CSng(AbgegebeneWertungen!Dame_Grundtechnik) / 2)
-                    GesamtPunkte = GesamtPunkte + (CSng(Nz(AbgegebeneWertungen!Dame_Haltung_Drehtechnik)) / 2) + (CSng(AbgegebeneWertungen!Choreographie) * 6 / 10) + (CSng(Nz(AbgegebeneWertungen!Tanzfiguren) * 6 / 10)) + (CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * 8 / 10)
-            End Select
-            If GesamtPunkte < 0 Then GesamtPunkte = 0
-            
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
-            'einen FT-WR einfügen
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Observer_FT(st_kl, AbgegebeneWertungen!Herr_Grundtechnik, 0, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", Observer_FT(st_kl, AbgegebeneWertungen!Herr_Haltung_Drehtechnik, 1, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Observer_FT(st_kl, AbgegebeneWertungen!Dame_Grundtechnik, 2, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", Observer_FT(st_kl, AbgegebeneWertungen!Dame_Haltung_Drehtechnik, 3, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", Observer_FT(st_kl, AbgegebeneWertungen!Choreographie, 4, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", Observer_FT(st_kl, AbgegebeneWertungen!Tanzfiguren, 5, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", Observer_FT(st_kl, AbgegebeneWertungen!Tänzerische_Darbietung, 6, trunde))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT08", Round(GesamtPunkte, 2))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT09", "&nbsp;")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", IIf(IsNull(AbgegebeneWertungen!Grobfehler_Text), "&nbsp;", AbgegebeneWertungen!Grobfehler_Text))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", AbgegebeneWertungen!Grobfehler_Summe)
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT12", "&nbsp;")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round(GesamtPunkte - AbgegebeneWertungen!Grobfehler_Summe, 2))
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT14", "&nbsp;")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", "&nbsp;")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", "&nbsp;")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", "&nbsp;")
-            
-            If AbgegebeneWertungen!Paar_ID <> Paar_ID And T_WR_Reset = False Then
-                T_WR = 1
-                T_WR_Reset = True
-            End If
-            If AbgegebeneWertungen!Paar_ID = Paar_ID Then
-                HTML_Paar_links = Replace(HTML_Paar_links, "<td>TWR" & T_WR & "</td>", HTML_WR_Werte)
-                PaarLinks = Paar_Infos!Startnr & " " & Paar_Infos!Ausdr1 & " / " & Paar_Infos!He_Nachname
-            Else
-                HTML_Paar_rechts = Replace(HTML_Paar_rechts, "<td>TWR" & T_WR & "</td>", HTML_WR_Werte)
-                PaarRechts = Paar_Infos!Startnr & " " & Paar_Infos!Ausdr1 & " / " & Paar_Infos!He_Nachname
-            End If
-           T_WR = T_WR + 1
+        If Paar_ID = AbgegebeneWertungen!Paar_ID Then
+            seite = 1
         Else
-            
-            GesamtPunkte = 0
-            For i = 1 To 8
-                If Not IsNull(AbgegebeneWertungen!Akrobatik1) Then
-                    GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen("Akrobatik" & i)) - CSng(AbgegebeneWertungen("Akrobatik" & i & "_Grobfehler_Summe"))
-                    t = t + 1
-                End If
-            Next
-            If st_kl = "F_RR_M" Then ' Master RR
-                GesamtPunkte = GesamtPunkte / IIf(t < 7, 6, t) * 5
-            Else
-                GesamtPunkte = 0
-            End If
-            If GesamtPunkte < 0 Then GesamtPunkte = 0
-            
-            'einen AK-WR einfügen
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Round((100 - (AbgegebeneWertungen!Akrobatik1 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 1))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", AbgegebeneWertungen!Akrobatik1_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Round((100 - (AbgegebeneWertungen!Akrobatik2 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 2))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", AbgegebeneWertungen!Akrobatik2_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", Round((100 - (AbgegebeneWertungen!Akrobatik3 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 3))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", AbgegebeneWertungen!Akrobatik3_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", Round((100 - (AbgegebeneWertungen!Akrobatik4 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 4))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT08", AbgegebeneWertungen!Akrobatik4_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT09", Round((100 - (AbgegebeneWertungen!Akrobatik5 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 5))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", AbgegebeneWertungen!Akrobatik5_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", Round((100 - (AbgegebeneWertungen!Akrobatik6 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 6))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT12", AbgegebeneWertungen!Akrobatik6_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round((100 - (AbgegebeneWertungen!Akrobatik7 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 7))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT14", AbgegebeneWertungen!Akrobatik7_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", Round((100 - (AbgegebeneWertungen!Akrobatik8 * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 8))), 0) & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", AbgegebeneWertungen!Akrobatik8_Grobfehler_Text & " ")
-            HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", Round(GesamtPunkte, 2))
-           
-            If AbgegebeneWertungen!Paar_ID <> Paar_ID And A_WR_Reset = False Then
-                A_WR = 1
-                A_WR_Reset = True
-            End If
-            If AbgegebeneWertungen!Paar_ID = Paar_ID Then
-                HTML_Paar_links = Replace(HTML_Paar_links, "<td>AWR" & A_WR & "</td>", HTML_WR_Werte)
-            Else
-                HTML_Paar_rechts = Replace(HTML_Paar_rechts, "<td>AWR" & A_WR & "</td>", HTML_WR_Werte)
-            End If
-            A_WR = A_WR + 1
+            seite = 2
         End If
-    
+        Set vars = zerlege(Nz(AbgegebeneWertungen!Cgi_Input))
+
+            HTML_WR_Werte = HTML_WR_Template
         
+            Paar_Infos.FindFirst "TP_ID = " & AbgegebeneWertungen!Paar_ID
+        
+             If AbgegebeneWertungen!WR_func = "Ft" Or AbgegebeneWertungen!WR_func = "X" Then
+           
+                GesamtPunkte = 0
+                Select Case left(st_kl, 3)
+                    Case "BW_"
+                        kl_punkte = Punkteverteilung(st_kl, rd, trunde)
+                        GesamtPunkte = CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
+                    Case "RR_"
+                        kl_punkte = Punkteverteilung(st_kl, rd, trunde)
+                        If rd = "ER" Then
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wsh" & seite)) * kl_punkte(0) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wth" & seite)) * kl_punkte(1) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wsd" & seite)) * kl_punkte(2) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wtd" & seite)) * kl_punkte(3) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wch" & seite)) * kl_punkte(4) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wtf" & seite)) * kl_punkte(5) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wda" & seite)) * kl_punkte(6) / 10
+                        Else
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wsh" & seite)) * kl_punkte(0) / 10 * 2
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wsd" & seite)) * kl_punkte(2) / 10 * 2
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wch" & seite)) * kl_punkte(4) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wch" & seite)) * kl_punkte(5) / 10
+                            GesamtPunkte = GesamtPunkte + CSng(vars.Item("wch" & seite)) * kl_punkte(6) / 10
+                        End If
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Observer_FT(st_kl, vars.Item("wsh" & seite), 0, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", Observer_FT(st_kl, vars.Item("wth" & seite), 1, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Observer_FT(st_kl, vars.Item("wsd" & seite), 2, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", Observer_FT(st_kl, vars.Item("wtd" & seite), 3, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", Observer_FT(st_kl, vars.Item("wch" & seite), 4, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", Observer_FT(st_kl, vars.Item("wtf" & seite), 5, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", Observer_FT(st_kl, vars.Item("wda" & seite), 6, trunde))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", vars.Item("tfl" & seite))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", CSng(vars.Item("wfl" & seite)))
+                        HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round(GesamtPunkte - CSng(vars.Item("wfl" & seite)), 2))
+                    Case "F_B"
+                        kl_punkte = Punkteverteilung(st_kl, rd, trunde)
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
+                    Case "F_R"
+                        kl_punkte = Punkteverteilung(st_kl, rd, trunde)
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Grundtechnik) * kl_punkte(0) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Herr_Haltung_Drehtechnik) * kl_punkte(1) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Dame_Grundtechnik) * kl_punkte(2) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Choreographie) * kl_punkte(4) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tanzfiguren) * kl_punkte(5) / 10
+                        GesamtPunkte = GesamtPunkte + CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * kl_punkte(6) / 10
+                    Case Else
+                        Select Case left(st_kl, 6)
+                            Case "BS_BW_", "BS_F_R"
+                                kl_punkte = Punkteverteilung(st_kl, rd, trunde)
+                                GesamtPunkte = GesamtPunkte + CSng(vars.Item("wth" & seite)) * kl_punkte(0) / 10
+                                GesamtPunkte = GesamtPunkte + CSng(vars.Item("wtd" & seite)) * kl_punkte(1) / 10
+                                GesamtPunkte = GesamtPunkte + CSng(vars.Item("wta" & seite)) * kl_punkte(2) / 10
+                                GesamtPunkte = GesamtPunkte + CSng(vars.Item("wak" & seite)) * kl_punkte(4) / 10
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT08", Round(GesamtPunkte, 2))
+                                GesamtPunkte = GesamtPunkte - CSng(vars.Item("wfe" & seite))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Observer_FT(st_kl, vars.Item("wth" & seite), 0, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", Observer_FT(st_kl, vars.Item("wtd" & seite), 1, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Observer_FT(st_kl, vars.Item("wta" & seite), 2, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", Observer_FT(st_kl, vars.Item("wak" & seite), 3, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", "&nbsp;")
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", "&nbsp;")
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", "&nbsp;")
+                               
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", Observer_FT(st_kl, vars.Item("tfe" & seite), 11, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", Observer_FT(st_kl, vars.Item("wfe" & seite), 10, trunde))
+                                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round(GesamtPunkte, 2))
+                            Case Else
+                                GesamtPunkte = (CSng(AbgegebeneWertungen!Herr_Grundtechnik) / 2) + (CSng(Nz(AbgegebeneWertungen!Herr_Haltung_Drehtechnik)) / 2) + (CSng(AbgegebeneWertungen!Dame_Grundtechnik) / 2)
+                                GesamtPunkte = GesamtPunkte + (CSng(Nz(AbgegebeneWertungen!Dame_Haltung_Drehtechnik)) / 2) + (CSng(AbgegebeneWertungen!Choreographie) * 6 / 10) + (CSng(Nz(AbgegebeneWertungen!Tanzfiguren) * 6 / 10)) + (CSng(AbgegebeneWertungen!Tänzerische_Darbietung) * 8 / 10)
+                        End Select
+                End Select
+                If GesamtPunkte < 0 Then GesamtPunkte = 0
+                
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
+                'einen FT-WR einfügen
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Observer_FT(st_kl, AbgegebeneWertungen!Herr_Grundtechnik, 0, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", Observer_FT(st_kl, AbgegebeneWertungen!Herr_Haltung_Drehtechnik, 1, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Observer_FT(st_kl, AbgegebeneWertungen!Dame_Grundtechnik, 2, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", Observer_FT(st_kl, AbgegebeneWertungen!Dame_Haltung_Drehtechnik, 3, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", Observer_FT(st_kl, AbgegebeneWertungen!Choreographie, 4, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", Observer_FT(st_kl, AbgegebeneWertungen!Tanzfiguren, 5, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", Observer_FT(st_kl, AbgegebeneWertungen!Tänzerische_Darbietung, 6, trunde))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT08", Round(GesamtPunkte, 2))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT09", "&nbsp;")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", IIf(IsNull(AbgegebeneWertungen!Grobfehler_Text), "&nbsp;", AbgegebeneWertungen!Grobfehler_Text))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", AbgegebeneWertungen!Grobfehler_Summe)
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT12", "&nbsp;")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round(GesamtPunkte - AbgegebeneWertungen!Grobfehler_Summe, 2))
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT14", "&nbsp;")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", "&nbsp;")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", "&nbsp;")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", "&nbsp;")
+                
+'                If AbgegebeneWertungen!Paar_ID <> Paar_ID And T_WR_Reset = False Then
+'                    T_WR = 1
+'                    T_WR_Reset = True
+'                End If
+                If AbgegebeneWertungen!Paar_ID = Paar_ID Then
+                    HTML_Paar_links = Replace(HTML_Paar_links, "<td>TWR" & T_WR(1) & "</td>", HTML_WR_Werte)
+                    PaarLinks = Paar_Infos!Startnr & " " & Paar_Infos!Ausdr1 & " / " & Paar_Infos!He_Nachname
+                    T_WR(1) = T_WR(1) + 1
+                Else
+                    HTML_Paar_rechts = Replace(HTML_Paar_rechts, "<td>TWR" & T_WR(2) & "</td>", HTML_WR_Werte)
+                    PaarRechts = Paar_Infos!Startnr & " " & Paar_Infos!Ausdr1 & " / " & Paar_Infos!He_Nachname
+                    T_WR(2) = T_WR(2) + 1
+                End If
+            Else
+                
+                GesamtPunkte = 0
+                For i = 1 To 8
+'                    If Not IsNull(AbgegebeneWertungen!Akrobatik1) Then
+                        GesamtPunkte = GesamtPunkte + CSng(vars.Item("wak" & seite & i)) - CSng(vars.Item("wfl" & seite & "_ak" & seite & i))
+                        t = t + 1
+'                    End If
+                Next
+                If st_kl = "F_RR_M" Then ' Master RR
+                    GesamtPunkte = GesamtPunkte / IIf(t < 7, 6, t) * 5
+                Else
+                    GesamtPunkte = 0
+                End If
+                If GesamtPunkte < 0 Then GesamtPunkte = 0
+                
+                'einen AK-WR einfügen
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WRNAME", AbgegebeneWertungen!WR_Nachname)
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT01", Round((100 - (CSng(vars.Item("wak" & seite & "1")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 1))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT02", vars.Item("wfl" & seite & "_ak" & seite & "1") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT03", Round((100 - (CSng(vars.Item("wak" & seite & "2")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 2))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT04", vars.Item("wfl" & seite & "_ak" & seite & "2") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT05", Round((100 - (CSng(vars.Item("wak" & seite & "3")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 3))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT06", vars.Item("wfl" & seite & "_ak" & seite & "3") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT07", Round((100 - (CSng(vars.Item("wak" & seite & "4")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 4))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT08", vars.Item("wfl" & seite & "_ak" & seite & "4") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT09", Round((100 - (CSng(vars.Item("wak" & seite & "5")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 5))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT10", vars.Item("wfl" & seite & "_ak" & seite & "5") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT11", Round((100 - (CSng(vars.Item("wak" & seite & "6")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 6))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT12", vars.Item("wfl" & seite & "_ak" & seite & "6") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT13", Round((100 - (CSng(vars.Item("wak" & seite & "7")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 7))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT14", vars.Item("wfl" & seite & "_ak" & seite & "7") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT15", Round((100 - (CSng(vars.Item("wak" & seite & "8")) * 100 / Get_Akropunkte(AbgegebeneWertungen!Paar_ID, Paar_Infos!Runde, 8))), 0) & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT16", vars.Item("wfl" & seite & "_ak" & seite & "8") & " ")
+                HTML_WR_Werte = Replace(HTML_WR_Werte, "WERT17", Round(GesamtPunkte, 2))
+               
+                If AbgegebeneWertungen!WR_func <> "Ob" Then
+                    If AbgegebeneWertungen!Paar_ID = Paar_ID Then
+                        HTML_Paar_links = Replace(HTML_Paar_links, "<td>AWR" & A_WR(1) & "</td>", HTML_WR_Werte)
+                        A_WR(1) = A_WR(1) + 1
+                    Else
+                        HTML_Paar_rechts = Replace(HTML_Paar_rechts, "<td>AWR" & A_WR(2) & "</td>", HTML_WR_Werte)
+                        A_WR(2) = A_WR(2) + 1
+                    End If
+                End If
+            End If
+    
+'        Next seite
         AbgegebeneWertungen.MoveNext
     
     Next x

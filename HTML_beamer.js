@@ -1,4 +1,4 @@
-var ver = 'V3.2014';
+var ver = 'V3.2015';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -262,7 +262,7 @@ exports.beamer_stellprobe = function (io, connection, teams, title) {
             HTML_Kopf = 'Stellprobe<br>' + title ;
             HTML_Inhalt = '<tr class="runde"><td height = "25hv" width="20%">Jetzt:</td><td id = "jetzt">';
             if (tp_id[0] === '-1') {
-                HTML_Inhalt += 'Pause</td></tr>';
+                HTML_Inhalt += '<strong>Pause</strong></td></tr>';
             } else {
                 HTML_Inhalt += '<strong>' + data[0].Name_Team + '</strong><br>' + data[0].Verein_Name + '</td></tr >';
             }

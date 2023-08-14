@@ -62,8 +62,20 @@ Private Sub Form_Current()
             Me!Danach_verein = IIf(re.EOF, "", re!Verein_Name)
             re.MovePrevious
         End If
+        markiere_liste
     End If
 End Sub
+
+Function markiere_liste()
+    Dim i As Integer
+    For i = 0 To Me.Formationen.ListCount - 1
+        If Me.Formationen.ItemData(i) = Me!Jetzt Then
+            Me.Formationen.Selected(i) = True
+            Exit For
+        End If
+    Next
+
+End Function
 
 Private Sub Form_Resize()
     If Me.WindowHeight > 7100 Then
@@ -82,12 +94,32 @@ On Error Resume Next
     count_down = 0
 End Sub
 
+Private Sub Nummern_eingeben_Click()
+    Dim re As Recordset
+    Dim in_st As String
+    Dim i As Integer
+    in_st = InputBox("Nummer eingeben")
+    If Len(in_st) > 0 And IsNumeric(in_st) Then
+        Set re = Me!Stellprobe_Liste.Form.RecordsetClone
+        re.Bookmark = Me!Stellprobe_Liste.Form.Bookmark
+        i = 0
+        Do Until re.EOF
+            re.Edit
+            re!Stell_Reihe = in_st + i
+            re.Update
+            re.MoveNext
+            i = i + 1
+        Loop
+        
+    End If
+End Sub
+
 Private Sub RegisterStr87_Click()
     If Nz(Me.stell_starten) = False Then DoCmd.Requery
 End Sub
 
 Private Sub schliesssen_Click()
-    DoCmd.close
+    DoCmd.Close
 End Sub
 
 Private Sub btnAktualisieren_Click()
@@ -103,7 +135,6 @@ Private Sub stell_starten_Click()
             stpr.Bookmark = Me.Bookmark
             st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_kopf&cont=Stellprobe")
             st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_stellprobe&&mdb=" & get_TerNr & "&cont=" & make_inhalt(stpr))
-
         Else
             Folie_anzeigen_Click
             Me.Folie_anzeigen.Enabled = False
@@ -124,20 +155,26 @@ Private Sub Form_Timer()
     If count_down = 0 Then
         Me.stell_starten.SetFocus
         count_down = Me!vorgabe
+        Me!Stell_erst = True
         DoCmd.GoToRecord , , acNext
+        If Not stpr.EOF Then
             If get_properties("EWS") = "EWS3" Then
                 st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_stellprobe&&mdb=" & get_TerNr & "&cont=" & make_inhalt(stpr))
             Else
                 Folie_anzeigen_Click
             End If
-        If Me!Jetzt = "Pause" Then
+        End If
+        If Me!Jetzt = "Pause" Or (stpr.EOF And count_down = Me!vorgabe) Then
+            Me.stell_starten = 0
             stell_starten_Click
+            Me!Stell_erst = True
+            DoCmd.GoToRecord , , acNext
         End If
     Else
         count_down = count_down - 1
         If get_properties("EWS") = "EWS3" Then
             If count_down > 239 Then
-                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=4:00")
+                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=")
             Else
                 st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
             End If
@@ -154,7 +191,11 @@ End Sub
 Function make_inhalt(re)
     HTML = re!Stell_TP_ID & ";"
     re.MoveNext
-    HTML = HTML & re!Stell_TP_ID
+    If Not re.EOF Then
+        HTML = HTML & re!Stell_TP_ID
+    Else
+        HTML = HTML & "-1"
+    End If
     make_inhalt = HTML
      
 End Function
@@ -196,7 +237,7 @@ Private Sub Folie_anzeigen_Click()
                      "st" & Format(re!Stell_Reihe, "00000") & ".html""><title></title></head><body></body></html>"
         Set out = file_handle(ht_pfad & "stellprobe.html")
         out.writeline (startHTML)
-        out.close
+        out.Close
         ' Countdownseite + Warteseite scheiben
         For i = 0 To 1
             line = get_line("Beamer", "Stellprobe", i)  'holt HTML-Seite aus HTML-Block
@@ -224,7 +265,7 @@ Private Sub Folie_anzeigen_Click()
             line = Replace(line, "x__html", next_HTML)
             
             out.writeline (line)
-            out.close
+            out.Close
         Next
     End If
     If re.RecordCount > 0 Then re.MoveFirst

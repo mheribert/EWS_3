@@ -220,11 +220,15 @@ Sub schreibe_Auswerteunterlagen()
     Set oXLSApp = CreateObject("Excel.Application")
     oXLSApp.Visible = True
     oXLSApp.DisplayAlerts = False
-    If tu!MehrkampfStationen = "Kondition und Koordination" Then
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 0)
-    Else
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 0)
-    End If
+    Select Case tu!MehrkampfStationen
+        Case "Kondition und Koordination"
+            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 0)
+        Case "Bodenturnen und Trampolin"
+            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 0)
+        Case Else
+            MsgBox "Kein Mehrkampf definiert!"
+            Exit Sub
+    End Select
     
     Set xsheet = oXLSWKB.Worksheets("Turnierangaben")
     

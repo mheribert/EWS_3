@@ -68,7 +68,7 @@ Public Function hasWertungen(TP_ID As Integer) As Boolean
     Dim rst As Recordset
     Set rst = dbs.OpenRecordset(stmt)
     hasWertungen = (rst!anz > 0)
-    rst.Close
+    rst.close
 End Function
 
 Public Function getRT_ID(Turniernr As Integer, Startkl As String, Runde As String) As Integer
@@ -78,7 +78,7 @@ Public Function getRT_ID(Turniernr As Integer, Startkl As String, Runde As Strin
     Dim rst As Recordset
     Set rst = dbs.OpenRecordset("Select * from View_Runden where Turniernr=" & Turniernr & " and Startklasse='" & Startkl & "' and Runde='" & Runde & "'")
     getRT_ID = rst!RT_ID
-    rst.Close
+    rst.close
 End Function
 
 Public Function get_rde(stkl, rde) As Recordset
@@ -174,7 +174,7 @@ Public Sub make_new_TDaten(T_Nr)
         & "FOREIGN KEY (WR_ID) " _
         & "REFERENCES Wert_Richter (WR_ID);"
 
-    db.Close
+    db.close
 End Sub
 
 Public Function Pfeil_up_down(KeyCode As Integer, Shift As Integer)
@@ -215,18 +215,17 @@ Public Sub start_config_webserver()
     End If
     If get_properties("EWS") = "EWS3" Then
         make_wr_zeitplan
-        write_config_json
         nodePfad = getBaseDir & "webserver"
-        retVal = Shell(nodePfad & "\node.exe " & nodePfad & "\server.js", vbMinimizedNoFocus)
+        write_config_json nodePfad
+        '
+        retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\server.js""", vbMinimizedNoFocus)
     End If
     
 End Sub
 
-Public Sub write_config_json()
+Public Sub write_config_json(pfad)
     If get_properties("Externer_Pfad") = 0 Then
-        neuPfad = getBaseDir & "webserver"
-        gen_Ordner neuPfad
-        Open neuPfad & "\config.json" For Output As #2
+        Open pfad & "\config.json" For Output As #2
         Print #2, "{""db"": """ & get_TerNr & "_TDaten.mdb"", ""pfad"": """ & Replace(getBaseDir, "\", "\\") & """, ""port"": 80}"
         Close #2
         Forms![A-Programmübersicht]!Befehl26.Visible = True

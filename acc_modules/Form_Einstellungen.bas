@@ -9,6 +9,27 @@ Private Sub Beenden_Click()
     End If
 End Sub
 
+Private Sub Bezeichnungsfeld100_Click()
+    Me!Einstellungen_Runden.SetFocus
+    DoCmd.GoToRecord , , acNewRec
+End Sub
+
+Private Sub Bezeichnungsfeld101_Click()
+    Me!Einstellungen_Deckblatt.SetFocus
+    DoCmd.GoToRecord , , acNewRec
+End Sub
+
+Private Sub Bezeichnungsfeld102_Click()
+    Me!Einstellungen_Rundeneinteilung.SetFocus
+    DoCmd.GoToRecord , , acNewRec
+End Sub
+
+Private Sub Bezeichnungsfeld21_Click()
+    Me!Untergeordnet72.Form!PROP_VALUE = ""
+    Me!Untergeordnet88.Form!PROP_VALUE = ""
+    Me!Untergeordnet75.Form!PROP_VALUE = ""
+End Sub
+
 Private Sub Form_Current()
 
     If Me!Untergeordnet96.Form!PROP_VALUE = "EWS2" Then

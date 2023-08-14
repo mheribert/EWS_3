@@ -20,6 +20,12 @@ Private Sub refresh_Startklassen()
     Form_Wertungsrichter_aufnehmen!currentWR_ID = WR_ID
 End Sub
 
+Private Sub Bezeichnungsfeld51_Click()
+   If MsgBox(Me!TL_Vorname & " sicher löschen?", vbYesNo) = vbYes Then
+         DoCmd.RunCommand acCmdDeleteRecord
+   End If
+End Sub
+
 Private Sub Form_AfterDelConfirm(Status As Integer)
     If Status = acDeleteOK Then
         Forms!Wertungsrichter_aufnehmen.Form_Close

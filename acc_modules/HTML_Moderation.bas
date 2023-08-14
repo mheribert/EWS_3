@@ -42,16 +42,16 @@ Public Sub make_a_startlist(RT_ID As Integer)
     Loop
     out.writeline (line)
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.Close
     
     Set re = db.OpenRecordset("SELECT Rundentab.* FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr & ") AND ((Rundentab.RT_ID)=" & RT_ID & "));")
     re.Edit
     re!RT_Stat = 1
     re.Update
     
-    re.close
-    ht.close
-    db.close
+    re.Close
+    ht.Close
+    db.Close
     make_a_schedule         'Zeiplan neu schreiben
     make_a_off              'Offiziellenliste schreiben
     make_a_wrlist           'WR-Einteilung schreiben
@@ -106,11 +106,11 @@ Public Sub make_a_Vorstellungslist()
     Loop
     out.writeline (line)
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.Close
     
-    re.close
-    ht.close
-    db.close
+    re.Close
+    ht.Close
+    db.Close
 End Sub
 
 Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, runde_id)
@@ -194,7 +194,7 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
         line = Replace(line, "rt__org", org)
         out.writeline (line)
         out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-        out.close
+        out.Close
     End If
 End Sub
 
@@ -249,7 +249,7 @@ Public Sub make_a_siegerehrung(RT_ID As Integer)
             t = t + 1
             wr.MoveNext
         Loop
-        out.close
+        out.Close
     End If
     make_a_schedule
     Start_Seite tr_nr
@@ -359,7 +359,7 @@ Public Sub make_a_schedule()
         re.MoveNext
     Loop
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.Close
 
 End Sub
 
@@ -413,7 +413,7 @@ Private Sub make_a_off()
     Loop
 
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.Close
 
 End Sub
 
@@ -460,9 +460,18 @@ Private Sub make_a_wrlist()
                re!Startklasse_text & "</td>" & vbCrLf
         
                 Do Until wr.EOF
-                    line = line & "        <td class=""wr_cros"">" & _
-                           IIf(IsNull(DLookup("[WR_ID]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID = " & wr!WR_ID)), "&nbsp", "X") & _
-                           "</td>" & vbCrLf
+                    line = line & "        <td class=""wr_cros"">"
+                    Select Case DLookup("[WR_Function]", "Startklasse_Wertungsrichter", "Startklasse='" & re!Startklasse & "' AND WR_ID = " & wr!WR_ID)
+                        Case "Ob"
+                            line = line & "Ob"
+                        Case "Ft"
+                            line = line & "Ft"
+                        Case "Ak"
+                            line = line & "Ak"
+                        Case "X"
+                            line = line & "X"
+                    End Select
+                    line = line & "</td>" & vbCrLf
             
                     wr.MoveNext
                 Loop
@@ -473,7 +482,7 @@ Private Sub make_a_wrlist()
     Loop
     
     out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.Close
 
 End Sub
 

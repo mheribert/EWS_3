@@ -1,4 +1,4 @@
-var ver = 'V3.2014';
+var ver = 'V3.2015';
 window.onload = start;
 var socket = io.connect();
 

@@ -196,8 +196,8 @@ Private Sub Form_Open(Cancel As Integer)
         re.MoveFirst
         s_row = s_row & re!Turniernum & ";""" & re!Turnier_Name & """;""" & re!T_Datum & """;" & Nz(re!Turnier_Nummer) & ";""" & re!Veranst_Name & """;" & re!Getrennte_Auslosung & ";""" & re!Veranst_Ort & """;"""";""" & re!BS_Erg & """;"
         t_sel = re!Turnier_Name
-        re.Close
-        db.Close
+        re.close
+        db.close
         T_Name = Dir(t_Pfad & "T*_TDaten*.mdb")
         Do Until T_Name = t_spei
             T_Name = Dir
@@ -233,7 +233,7 @@ Private Sub Turnierausw_AfterUpdate()
         Land = Turnierausw.Column(8)
         'akt_Turnier
         setzte_logo Turnierausw.Column(1)
-        write_config_json
+        write_config_json getBaseDir & "webserver"
     End If
     lae = Nz(Forms![A-Programmübersicht]!Turnierausw.Column(8))
     setzte_buttons "A-Programmübersicht", "Dokumentation", IIf(lae = "", get_properties("LAENDER_VERSION"), lae)
@@ -255,12 +255,12 @@ Sub setzte_logo(turnier)
         Set db = CurrentDb
         Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'Logo' and Bereich = 'Bild';")
         ht.MoveFirst
-        Dateigroesse = Nz(LenB(ht!f3), 0)
+        Dateigroesse = Nz(LenB(ht!F3), 0)
         BilddateiID = FreeFile
         
         ReDim Buffer(Dateigroesse)
         Open dbPfad & Trim(ht!F1) For Binary Access Write As BilddateiID
-        Buffer = ht!f3.GetChunk(0, Dateigroesse)
+        Buffer = ht!F3.GetChunk(0, Dateigroesse)
         Put BilddateiID, , Buffer
         Close BilddateiID
     End If

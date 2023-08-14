@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 Private Sub Befehl2_Click()
-    DoCmd.close
+    DoCmd.Close
 End Sub
 
 Private Sub Befehl43_Click()
@@ -171,19 +171,15 @@ Private Sub Form_Load()
             End If
         Case "SL"
             Me!FolieRunden.Visible = True
-            Me!Rechteck47.Visible = True
             Me!Übertrag_EXCEL.Visible = False
         Case "BY"
             Me!FolieRunden.Visible = True
-            Me!Rechteck47.Visible = True
             Me!Übertrag_EXCEL.Visible = False
         Case "BW"
             Me!FolieRunden.Visible = True
-            Me!Rechteck47.Visible = True
             Me!Übertrag_EXCEL.Visible = False
         Case Else
             Me!FolieRunden.Visible = False
-            Me!Rechteck47.Visible = False
             Me!Übertrag_EXCEL.Visible = False
     End Select
 
@@ -251,7 +247,7 @@ Private Sub Kombinationsfeld32_AfterUpdate()
             rst.Update
             rst.MoveNext
         Loop
-        rst.close
+        rst.Close
     End If
     If Me!Kombinationsfeld32 = 2 Then
         Me!Runde = Null
@@ -294,7 +290,7 @@ Private Sub Runde_suchen_AfterUpdate()
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
     InRundeneinteilung = rs!InRundeneinteilung
-    rs.close
+    rs.Close
     
     If (InRundeneinteilung = 2) Then
         Dim MasterRunde As Integer
@@ -315,11 +311,11 @@ Private Sub Runde_suchen_AfterUpdate()
             Set rs = dbs.OpenRecordset(sqlstr)
             If (rs.NoMatch) Then
                 MsgBox ("Es wurde die dazugehörige Akrobatikrunde nicht gefunden!")
-                rs.close
+                rs.Close
                 Exit Sub
             End If
             MasterRunde = rs!RT_ID
-            rs.close
+            rs.Close
             Call UpdateRundenqualifikation(MasterRunde, Runde_suchen, False)
         End If
     End If
@@ -432,7 +428,7 @@ Private Sub umgekehrte_Reihenfolge()
     Tanzrunde = rs!Runde
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
-    rs.close
+    rs.Close
     
     'Wenn es sich nicht um eine Endrunde handelt, dann kann keine Auslosung in umgekehrter Reihenfolge gemacht werden
     'hier in Zukunft eventuell Abzweig möglich wenn Auslosung erster gegen letzte stattfinden soll
@@ -447,13 +443,13 @@ Private Sub umgekehrte_Reihenfolge()
     
     ' Abbruch, wenn keine Daten vorhanden sind
     If (rstauslosung.EOF) Then
-        rstauslosung.close
+        rstauslosung.Close
         Exit Sub
     End If
     
     'Abbruch, wenn keine Rock'n'Roll Turnierklasse
     If Not Startklasse Like "RR*" And Not Startklasse Like "BW*" Then
-        rstauslosung.close
+        rstauslosung.Close
         Exit Sub
     End If
     
@@ -475,7 +471,7 @@ Private Sub umgekehrte_Reihenfolge()
             End If
         End If
     End If
-    rs.close
+    rs.Close
     
     
     If Fußtechnik_checken Then
@@ -497,7 +493,7 @@ Private Sub umgekehrte_Reihenfolge()
     
     If (rstauslosung.EOF) Then
         MsgBox "Noch keine Ergebnisse in der vorher getanzten Runde vorhanden!", vbOKOnly
-        rstauslosung.close
+        rstauslosung.Close
         Exit Sub
     End If
     
@@ -515,7 +511,7 @@ Private Sub umgekehrte_Reihenfolge()
         rstauslosung.MoveNext
         trunde = trunde + 1
     Loop
-    rstauslosung.close
+    rstauslosung.Close
     
 
 
@@ -536,13 +532,13 @@ Private Sub umgekehrte_Reihenfolge()
             GoTo BW_RR_Error
         End If
         rt_id_er_fuss = rstr!RT_ID
-        rstr.close
+        rstr.Close
         
         Call UpdateRundenqualifikation(Runde_suchen, rt_id_er_fuss, True)
     End If
     
 BW_RR_Error:
-    dbs.close
+    dbs.Close
     
     Me.Requery
     DoCmd.RepaintObject , ""
@@ -574,13 +570,13 @@ Private Sub zufallszahl()
     Tanzrund = rs!Runde
     Startklasse = rs!Startklasse
     Turniernr = rs!Turniernr
-    rs.close
+    rs.Close
     sqlstr = "select * from Paare_Rundenqualifikation where RT_ID= " & Runde_suchen
     Set rstauslosung = dbs.OpenRecordset(sqlstr)
     
     ' Abbruch, wenn keine Daten vorhanden sind
     If (rstauslosung.EOF) Then
-        rstauslosung.close
+        rstauslosung.Close
         Exit Sub
     End If
     
@@ -596,7 +592,7 @@ Private Sub zufallszahl()
         rstauslosung.Update
         rstauslosung.MoveNext
     Loop
-    rstauslosung.close
+    rstauslosung.Close
     
     If Me!Feld52 = 1 Then
         sqlstr = "SELECT * FROM Paare_Rundenqualifikation WHERE RT_ID= " & Runde_suchen & " ORDER BY auslosung;"
@@ -627,7 +623,7 @@ Private Sub zufallszahl()
         rstauslosung.Update
         rstauslosung.MoveNext
     Loop
-    rstauslosung.close
+    rstauslosung.Close
     '  Anfang
     '  verhindern, dass mehrere Paare aus dem gleichen Verein in der gleichen Runde tanzen
     '
@@ -638,7 +634,7 @@ Private Sub zufallszahl()
         Runde_übertragen Tanzrund, Startklasse
     End If
 BW_RR_Error:
-    dbs.close
+    dbs.Close
     
     Me.Requery
     DoCmd.RepaintObject , ""

@@ -41,11 +41,6 @@ Private Sub FilterStartklasse_DblClick(Cancel As Integer)
 End Sub
 
 Private Sub Form_Load()
-    If get_properties("EWS") = "EWS3" Then
-        Me!moderator_vorstellung.Visible = True
-    Else
-        Me!moderator_vorstellung.Visible = False
-    End If
     Const xoff = 630
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "SL"
@@ -70,7 +65,7 @@ Private Sub Form_Load()
             Me!Startbuch1.Visible = False
             Me.Wertungen_ausdrucken.Visible = False
         Case "BW"
-            Me.Wertungen_ausdrucken.Visible = False
+            Me.Wertungen_ausdrucken.Visible = True
         Case "BY"
             Me.Wertungen_ausdrucken.Visible = False
             Me.Akro_anzeigen.Visible = False
@@ -98,10 +93,14 @@ End Sub
 
 Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String
-    If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
-        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=0")
+    If get_properties("EWS") = "EWS1" Then
+        make_a_Vorstellungslist
     Else
-        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=" & Me!FilterStartklasse)
+        If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=0")
+        Else
+            st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=moderator_vorstellung&mdb=" & get_TerNr & "&text=" & Me!FilterStartklasse)
+        End If
     End If
 End Sub
 
