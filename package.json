@@ -1,9 +1,0 @@
-{
-  "name": "webserver",
-  "version": "0.0.0",
-  "description": "webserver",
-  "main": "app.js",
-  "author": {
-    "name": ""
-  }
-}

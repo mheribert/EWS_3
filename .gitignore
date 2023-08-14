@@ -354,3 +354,5 @@ config.json
 /viewsfavicon.ico
 /querys/frm_DebugTestdaten1_Tanzrunde.qry
 /querys/frm_DebugTestdaten_Tanzrunde.qry
+/package.json
+/Start.bat
