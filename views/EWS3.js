@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2015';
+﻿    var ver =  'V3.2016';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -549,21 +549,27 @@ function chkFormular () {
 function check_mkpagefilled() {
     var s = document.forms["Formular"].elements;
     var all_filled = true;
+    var isMK = true;
     format_zeit();
     for (var el = 0; el < s.length; el++) {
         if (s[el].tagName === 'INPUT' && s[el].value === '') {
             all_filled = false;
         }
+        if (s[el].tagName === 'INPUT' && s[el].value === 'Absenden') {
+            isMK = false;
+        }
     }
-    var otext = s["klasse"][s["klasse"].selectedIndex];
-    if (all_filled) {
-        document.getElementById('couple1').style.backgroundColor = "#dfd";
-        otext.textContent = '*   ' + otext.textContent.replace("*   ", "");
-    } else {
-        document.getElementById('couple1').style.backgroundColor = "";
-        otext.textContent = otext.textContent.replace("*   ", "");
+    if (isMK === true) {
+        var otext = s["klasse"][s["klasse"].selectedIndex];
+        if (all_filled) {
+            document.getElementById('couple1').style.backgroundColor = "#dfd";
+            otext.textContent = '*   ' + otext.textContent.replace("*   ", "");
+        } else {
+            document.getElementById('couple1').style.backgroundColor = "";
+            otext.textContent = otext.textContent.replace("*   ", "");
+        }
+        drop_filled[document.getElementById("station").value + document.getElementById("klasse").value] = all_filled;
     }
-    drop_filled[document.getElementById("station").value + document.getElementById("klasse").value] = all_filled;
 }
 
 function p_logout() {

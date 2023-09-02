@@ -1,4 +1,4 @@
-var ver = 'V3.2015';
+var ver = 'V3.2016';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -209,6 +209,7 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
                 } else {
                     HTML_Inhalt += '<td>' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
+                data[p].jetztRunde = data[p].jetztRunde || 0;
                 punkte = data[p].jetztRunde.toFixed(2);
                 HTML_Inhalt += '<td class="pkte">' + punkte.replace('.', ',') + '</td></tr>';
             }

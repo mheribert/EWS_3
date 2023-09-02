@@ -111,6 +111,10 @@ Private Sub Form_AfterUpdate()
     Form_Paare_ohne_Punkte_UF.Requery
 End Sub
 
+Private Sub Text162_GotFocus()
+    Me!pu1.SetFocus
+End Sub
+
 Private Sub Umschaltfl‰che147_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     Dim st As String    'Beitensport Taktung
     If Me!Umschaltfl‰che147.Caption = "Runde starten" Then
@@ -186,7 +190,7 @@ Private Sub Runde_beenden_Click()
     Dim retl
         
     Set db = CurrentDb
-    retl = get_wertungen(Me!Tanzrunde, Me!Tanzrunde.Column(3), Me!Tanzrunde.Column(6))
+    Call Wertungen_einlesen_Click
     AuswertenundPlatzieren Me.Tanzrunde, Me.Tanzrunde.Column(3), Me.Tanzrunde.Column(17), Me.Tanzrunde.Column(6), Me.Tanzrunde.Column(7)
     If get_properties("EWS") = "EWS3" Then
         Set re = db.OpenRecordset("Select* from Rundentab Where RT_ID =" & Me!Tanzrunde & ";")
@@ -213,11 +217,11 @@ Private Sub sende_msg_Click()
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&bereich=beamer_inhalt&cont=" & Me!sende_text)
     
     
-'     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & Me!sende_text)
+     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & Me!sende_text)
 
 '    ' Werte senden Achtung beiGrobfehler
 '     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=setWert&WR_ID=2&fld=ak13&val=9")
-     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=remSend&WR_ID=2")
+'     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=remSend&WR_ID=2")
      
      
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
@@ -246,6 +250,13 @@ Sub Tanzrunde_AfterUpdate()
             ' bei Fuﬂ nur FT-Wr
             '*****AB***** V13.02 Fehler es wurde noch auf das alte Feld WR_func im Recordset zugegriffen - hier ge‰nder in: WR_function
             wr_tr = left(Me!Tanzrunde.Column(6), 4)
+            If get_properties("EWS") = "EWS3" Then
+                Me!Runde_starten.Visible = True
+                If left(Me!Tanzrunde.Column(3), 3) = "F_R" Then Me!Rundenergebnis.Visible = True
+            Else
+                Me!Runde_starten.Visible = False
+                Me!Rundenergebnis.Visible = False
+            End If
             If Right(Me!Tanzrunde.Column(6), 4) = "_Fuﬂ" Then
                 where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
             Else
@@ -254,11 +265,6 @@ Sub Tanzrunde_AfterUpdate()
                     Me!Runde_starten.Visible = False
                 Else
                     where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND (Left([WR_function],1)<>'M' OR WR_function='Ob'))"
-                    If get_properties("EWS") = "EWS3" Then
-                        Me!Runde_starten.Visible = True
-                    Else
-                        Me!Runde_starten.Visible = False
-                    End If
                 End If
             End If
             Set re = dbs.OpenRecordset("SELECT [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_ID, Wert_Richter.WR_Kuerzel, Startklasse_Wertungsrichter.WR_function, Startklasse_Wertungsrichter.Startklasse, Rundentab.RT_ID FROM Wert_Richter INNER JOIN (Rundentab INNER JOIN Startklasse_Wertungsrichter ON Rundentab.Startklasse = Startklasse_Wertungsrichter.Startklasse) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE " & where_part & " ORDER BY Wert_Richter.WR_Kuerzel;")
@@ -719,10 +725,15 @@ End Sub
 
 Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
     If no_runde_selected Then Exit Sub
-    
-    Forms!Wertung_einlesen!HTML_Select = 5
-    AuswertenundPlatzieren Me.Tanzrunde, Me.Tanzrunde.Column(3), Me.Tanzrunde.Column(17), Me.Tanzrunde.Column(6), Me.Tanzrunde.Column(7)
-    Beamer_generieren
+    If get_properties("EWS") = "EWS1" Then
+        Forms!Wertung_einlesen!HTML_Select = 5
+        AuswertenundPlatzieren Me.Tanzrunde, Me.Tanzrunde.Column(3), Me.Tanzrunde.Column(17), Me.Tanzrunde.Column(6), Me.Tanzrunde.Column(7)
+        Beamer_generieren
+    Else
+        Dim st
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=allranking")
+
+    End If
 End Sub
 
 Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)

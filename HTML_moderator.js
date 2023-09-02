@@ -1,4 +1,4 @@
-var ver = 'V3.2015';
+var ver = 'V3.2016';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -185,6 +185,7 @@ exports.siegerehrung = function (io, connection, rt_id) {
                 } else {
                     HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
+                data[p].jetztRunde = data[p].jetztRunde || 0;
                 punkte = data[p].jetztRunde.toFixed(2);
                 HTML_Inhalt += '<td class="mod_pkte">' + punkte + '</td></tr>';
             }

@@ -389,7 +389,7 @@ Function Punkteverteilung(Startklasse, rd, rde)
         Case "BW_SB"
             punkte_verteilung = Array(15, 7.5, 10, 0, 15, 10, 7.5)
         Case "BW_NG"
-            punkte_verteilung = Array(1.5, 1.5, 1, 1, 1, 1, 1, 1, 3, 3, 3)
+            punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1.5, 1, 1, 1, 2.5, 2.5, 2.5)
         ' Breitensport Bayern
         Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1"
             punkte_verteilung = Array(15, 15, 10, 25, 0, 0, 0)

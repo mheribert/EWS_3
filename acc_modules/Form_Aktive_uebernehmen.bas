@@ -233,7 +233,7 @@ Private Sub btn_aktive_1_Click()    ' paare xls-datei laden
     Set rstpaare = dbs.OpenRecordset("SELECT DISTINCT Paare.Startkl FROM Paare WHERE Turniernr =" & Akt_Turnier & ";")
     write_startklassen rstpaare
 
-    MsgBox (importiert & " Paare importiert")
+    MsgBox (importiert & " Paare/Formationen importiert")
 Exit_Befehl80_Click:
     Exit Sub
 

@@ -23,9 +23,19 @@ Sub lese_Auswerteunterlagen(Startklasse, st_kl)
     oXLSApp.Visible = True
     oXLSApp.DisplayAlerts = False
     If get_mk() = "Kondition und Koordination" Then
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 3)
+        If Len(Dir(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx")) > 0 Then
+            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 3)
+        Else
+            MsgBox "Es fehlt die EXCEL-Datei " & vbCrLf & "Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx"
+            Exit Sub
+        End If
     Else                                                                                            ' nicht ändern wegen verknüpfungen
-        Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 3)
+        If Len(Dir(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx")) > 0 Then
+            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 3)
+        Else
+            MsgBox "Es fehlt die EXCEL-Datei " & vbCrLf & "Auswertungsunterlagen Tanz-Bodenturnen-Trampolin.xlsx"
+            Exit Sub
+        End If
     End If
 
     
@@ -217,14 +227,27 @@ Sub schreibe_Auswerteunterlagen()
     Set tu = db.OpenRecordset("Turnier")
     
     If get_mk = "" Then Exit Sub
-    Set oXLSApp = CreateObject("Excel.Application")
-    oXLSApp.Visible = True
-    oXLSApp.DisplayAlerts = False
     Select Case tu!MehrkampfStationen
         Case "Kondition und Koordination"
-            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 0)
+            If Len(Dir(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx")) > 0 Then
+                Set oXLSApp = CreateObject("Excel.Application")
+                oXLSApp.Visible = True
+                oXLSApp.DisplayAlerts = False
+                Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\2_Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx", 0)
+            Else
+                MsgBox "Es fehlt die EXCEL-Datei " & vbCrLf & "Auswertungsunterlagen Tanz-Koordination-Kondition.xlsx"
+                Exit Sub
+            End If
         Case "Bodenturnen und Trampolin"
-            Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 0)
+            If Len(Dir(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx")) > 0 Then
+                Set oXLSApp = CreateObject("Excel.Application")
+                oXLSApp.Visible = True
+                oXLSApp.DisplayAlerts = False
+                Set oXLSWKB = oXLSApp.Workbooks.Open(getBaseDir & "Turn und Athletik-WB\1_Auswertungsunterlagen Tanz-Bodentunen-Trampolin.xlsx", 0)
+            Else
+                MsgBox "Es fehlt die EXCEL-Datei " & vbCrLf & "Auswertungsunterlagen Tanz-Bodenturnen-Trampolin.xlsx"
+                Exit Sub
+            End If
         Case Else
             MsgBox "Kein Mehrkampf definiert!"
             Exit Sub
@@ -243,16 +266,25 @@ Sub schreibe_Auswerteunterlagen()
         xsheet.cells(5, 3) = tu!Veranst_Ort
         xsheet.cells(6, 3) = tu!Veranst_Name
         xsheet.cells(7, 3) = ""
-        If tu!MehrkampfStationen = "Kondition und Koordination" Then
-            xsheet.cells(8, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_21 & "'"), 4)
-            xsheet.cells(9, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_22 & "'"), 4)
-            xsheet.cells(10, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_23 & "'"), 4)
-            xsheet.cells(11, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_11 & "'"), 4)
-            xsheet.cells(12, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_12 & "'"), 4)
-            xsheet.cells(13, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_13 & "'"), 4)
-        End If
         
-        Set re = db.OpenRecordset("SELECT * FROM paare WHERE Startkl<>'RR_A' AND Startkl<>'RR_B' AND (Anwesent_Status = 1 OR Anwesent_Status = 2) ORDER BY startkl, startnr;")
+        Select Case tu!MehrkampfStationen
+            Case "Kondition und Koordination"
+                xsheet.cells(8, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_21 & "'"), 4)
+                xsheet.cells(9, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_22 & "'"), 4)
+                xsheet.cells(10, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_23 & "'"), 4)
+                xsheet.cells(11, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_11 & "'"), 4)
+                xsheet.cells(12, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_12 & "'"), 4)
+                xsheet.cells(13, 3) = Mid(DLookup("Rundentext", "Tanz_Runden_fix", "Runde='" & tu!MK_13 & "'"), 4)
+            Case "Bodenturnen und Trampolin"
+                xsheet.cells(8, 2) = "Station 1"
+                xsheet.cells(8, 3) = "Bodenturnen"
+                xsheet.cells(9, 2) = "Station 2"
+                xsheet.cells(9, 3) = "Trampolin"
+            Case Else
+                MsgBox "Kein Mehrkampf definiert!"
+                Exit Sub
+        End Select
+        Set re = db.OpenRecordset("SELECT * FROM paare WHERE Startkl<>'RR_A' AND Startkl<>'RR_B' AND Startkl<>'RR_C' AND (Anwesent_Status = 1 OR Anwesent_Status = 2) ORDER BY startkl, startnr;")
         re.MoveFirst
         t = 2
         Do Until re.EOF

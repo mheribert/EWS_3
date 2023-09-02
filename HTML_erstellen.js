@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2015';
+﻿var ver = 'V3.2016';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -360,7 +360,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
             }
             HTML_Seite += '<tr><td><table style="width: 800px; text-align: center;" cellspacing="0" cellpadding="1" border="1"><tbody><tr bgcolor="#ddd">';
             if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
-                HTML_Seite += '<td>Name</td><td>Tanztechnik</td><td>Tanzfiguren</td><td>Choreo</td><td>Synchro</td><td>Bilder</td><td>Formationsfig</td><td>Summe</td><td>&nbsp;</td></tr>';
+                HTML_Seite += '<td>WR</td><td style="width: 120px;">Schritt</td><td style="width: 120px;">Syn</td><td>Fig Au</td><td>Fig Sch</td><td style="width: 120px;">Fig Bo</td><td style="width: 120px;">Ch</td><td style="width: 120px;">Ch Id</td><td style="width: 120px;">Ch Bo</td><td style="width: 120px;">AF Sy</td><td>AF Pos</td><td style="width: 120px;">AF Bo</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
             } else {
                 if (new_guidelines) {
                     HTML_Seite += '<td>WR</td><td style="width: 120px;">GS D</td><td style="width: 120px;">GS H</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
@@ -379,13 +379,19 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                         if (typeof wertungen[wr][tp_id] !== "undefined") {
                             cgi_val = wertungen[wr][tp_id].cgi;
                             if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
-                                HTML_Seite += '<tr><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wtk" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wch" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["wab" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["waw" + seite]) + '</td>';
-                                HTML_Seite += '<td>' + parseFloat(cgi_val["waf" + seite]) + '</td>';
+                                if (wertungen[wr][tp_id].in === true) {
+                                    HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                } else {
+                                    HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                }
+                                var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+                                for (var k = 0; k < wr_kr.length; k++) {
+                                    if (wertungen[wr][tp_id]["w" + wr_kr[k] + seite] === false) {
+                                        HTML_Seite += '<td bgcolor="#dbd" fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                    } else {
+                                        HTML_Seite += '<td fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                    }
+                                }
                             } else {
                                 if (wertungen[wr][tp_id].in === true) {
                                     HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
@@ -400,7 +406,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                                         } else {
                                             HTML_Seite += '<td fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
                                         }
-                                }
+                                    }
                                 } else {
                                     HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
                                     if (trunde === 'ER') {
@@ -604,6 +610,7 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
     var wr;
     var wrn;
     var c;
+    var but_send = false;
     var seiten = runden_info[rd_ind].PpR;
     var s = 1;
     if (anz_obs === 2) {
@@ -622,7 +629,7 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         tp_id = runden_info[rd_ind + seite].TP_ID;
         for (wr in wertungen) {
             if (typeof wertungen[wr][tp_id] !== "undefined") {
-                wrn = wertungsrichter[wr].WR_Vorname.substr(0, 1) + wertungsrichter[wr].WR_Nachname.substr(0, 2);
+                wrn = wertungsrichter[wr].WR_Nachname.substring(0, 1) + wertungsrichter[wr].WR_Vorname.substring(0, 2);
                 switch (wertungsrichter[wr].WR_func) {
                     case 'Ob':
                         PunkteOb = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
@@ -749,9 +756,12 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         HTML_Seite += '</tr>';
 
         HTML_Seite += '<tr><td colspan="10" bgcolor="#000"><input name="korr' + s + '" value="' + korr + '" type="hidden"></td></tr>';
+        if (korr === true) {
+            but_send = true;
+        }
     }
     HTML_Seite += '</table ></td></tr>';
-    HTML_Seite += make_absenden(true, !korr) + '</table></center></form>';
+    HTML_Seite += make_absenden(true, !but_send) + '</table></center></form>';
 
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'RR_' });
 };

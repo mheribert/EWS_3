@@ -6,25 +6,26 @@ Private Sub Befehl2_Click()
 End Sub
 
 Private Sub Befehl43_Click()
-    Dim dbs As Database
-    Dim re As Recordset
-    Set dbs = CurrentDb
-    Set re = dbs.OpenRecordset("select * from Rundentab where RT_ID=" & Runde_suchen & ";")
-    If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Then
-        Runde_übertragen re!Runde, re!Startklasse
+    If Not Me.Runde_suchen = " " Then
+        Dim dbs As Database
+        Dim re As Recordset
+        Set dbs = CurrentDb
+        Set re = dbs.OpenRecordset("select * from Rundentab where RT_ID=" & Runde_suchen & ";")
+        If Not DLookup("Getrennte_Auslosung", "Turnier", "Turniernum = " & Turniernr) Then
+            Runde_übertragen re!Runde, re!Startklasse
+        End If
+        Requery
+    Else
+        MsgBox ("Bitte Runde auswählen")
     End If
-    Requery
+
 End Sub
 
 Private Sub Befehl47_Click()
 '****AB**** V13_04 - neue Funktion/button zum Ausdrucken der Observer Wertungsbögen
     Dim stDocName As String
     If Not Me.Runde_suchen = " " Then
-'        If Me.Runde_suchen.Column(4) = "End_r" Or Me.Runde_suchen.Column(4) = "End_r_akro" Then
-'            stDocName = "ObserverWertungsbogenEndrunde"
-'        Else
-            stDocName = "ObserverWertungsbogen"
-'        End If
+        stDocName = "ObserverWertungsbogen"
         DoCmd.OpenReport stDocName, acPreview, , "RT_ID = " & Me.Runde_suchen.Column(0) & ""
     Else
         MsgBox ("Bitte Runde auswählen")
@@ -325,7 +326,7 @@ Private Sub Runde_suchen_AfterUpdate()
 End Sub
 
 Private Sub Auslosung_Click()
-    If Me!Anz_Paare = 0 Then
+    If Nz(Me!Anz_Paare) = 0 Then
         MsgBox "Die Anzahl der Paare pro Runde darf nicht 0 betragen!"
         Exit Sub
     End If

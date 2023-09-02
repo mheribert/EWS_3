@@ -1,4 +1,4 @@
-var ver = 'V3.2015';
+var ver = 'V3.2016';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -493,7 +493,7 @@ function insert_differences(body, wertungen) {
     for (var i in body) {
         if (i.substring(0, 3).indexOf("tfl") !== -1) {
             s = i.replace("ak", "");
-            s = s.substring(3, 1);
+            s = s.substring(3, 4);
             wertungen[body.WR_ID][body["TP_ID" + s]][i] = body[i];
             wertungen[body.WR_ID][body["TP_ID" + s]]["korr"] = "Ok";
             wertungen[body.WR_ID][body["TP_ID" + s]]["w" + i.substring(1, 8)] = body["w" + i.substring(1, 8)];
@@ -809,7 +809,8 @@ function verteilen(WR_ID) {
                     HTML_Seite = HTML_erstellen.BW_ObsCheck(rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, WR_ID, io, new_guidelines);
                     break;
                 case "F_B":
-                    HTML_Seite = HTML_erstellen.BW_ObsCheck(rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, WR_ID, io, false);
+                    HTML_auswerten.berechne_punkte(wertungen, runden_info, runde, wertungsrichter, conf.pfad + turnier_nr + 'tmp.txt');
+                    HTML_Seite = HTML_erstellen.BW_ObsCheck(rd_ind, wertungsrichter, wertungen, runden_info, runde, wr_name, WR_ID, io, new_guidelines);
                     break;
                 case "F_R":
                 case "RR_":
