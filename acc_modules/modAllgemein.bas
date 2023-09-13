@@ -68,7 +68,7 @@ Public Function hasWertungen(TP_ID As Integer) As Boolean
     Dim rst As Recordset
     Set rst = dbs.OpenRecordset(stmt)
     hasWertungen = (rst!anz > 0)
-    rst.close
+    rst.Close
 End Function
 
 Public Function getRT_ID(Turniernr As Integer, Startkl As String, Runde As String) As Integer
@@ -78,7 +78,7 @@ Public Function getRT_ID(Turniernr As Integer, Startkl As String, Runde As Strin
     Dim rst As Recordset
     Set rst = dbs.OpenRecordset("Select * from View_Runden where Turniernr=" & Turniernr & " and Startklasse='" & Startkl & "' and Runde='" & Runde & "'")
     getRT_ID = rst!RT_ID
-    rst.close
+    rst.Close
 End Function
 
 Public Function get_rde(stkl, rde) As Recordset
@@ -174,7 +174,7 @@ Public Sub make_new_TDaten(T_Nr)
         & "FOREIGN KEY (WR_ID) " _
         & "REFERENCES Wert_Richter (WR_ID);"
 
-    db.close
+    db.Close
 End Sub
 
 Public Function Pfeil_up_down(KeyCode As Integer, Shift As Integer)
@@ -195,6 +195,9 @@ Public Sub start_config_webserver()
     Dim strZeile As String
     Dim neuPfad As String
     Dim nodePfad As String
+    Dim st As String
+    Dim db As Database
+    Set db = CurrentDb()
     Dim retVal
     
     Call Bilderspeichern
@@ -219,6 +222,15 @@ Public Sub start_config_webserver()
         write_config_json nodePfad
         '
         retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\server.js""", vbMinimizedNoFocus)
+        If get_mk <> "" Then    ' MehrkampfWR schonmal eintragen
+            db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE (((Startklasse_Wertungsrichter.WR_function) Like 'M*'));"
+        End If
+        SngSec = Timer + 0.25
+        Do While Timer < SngSec
+            DoEvents
+        Loop
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&cont=reload")
+
     End If
     
 End Sub

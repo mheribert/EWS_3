@@ -1,4 +1,4 @@
-var ver = 'V3.2016';
+var ver = 'V3.2017';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';

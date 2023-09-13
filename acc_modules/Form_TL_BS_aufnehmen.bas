@@ -15,6 +15,11 @@ Public Sub btnAddOffiziellen_Click()
     
     Dim rstoff As Recordset, rsCheck As Recordset
     Dim Count As Integer
+        
+    If Nz(Me!VName) = "" Or Nz(Me!NName = "") Then
+        MsgBox "Bitte ganzen Namen ausfüllen"
+        Exit Sub
+    End If
     
     ' Prüfen, ob der TL schon in der DB vorhanden ist (nur, wenn mit Lizenznr. eingegeben
     If (Not IsNull(Lizenznr) And Lizenznr <> "") Then

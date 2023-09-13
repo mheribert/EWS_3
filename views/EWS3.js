@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2016';
+﻿    var ver =  'V3.2017';
     window.onload = start;
     var socket = io.connect();
     var ausw;

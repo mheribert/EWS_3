@@ -331,10 +331,36 @@ Public Sub Startklasse_Change()
     ' Test, ob in der aktuellen Runde, schon Majoritätseinträge vorhanden sind oder nicht
     ' Wenn nein, dann automatisch eine Wertung durchführen
     Dim rs As Recordset
+    Dim ausw_anz
     Dim anz As Integer
     Dim anz_Wertungen As Integer
     Dim Startkl As String
     Dim ANZAHL_WR As Integer
+    
+    ausw_anz = Split(Nz(DLookup("ausw_anz", "Tanz_Runden_fix", "Runde='" & Startklasse.Column(7) & "'")), ";")
+    ' RR   BW   F   BS
+    If UBound(ausw_anz) > 0 Then
+        If Startklasse.Column(7) = "MK_5_TNZ" And DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") = "Kondition und Koordination" Then
+            Me!ausw_anz.Caption = ausw_anz(1)
+        Else
+            Select Case left(Startklasse.Column(3), 3)
+                Case "RR_"
+                    Me!ausw_anz.Caption = ausw_anz(0)
+                Case "BW_"
+                    Me!ausw_anz.Caption = ausw_anz(1)
+                Case "F_R"
+                    Me!ausw_anz.Caption = ausw_anz(2)
+                Case "F_B"
+                    Me!ausw_anz.Caption = ausw_anz(1)
+                Case "BS_"
+                    Me!ausw_anz.Caption = ausw_anz(3)
+                Case Else
+                    Me!ausw_anz.Caption = ""
+            End Select
+        End If
+    Else
+        Me!ausw_anz.Caption = Nz(DLookup("ausw_anz", "Tanz_Runden_fix", "Runde='" & Startklasse.Column(7) & "'"))
+    End If
     '***** 14_11 ***** Abfrage ob schon Wertungen vorhanden sind falls nein keine automatische Auswertung
     Set rs = dbs.OpenRecordset("SELECT count(*) as anzahl FROM Auswertung a INNER JOIN Paare_Rundenqualifikation p ON A.PR_ID = P.PR_ID WHERE p.RT_ID=" & Me!Startklasse & ";")
     anz_Wertungen = rs!Anzahl

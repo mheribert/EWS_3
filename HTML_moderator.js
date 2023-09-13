@@ -1,4 +1,4 @@
-var ver = 'V3.2016';
+var ver = 'V3.2017';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {

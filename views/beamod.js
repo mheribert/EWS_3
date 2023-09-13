@@ -1,4 +1,4 @@
-var ver = 'V3.2016';
+var ver = 'V3.2017';
 window.onload = start;
 var socket = io.connect();
 
@@ -8,6 +8,9 @@ function start() {
             // beamer_bild, beamer_kopf, beamer_inhalt, beamer_seite, beamer_minute
             if (data.bereich !== undefined) {
                 document.getElementById(data.bereich).innerHTML = data.cont;
+            }
+            if (data.cont === 'reload') {
+                location.reload(true);
             }
             return;
         }

@@ -195,7 +195,7 @@ Public Sub Bilderspeichern()
     Set db = CurrentDb
 
     If get_properties("EWS") = "EWS3" Then
-        base = getBaseDir & "webserver\views"
+        base = getBaseDir & "webserver\views\"
         Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and F1 = 'favicon.ico';")
         ht.MoveFirst
         out_bild ht, base
@@ -222,7 +222,7 @@ Public Sub Bilderspeichern()
         Set ht = open_re("All", "Zahl")
         For t = 1 To 7
             Set out = file_handle(base & tr_nr & "_" & t & ".html")
-            out.writeline Replace(ht!f1, "x__zahl", t)
+            out.writeline Replace(ht!F1, "x__zahl", t)
         Next t
     End If
 
@@ -235,11 +235,11 @@ Function out_bild(ht, base)
 On Error Resume Next
     
     BilddateiID = FreeFile
-    Dateigroesse = Nz(LenB(ht!f3), 0)
+    Dateigroesse = Nz(LenB(ht!F3), 0)
 
     ReDim Buffer(Dateigroesse)
-    Open base & Trim(ht!f1) For Binary Access Write As BilddateiID
-    Buffer = ht!f3.GetChunk(0, Dateigroesse)
+    Open base & Trim(ht!F1) For Binary Access Write As BilddateiID
+    Buffer = ht!F3.GetChunk(0, Dateigroesse)
     Put BilddateiID, , Buffer
     Close BilddateiID
 

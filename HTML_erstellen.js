@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2016';
+﻿var ver = 'V3.2017';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {

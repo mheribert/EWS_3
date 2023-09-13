@@ -416,7 +416,7 @@ Private Sub Kombinationsfeld53_AfterUpdate()        'Runde
         Me!Startklasse = Null
         Me!Anz_Paare = 0
     End If
-    If InStr(1, Kombinationsfeld53.Column(1), "Endrunde") > 0 Then
+    If InStr(1, Kombinationsfeld53.Column(1), "Endrunde") > 0 Or InStr(1, Kombinationsfeld53.Column(1), "MK_") > 0 Then
         Me!Anz_Paare = 1
     End If
 End Sub

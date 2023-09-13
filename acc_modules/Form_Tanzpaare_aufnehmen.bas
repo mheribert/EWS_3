@@ -40,6 +40,36 @@ Private Sub FilterStartklasse_DblClick(Cancel As Integer)
     FilterStartklasse_Change
 End Sub
 
+Private Sub test_akros()
+    Dim db As Database
+    Dim akros As Recordset
+    Dim Paare As Recordset
+    Dim akronummer, rde As Integer
+    Dim rden
+    Dim fehlende As String
+    rden = Array("_VR", "_ZR", "_ER")
+    Set db = CurrentDb
+    Set akros = db.OpenRecordset("SELECT Akrobatik, Langtext FROM Akrobatiken;")
+    Set Paare = db.OpenRecordset("SELECT * FROM Paare;")
+    
+    If Paare.RecordCount > 0 Then Paare.MoveFirst
+    Do Until Paare.EOF
+        For rde = 0 To 2
+            For akronummer = 1 To 8
+                If Paare("Akro" & akronummer & rden(rde)) <> "" Then
+                    akros.FindFirst "akrobatik = '" & Paare("Akro" & akronummer & rden(rde)) & "'"
+                    If akros.NoMatch And Paare("Akro" & akronummer & rden(rde)) <> "" Then
+                        fehlende = fehlende & Paare!Startnr & "    " & Paare("Akro" & akronummer & rden(rde)) & vbCrLf
+                    End If
+                End If
+            Next
+    
+        Next
+        Paare.MoveNext
+    Loop
+    If Len(fehlende) > 0 Then MsgBox "fehlende Akrobatik bei Startnummer" & vbCrLf & fehlende
+End Sub
+
 Private Sub Form_Load()
     Const xoff = 630
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
@@ -71,6 +101,7 @@ Private Sub Form_Load()
             Me.Akro_anzeigen.Visible = False
         Case Else
     End Select
+    Call test_akros
 
 End Sub
 
@@ -141,6 +172,7 @@ End Sub
 
 Private Sub Form_Activate()
     Call FilterStartklasse_Change
+
 End Sub
 
 Private Sub Form_SelectionChange()

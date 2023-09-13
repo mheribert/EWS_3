@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2016';
+﻿var ver = 'V3.2017';
 var fs = require('fs');
 var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
 
