@@ -45,6 +45,7 @@ Private Sub test_akros()
     Dim akros As Recordset
     Dim Paare As Recordset
     Dim akronummer, rde As Integer
+    Dim anz_akros, max_akros As Integer
     Dim rden
     Dim fehlende As String
     rden = Array("_VR", "_ZR", "_ER")
@@ -55,19 +56,35 @@ Private Sub test_akros()
     If Paare.RecordCount > 0 Then Paare.MoveFirst
     Do Until Paare.EOF
         For rde = 0 To 2
+            anz_akros = 0
             For akronummer = 1 To 8
-                If Paare("Akro" & akronummer & rden(rde)) <> "" Then
+                If Nz(Paare("Akro" & akronummer & rden(rde))) <> "" Then
+                    anz_akros = anz_akros + 1
                     akros.FindFirst "akrobatik = '" & Paare("Akro" & akronummer & rden(rde)) & "'"
                     If akros.NoMatch And Paare("Akro" & akronummer & rden(rde)) <> "" Then
-                        fehlende = fehlende & Paare!Startnr & "    " & Paare("Akro" & akronummer & rden(rde)) & vbCrLf
+                        fehlende = fehlende & Paare!Startnr & "    " & Right(rden(rde), 2) & "    " & Paare("Akro" & akronummer & rden(rde)) & "    fehlt" & vbCrLf
                     End If
                 End If
             Next
-    
+            Select Case Paare!Startkl
+                Case "RR_A", "RR_B"
+                    If rden(rde) = "_ER" Then
+                        max_akros = 6
+                    Else
+                        max_akros = 5
+                    End If
+                Case "RR_C", "RR_J"
+                    max_akros = 4
+                Case Else
+                    max_akros = 0
+            End Select
+            If (anz_akros < max_akros) And (Paare!Startkl = "RR_A" Or Paare!Startkl = "RR_B" Or Paare!Startkl = "RR_C" Or Paare!Startkl = "RR_J") Then
+                fehlende = fehlende & Paare!Startnr & "    " & Right(rden(rde), 2) & "    hat zu wenig Akrobatiken" & vbCrLf
+            End If
         Next
         Paare.MoveNext
     Loop
-    If Len(fehlende) > 0 Then MsgBox "fehlende Akrobatik bei Startnummer" & vbCrLf & fehlende
+    If Len(fehlende) > 0 Then MsgBox fehlende
 End Sub
 
 Private Sub Form_Load()

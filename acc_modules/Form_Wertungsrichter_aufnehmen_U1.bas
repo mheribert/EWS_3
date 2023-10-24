@@ -68,7 +68,7 @@ Function Ob_Anzeige(Startkl, sle)
     Set dbs = CurrentDb
     Set re = dbs.OpenRecordset("SELECT Count([Startklasse_wertungsrichter].[WR_ID]) AS Ob_WR FROM Wert_Richter INNER JOIN Startklasse_wertungsrichter ON Wert_Richter.WR_ID = Startklasse_wertungsrichter.WR_ID WHERE (Startklasse='" & Startkl & "' AND WR_function='Ob' AND WR_Azubi=False);")
     If re.RecordCount > 0 Then
-        anzeige = "/ " & re!Ob_WR
+        anzeige = " " & re!Ob_WR
     End If
     Ob_Anzeige = anzeige
 End Function
@@ -141,6 +141,18 @@ Private Sub CTRL17_KeyDown(KeyCode As Integer, Shift As Integer)
     taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
 End Sub
 
+Private Sub CTRL18_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
+Private Sub CTRL19_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
+Private Sub CTRL20_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
 Function taste_up_down(KeyCode, Shift, ctl, top)
 On Error GoTo Fehlerout
     Dim sqlcmd As String
@@ -150,9 +162,9 @@ On Error GoTo Fehlerout
     Dim i As Integer
      
     Set dbs = CurrentDb
-    
+     
     sel = Me(ctl).ControlSource
-    Set wr = dbs.OpenRecordset("SELECT Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & "));")
+       Set wr = dbs.OpenRecordset("SELECT Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & "));")
     Set re = dbs.OpenRecordset("SELECT * FROM Startklasse_wertungsrichter WHERE WR_ID=" & wr!WR_ID & " AND startklasse ='" & Me!Startklasse & "';")
         
     wr_art = Split(Me!stkl_w, ", ")
@@ -168,7 +180,7 @@ On Error GoTo Fehlerout
     End If
     If i <= UBound(wr_art) Then
         DoCmd.CancelEvent
-        If Screen.ActiveControl = "MA" Then i = i + 1
+        If Screen.ActiveControl = "MA" And Art = "M" Then i = i + 1
         dbs.Execute "DELETE skwr.WR_ID, skwr.Startklasse FROM Startklasse_wertungsrichter AS skwr WHERE (((skwr.WR_ID)=(SELECT TOP 1 Wert_Richter.WR_ID FROM Wert_Richter WHERE (((Wert_Richter.WR_Kuerzel)=""" & Right(sel, 1) & """) AND ((Wert_Richter.Turniernr)=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " ));)) AND ((skwr.Startklasse)= """ & Me!Startklasse & """));"
         dbs.Execute "INSERT into Startklasse_wertungsrichter( WR_ID, startklasse, WR_function)" & _
                      " values(" & wr!WR_ID & ", '" & Me!Startklasse & "', '" & wr_art(i) & "');"

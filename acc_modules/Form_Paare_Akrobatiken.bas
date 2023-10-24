@@ -19,7 +19,7 @@ Private Sub Beenden_Click()
 On Error GoTo Err_Beenden_Click
 
 
-    DoCmd.close
+    DoCmd.Close
 
 Exit_Beenden_Click:
     Exit Sub
@@ -152,47 +152,66 @@ Function check_doppelte(max, Gruppen_ID)
 
 End Function
 
+Private Sub AkrobatikenPaarRowsource____neu()
+Dim sql As Variant
+Dim Startklasse, Tanzrunde As String
+Dim akronummer, TP_ID As Integer
+
+Startklasse = Forms!Tanzpaare_aufnehmen!Startkl
+TP_ID = Me.TP_ID
+
+    For akronummer = 1 To 8
+        Tanzrunde = "ER"
+        sql = "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken.RR_A FROM Akrobatiken;"
+
+
+        Me("Akro" & akronummer & "_" & Tanzrunde).RowSource = sql
+
+
+    Next
+End Sub
+
 Private Sub AkrobatikenPaarRowsource()
 ' diese Funktion sucht mit den Parametern das Paar und erstellt ein SQL Skript für die RowSource mit den jeweiligen Akrobatiken und Ersatzakrobatiken
 
 Dim sql As Variant
 Dim Startklasse, Tanzrunde As String
-Dim Akronummer, TP_ID As Integer
+Dim akronummer, TP_ID As Integer
 
 Startklasse = Forms!Tanzpaare_aufnehmen!Startkl
 TP_ID = Me.TP_ID
 
-    For Akronummer = 1 To 8
+    For akronummer = 1 To 8
         Tanzrunde = "VR"
         
         sql = "SELECT TOP 1 '' AS Ausdr1, ' < keine > ' AS Ausdr2, '' AS Ausdr3 FROM Tanz_Runden UNION SELECT Akrobatik, [nr#] & ' ' & Langtext, " & Startklasse & " FROM Akrobatiken  WHERE [Nr#]='ALL' UNION "
-        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & Akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
+        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro1_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro2_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) ORDER BY Ausdr2;"
 
     
-        Me("Akro" & Akronummer & "_" & Tanzrunde).RowSource = sql
+        Me("Akro" & akronummer & "_" & Tanzrunde).RowSource = sql
 '        Me("Wert" & Akronummer & "_" & Tanzrunde).ControlSource = "=[Akro" & Akronummer & "_VR].[column](2)"
     
         Tanzrunde = "ZR"
         
         sql = "SELECT TOP 1 '' AS Ausdr1, ' < keine > ' AS Ausdr2, '' AS Ausdr3 FROM Tanz_Runden UNION SELECT Akrobatik, [nr#] & ' ' & Langtext, " & Startklasse & " FROM Akrobatiken  WHERE [Nr#]='ALL' UNION "
-        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & Akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
+        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro1_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro2_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) ORDER BY Ausdr2;"
 
     
-        Me("Akro" & Akronummer & "_" & Tanzrunde).RowSource = sql
+        Me("Akro" & akronummer & "_" & Tanzrunde).RowSource = sql
 '        Me("Wert" & Akronummer & "_" & Tanzrunde).ControlSource = "=[Akro" & Akronummer & "_ZR].[column](2)"
         
         Tanzrunde = "ER"
         
         sql = "SELECT TOP 1 '' AS Ausdr1, ' < keine > ' AS Ausdr2, '' AS Ausdr3 FROM Tanz_Runden UNION SELECT Akrobatik, [nr#] & ' ' & Langtext, " & Startklasse & " FROM Akrobatiken  WHERE [Nr#]='ALL' UNION "
-        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & Akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
+        sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.Akro" & akronummer & "_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro1_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) UNION "
         sql = sql & "SELECT Akrobatiken.Akrobatik, [Nr#] & ' ' & [Langtext] AS Ausdr2, Akrobatiken." & Startklasse & " FROM Paare INNER JOIN Akrobatiken ON Paare.E_Akro2_" & Tanzrunde & " = Akrobatiken.Akrobatik WHERE (((Paare.TP_ID)=" & TP_ID & " and " & Startklasse & " >='0')) ORDER BY Ausdr2;"
 
-        Me("Akro" & Akronummer & "_" & Tanzrunde).RowSource = sql
+        Me("Akro" & akronummer & "_" & Tanzrunde).RowSource = sql
 '        Me("Wert" & Akronummer & "_" & Tanzrunde).ControlSource = "=[Akro" & Akronummer & "_ER].[column](2)"
     Next
 End Sub

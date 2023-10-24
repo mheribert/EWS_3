@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2017';
+﻿var ver = 'V3.2018';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -351,7 +351,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
 
     if (runde <= runden_info.length) {
         HTML_Arr[0] = make_kopf(rd_ind, runden_info, 2, wr_name) + '\r\n';
-
+        // headline
         for (seite = 1; seite < runden_info[rd_ind].PpR + 1; seite++) {
             if (runden_info[rd_ind + seite - 1].Name_Team === null) {
                 HTML_Seite = '<tr id = "anzeige_body"><td>' + runden_info[rd_ind + seite - 1].Da_Nachname + ' & ' + runden_info[rd_ind + seite - 1].He_Nachname + '</td></tr>';
@@ -371,34 +371,20 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                         HTML_Seite += '<td>Name</td><td>Grundschritt</td><td>Tanzfig</td><td>Interpret</td><td>Dance Perf</td><td>Summe</td><td>&nbsp;</td></tr>';
                     }
                 }
-            }
+            } // wr-teil
             for (wr in wertungsrichter) {
-                if (wertungsrichter[wr].WR_func === "X") {
-                    tp_id = runden_info[rd_ind + seite - 1].TP_ID;
-                    if (typeof wertungen[wr] !== "undefined") {
-                        if (typeof wertungen[wr][tp_id] !== "undefined") {
-                            cgi_val = wertungen[wr][tp_id].cgi;
-                            if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
-                                if (wertungen[wr][tp_id].in === true) {
-                                    HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                } else {
-                                    HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                }
-                                var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
-                                for (var k = 0; k < wr_kr.length; k++) {
-                                    if (wertungen[wr][tp_id]["w" + wr_kr[k] + seite] === false) {
-                                        HTML_Seite += '<td bgcolor="#dbd" fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                if (wertungsrichter[wr].WR_Azubi === false) {
+                    if (wertungsrichter[wr].WR_func === "X") {
+                        tp_id = runden_info[rd_ind + seite - 1].TP_ID;
+                        if (typeof wertungen[wr] !== "undefined") {
+                            if (typeof wertungen[wr][tp_id] !== "undefined") {
+                                cgi_val = wertungen[wr][tp_id].cgi;
+                                if (runden_info[0].Startklasse.substring(0, 3) === "F_B") {
+                                    if (wertungen[wr][tp_id].in === true) {
+                                        HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
                                     } else {
-                                        HTML_Seite += '<td fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                        HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
                                     }
-                                }
-                            } else {
-                                if (wertungen[wr][tp_id].in === true) {
-                                    HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                } else {
-                                    HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                }
-                                if (new_guidelines) {
                                     var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
                                     for (var k = 0; k < wr_kr.length; k++) {
                                         if (wertungen[wr][tp_id]["w" + wr_kr[k] + seite] === false) {
@@ -408,46 +394,62 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                                         }
                                     }
                                 } else {
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
-                                    if (trunde === 'ER') {
-                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wbd" + seite]) + '</td>';
+                                    if (wertungen[wr][tp_id].in === true) {
+                                        HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                    } else {
+                                        HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
                                     }
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["win" + seite]) + '</td>';
-                                    if (trunde === 'ER') {
-                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wsi" + seite]) + '</td>';
+                                    if (new_guidelines) {
+                                        var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
+                                        for (var k = 0; k < wr_kr.length; k++) {
+                                            if (wertungen[wr][tp_id]["w" + wr_kr[k] + seite] === false) {
+                                                HTML_Seite += '<td bgcolor="#dbd" fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                            } else {
+                                                HTML_Seite += '<td fld=' + wr_kr[k] + seite + '>' + parseFloat(cgi_val["w" + wr_kr[k] + seite]) + '</td>';
+                                            }
+                                        }
+                                    } else {
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wgs" + seite]) + '</td>';
+                                        if (trunde === 'ER') {
+                                            HTML_Seite += '<td>' + parseFloat(cgi_val["wbd" + seite]) + '</td>';
+                                        }
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wtf" + seite]) + '</td>';
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["win" + seite]) + '</td>';
+                                        if (trunde === 'ER') {
+                                            HTML_Seite += '<td>' + parseFloat(cgi_val["wsi" + seite]) + '</td>';
+                                        }
+                                        HTML_Seite += '<td>' + parseFloat(cgi_val["wdp" + seite]) + '</td>';
                                     }
-                                    HTML_Seite += '<td>' + parseFloat(cgi_val["wdp" + seite]) + '</td>'; 
                                 }
+                                if (runden_info[0].Runde.indexOf("r_schnell") > 0) {
+                                    HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte / 1.1) + '</td>';
+                                } else {
+                                    HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte) + '</td>';
+                                }
+                                HTML_Seite += '<td><input class="wr_nochmal" value="nochmal werten" type="button" onclick="senden(this.value, ' + wr + ')"></td ></tr>';
                             }
-                            if (runden_info[0].Runde.indexOf("r_schnell") > 0) {
-                                HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte / 1.1) + '</td>';
-                            } else {
-                                HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte) + '</td>';
-                            }
-                            HTML_Seite += '<td><input class="wr_nochmal" value="nochmal werten" type="button" onclick="senden(this.value, ' + wr + ')"></td ></tr>';
                         }
                     }
-                }
-                if (wertungsrichter[wr].WR_func === "Ob") {
-                    tp_id = runden_info[rd_ind + seite - 1].TP_ID;
-                    if (typeof wertungen[wr] !== "undefined") {
-                        if (typeof wertungen[wr][tp_id] !== "undefined") {
-                            cgi_val = wertungen[wr][tp_id].cgi;
-                            HTML_Seite += '<tr><td height="40px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                            HTML_Seite += '<td' + iif('Akro ', cgi_val["wakrovw" + seite]) + '</td>';
-                            HTML_Seite += '<td' + iif('Fig Jun ', cgi_val["wjuniorvw" + seite]) + '</td>';
-                            HTML_Seite += '<td' + iif('Kleid ', cgi_val["wkleidungvw" + seite]) + '</td>';
-                            HTML_Seite += '<td' + iif('Tanzber ', cgi_val["wtanzbereichvw" + seite]) + '</td>';
-                            //if (trunde === 'ER') {
+                    if (wertungsrichter[wr].WR_func === "Ob") {
+                        tp_id = runden_info[rd_ind + seite - 1].TP_ID;
+                        if (typeof wertungen[wr] !== "undefined") {
+                            if (typeof wertungen[wr][tp_id] !== "undefined") {
+                                cgi_val = wertungen[wr][tp_id].cgi;
+                                HTML_Seite += '<tr><td height="40px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                HTML_Seite += '<td' + iif('Akro ', cgi_val["wakrovw" + seite]) + '</td>';
+                                HTML_Seite += '<td' + iif('Fig Jun ', cgi_val["wjuniorvw" + seite]) + '</td>';
+                                HTML_Seite += '<td' + iif('Kleid ', cgi_val["wkleidungvw" + seite]) + '</td>';
+                                HTML_Seite += '<td' + iif('Tanzber ', cgi_val["wtanzbereichvw" + seite]) + '</td>';
+                                //if (trunde === 'ER') {
                                 HTML_Seite += '<td' + iif('TanzZeit ', cgi_val["wtanzzeitvw" + seite]) + '</td>';
                                 HTML_Seite += '<td' + iif('Dis ', cgi_val["waufrufvw" + seite]) + '</td>';
-                            //}
-                            if (new_guidelines) {
-                                HTML_Seite += '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>';
+                                //}
+                                if (new_guidelines) {
+                                    HTML_Seite += '<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>';
+                                }
+                                HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte) * -1 + '</td>';
+                                HTML_Seite += '<td><input class="wr_nochmal" value="nochmal werten" type="button" onclick="senden(this.value, ' + wr + ')"></td ></tr>';
                             }
-                            HTML_Seite += '<td>' + fix2(wertungen[wr][tp_id].Punkte) * -1 + '</td>';
-                            HTML_Seite += '<td><input class="wr_nochmal" value="nochmal werten" type="button" onclick="senden(this.value, ' + wr + ')"></td ></tr>';
                         }
                     }
                 }
@@ -590,7 +592,7 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
         }
         HTML_Seite += '</table></td>' + '\r\n';
     }
-//---
+
     HTML_Seite += '</tr>' + make_absenden(true, btn_aktiv);
     HTML_Seite += '</table></center></form>';
     HTML_Seite += '<script> const ausw="' + runden_info[0].Startklasse.substr(0, 2) + '" </script>';
@@ -629,17 +631,19 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         tp_id = runden_info[rd_ind + seite].TP_ID;
         for (wr in wertungen) {
             if (typeof wertungen[wr][tp_id] !== "undefined") {
-                wrn = wertungsrichter[wr].WR_Nachname.substring(0, 1) + wertungsrichter[wr].WR_Vorname.substring(0, 2);
-                switch (wertungsrichter[wr].WR_func) {
-                    case 'Ob':
-                        PunkteOb = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
-                        break;
-                    case 'Ft':
-                        PunkteFt[wr] = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
-                        break;
-                    case 'Ak':
-                        PunkteAk[wr] = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
-                        break;
+                if (wertungsrichter[wr].WR_Azubi === false) {
+                    wrn = wertungsrichter[wr].WR_Nachname.substring(0, 1) + wertungsrichter[wr].WR_Vorname.substring(0, 2) + wertungsrichter[wr].WR_ID;
+                    switch (wertungsrichter[wr].WR_func) {
+                        case 'Ob':
+                            PunkteOb = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
+                            break;
+                        case 'Ft':
+                            PunkteFt[wr] = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
+                            break;
+                        case 'Ak':
+                            PunkteAk[wr] = { "WR_ID": wr, "WR_func": wertungsrichter[wr].WR_func, "rd_ind": rd_ind + seite, "paar": wertungen[wr], "seite": s, "WR_name": wrn, "cgi": wertungen[wr][tp_id].cgi };
+                            break;
+                    }
                 }
             }
         }
@@ -649,7 +653,7 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         HTML_fehler = '<tr><td>Fu&szlig;technik</td>';
         for (i in PunkteFt) {
             cgi_val = PunkteFt[i].cgi;
-            HTML_name += '<td>' + PunkteFt[i].WR_name + '</td>';
+            HTML_name += '<td>' + PunkteFt[i].WR_name.substring(0, 3) + '</td>';
             if (cgi_val['wfl' + s] > 0) {
                 HTML_fehler += '<td>' + get_grobfehler(cgi_val['tfl' + s], 'fl' + s) + '</td>';
                 korr = true;
@@ -659,7 +663,7 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         }
         // Fußtechnik Ob erstellen --------------------------
         cgi_val = PunkteOb.cgi;
-        HTML_name += '<td>' + PunkteOb.WR_name + '</td>';
+        HTML_name += '<td>' + PunkteOb.WR_name.substring(0, 3) + '</td>';
         if (cgi_val['wfl' + s] > 0) {
             HTML_fehler += '<td>' + get_grobfehler(cgi_val['tfl' + s], 'fl' + s) + '</td>';
             korr = true;
@@ -715,7 +719,7 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
             wr = new Array();
             for (c in HTML_array[1]) {
                 if (c !== "Akro" && c !== "korr") {
-                    HTML_name += '<td>' + c + '</td>';
+                    HTML_name += '<td>' + c.substring(0,3) + '</td>';
                     wr.push(c);
                 }
             }

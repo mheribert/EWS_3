@@ -227,25 +227,32 @@ Private Sub DRBV_Musik_herunterladen()
     pfad = "C:\DRBV-V16\Musik\turniermusik"
 '    pfad = gen_Ordner(getBaseDir() & "Turnierleiterpaket\" & get_TerNr() & "_Musik")
     If Len(Dir(pfad & ".csv")) <> 0 Then
-        Open pfad & fName & ".csv" For Input As #1
+'        Open pfad & fName & ".csv" For Input As #1
+        Open pfad & "\1230502_16829028042.csv" For Input As #1
+
         Line Input #1, strZeile
         Do While Not EOF(1)
             Line Input #1, strZeile
             If strZeile <> "" Then
                 strZeile = del_kochkomma(strZeile)
                 da = Split(strZeile, ";")
-                If da(5) = takte And left(da(2), 6) = "boogie" And da(8) = "swing" Then
+'                If da(5) = takte And left(da(2), 6) = "boogie" And da(8) = "swing" Then
                     gen_Ordner (getBaseDir() & "Musik")
-                    dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(5) & da(8)) & "\" & da(4) & " - " & da(3) & ".mp3"
+                    dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & da(4) & " - " & da(3) & ".mp3"
                     If InStr(da(1), "&") Then
                         da(1) = Replace(da(1), "&", "&teil2=")
                     End If
-                    file_URL = "http://www.drbv.de/turniermusik/musikdb.php?pfad=/" & da(2) & "&file=" & da(1)
-
-                    retl = get_url_to_file(file_URL, dest_file)
+                    If da(9) <> "" Then
+                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & Mid(da(9), InStr(da(9), "?file=") + 6)
+                        retl = get_url_to_file(da(9), dest_file)
+                    End If
 '                    Pause 1
+                    If da(10) <> "" Then
+                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & Mid(da(10), InStr(da(10), "?file=") + 6)
+                        retl = get_url_to_file(da(10), dest_file)
+                    End If
 
-                End If
+'                End If
             End If
         Loop
         Close #1

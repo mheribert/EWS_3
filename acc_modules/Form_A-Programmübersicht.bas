@@ -196,8 +196,8 @@ Private Sub Form_Open(Cancel As Integer)
         re.MoveFirst
         s_row = s_row & re!Turniernum & ";""" & re!Turnier_Name & """;""" & re!T_Datum & """;" & Nz(re!Turnier_Nummer) & ";""" & re!Veranst_Name & """;" & re!Getrennte_Auslosung & ";""" & re!Veranst_Ort & """;"""";""" & re!BS_Erg & """;"
         t_sel = re!Turnier_Name
-        re.close
-        db.close
+        re.Close
+        db.Close
         T_Name = Dir(t_Pfad & "T*_TDaten*.mdb")
         Do Until T_Name = t_spei
             T_Name = Dir

@@ -161,12 +161,14 @@ Private Sub FolieRunden_Click()
 End Sub
 
 Private Sub Form_Load()
+    Dim ews As String
+    ews = get_properties("EWS")
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "D"
             If DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") <> "" Then
                 Me!Übertrag_EXCEL.Visible = True
             End If
-            If get_properties("EWS") = "EWS3" Then
+            If ews = "EWS3" Then
                 Me!Befehl47.Visible = False
                 Me!HTML_Seiten.Visible = False
             End If
@@ -174,11 +176,27 @@ Private Sub Form_Load()
             Me!FolieRunden.Visible = True
             Me!Übertrag_EXCEL.Visible = False
         Case "BY"
-            Me!FolieRunden.Visible = True
             Me!Übertrag_EXCEL.Visible = False
+            If ews = "EWS3" Then
+                Me!Befehl47.Visible = False
+                Me!HTML_Seiten.Visible = False
+                Me!FolieRunden.Visible = False
+            Else
+                Me!Befehl47.Visible = True
+                Me!HTML_Seiten.Visible = True
+                Me!FolieRunden.Visible = True
+            End If
         Case "BW"
-            Me!FolieRunden.Visible = True
             Me!Übertrag_EXCEL.Visible = False
+            If ews = "EWS3" Then
+                Me!Befehl47.Visible = False
+                Me!HTML_Seiten.Visible = False
+                Me!FolieRunden.Visible = False
+            Else
+                Me!Befehl47.Visible = True
+                Me!HTML_Seiten.Visible = True
+                Me!FolieRunden.Visible = True
+            End If
         Case Else
             Me!FolieRunden.Visible = False
             Me!Übertrag_EXCEL.Visible = False

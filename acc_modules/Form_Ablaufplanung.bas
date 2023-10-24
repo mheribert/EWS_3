@@ -67,7 +67,7 @@ Private Sub Form_Open(Cancel As Integer)
     Set dbs = CurrentDb
     Set re = dbs.OpenRecordset("Startklasse_Turnier")
     If re.RecordCount = 0 Then
-        MsgBox "Es wurden noch keine Startklassen definiert!"
+        MsgBox "Es wurden noch keine Startklassen angelegt!"
         Exit Sub
     End If
     
@@ -111,6 +111,28 @@ End Sub
 
 Private Sub hochladen_Click()
     send_zeitplan Forms![A-Programmübersicht]!Turnier_Nummer
+End Sub
+
+Private Sub Kombinationsfeld51_Enter()
+    If get_properties("highlight_ablauf") Then
+        Me!Kombinationsfeld51.FormatConditions(1).Modify acFieldValue, acEqual, Chr(34) & Me!Kombinationsfeld51 & Chr(34), ""
+    End If
+End Sub
+
+Private Sub Kombinationsfeld51_Exit(Cancel As Integer)
+    Me!Kombinationsfeld51.FormatConditions(1).Modify acFieldValue, acEqual, """", ""
+End Sub
+
+Private Sub Kombinationsfeld53_Enter()
+    If get_properties("highlight_ablauf") Then
+        If Not IsNull(Me!Kombinationsfeld53) Then
+            Me!Kombinationsfeld53.FormatConditions(0).Modify acExpression, acBetween, "[runde] Like """ & Me!Kombinationsfeld53 & "*""", ""
+        End If
+    End If
+End Sub
+
+Private Sub Kombinationsfeld53_Exit(Cancel As Integer)
+    Me!Kombinationsfeld53.FormatConditions(0).Modify acExpression, acBetween, """", ""
 End Sub
 
 Private Sub Mehrkampf_eintragen_Click()
@@ -412,12 +434,18 @@ Private Sub btnAktualisieren_Click()
 End Sub
 
 Private Sub Kombinationsfeld53_AfterUpdate()        'Runde
-    If (Kombinationsfeld53.Column(3) = 0) Then
-        Me!Startklasse = Null
-        Me!Anz_Paare = 0
-    End If
-    If InStr(1, Kombinationsfeld53.Column(1), "Endrunde") > 0 Or InStr(1, Kombinationsfeld53.Column(1), "MK_") > 0 Then
-        Me!Anz_Paare = 1
+    Dim rde As String
+    If Not IsNull(Me!Kombinationsfeld53) Then
+        rde = Kombinationsfeld53.Column(3)
+        If rde = 0 Then
+            Me!Startklasse = Null
+            Me!Anz_Paare = 0
+        End If
+        
+        rde = Kombinationsfeld53
+        If InStr(1, rde, "End_r") > 0 Or InStr(1, rde, "MK_") > 0 Or rde = "Startbuchabgabe" Or rde = "Sieger" Then
+            Me!Anz_Paare = 1
+        End If
     End If
 End Sub
 

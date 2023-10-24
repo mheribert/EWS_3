@@ -1,4 +1,4 @@
-var ver = 'V3.2017';
+var ver = 'V3.2018';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -389,8 +389,14 @@ app.get('/hand', function (req, res) {
             break;
 
         case "beamer_runde":
+            var rd_ind = 0;
+            for (i = 0; i < runden_info.length; i++) {
+                if (runden_info[i].Rundennummer < runde) {
+                    rd_ind++;
+                }
+            }
             res.send(req.query.msg + req.query.text);
-            HTML_beamer.beamer_runde(io, runden_info, runde, 0);
+            HTML_beamer.beamer_runde(io, runden_info, runde, rd_ind);
             break;
 
         case "beamer_siegerehrung":
@@ -1124,6 +1130,8 @@ function wr_lesen() {
 }
 
 turnier_titel();
+console.log("---------------------------------");
+console.log(new Date().toString('de-DE'));
 console.log('App Started on PORT ' + conf.port + '.');
 console.log('Version ' + ver);
 to_Root();

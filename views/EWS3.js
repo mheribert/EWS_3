@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2017';
+﻿    var ver =  'V3.2018';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -30,13 +30,28 @@ function start() {
                 return;
             }
             if (data.msg === 'setWert' && parseInt(data.WR) === WR_ID) {
-                btn = document.getElementById(data.fld);
-/*                data.val = parseFloat(data.val.replace(",", "."));
-                if (data.fld.substring(0, 2) === "ak" && parseFloat(data.val) > 0) {
-                    data.val = document.getElementById("w" + data.fld).max / parseFloat(data.val / 2);
-                }*/
-                btn = btn.children[data.val];
-                paint_bar(btn);
+                if (data.fld === "absenden") {
+                    f_send();
+                } else {
+                    switch (data.fld.substring(0, 3)) {
+                        case "tfl":
+                            if (data.val !== "") {
+                                btn = document.getElementById("mistakes-list" + data.fld.substring(3));
+                                btn.innerHTML = '<div class="btn-danger">' + data.val + '</div>';
+                                btn = document.getElementById(data.fld);
+                                btn.value = data.val;
+                            }
+                            break;
+                        case "wfl":
+                            btn = document.getElementById(data.fld);
+                            btn.value = data.val / 2;
+                            break;
+                        default:
+                            btn = document.getElementById(data.fld.substring(1));
+                            btn = btn.children[data.val];
+                            paint_bar(btn);
+                    }
+                }
             }
             if (data.msg === 'remSend' && parseInt(data.WR) === WR_ID) {
                 f_send();
@@ -66,6 +81,11 @@ function start() {
             }
             if (parseInt(data.send_mk) === WR_ID) {
                 senden_mk();
+            }
+            if (data.msg === 'setWert' && parseInt(data.WR) === WR_ID) {
+               //   document.getElementById("mySelect").selectedIndex = "2"; 
+                btn = document.getElementById(data.fld);
+                btn = btn.value[data.val];
             }
             if (data.storage_clear) {
                 localStorage.clear();
@@ -141,7 +161,7 @@ function wr_delmistake(e) {
         pu.value = parseInt(pu.value) - parseInt(fl);
         tar.parentNode.removeChild(tar);
         if (tar.innerText === "A20") {
-            senden("WR-Info" + s.substring(0, 1), "")
+            senden("WR-Info" + s.substring(0, 1), "A20 wurde gelöscht");
         }
     }
 }

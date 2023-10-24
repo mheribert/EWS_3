@@ -24,10 +24,12 @@ End Sub
 
 Private Sub Form_Load()
     Form_Resize
+    Me!Siegerehrung.Visible = False
     If get_properties("EWS") = "EWS3" Then
 '        Me!Runde_starten.Visible = True
-        Me!Platzierungsliste.Visible = False
 '        Me!nochmal_starten.Visible = True
+        Me!Zeitplan_ganz.Visible = False
+        Me!Platzierungsliste.Visible = False
    Else
         Me!Runde_starten.Visible = False
         Me!Platzierungsliste.Visible = True
@@ -303,6 +305,8 @@ Sub Tanzrunde_AfterUpdate()
                     Me("WR_" & t) = re!WR_ID
                     Me("Feld" & t).Caption = re!Ausdr1
                     Me("Feld" & t).Visible = True
+                    Me("Feld" & t).BackStyle = 0
+                    Me("Feld" & t).ForeColor = 0
                     t = t + 1
                 End If
                 Me!Feld14.Visible = True

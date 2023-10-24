@@ -530,7 +530,7 @@ On Error GoTo RT_Import_Fehler_Err
     Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
     Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
     Dim n, Akrozähler As Integer
-    Dim fs, inp, cgivar, Zeile, Testarray
+    Dim fs, inp, cgivar, zeile, Testarray
     Dim anzahl_paare As Integer
     Dim AbgegebeneWertungen, rt, html_felder As Recordset
     Dim db As Database
@@ -551,14 +551,14 @@ On Error GoTo RT_Import_Fehler_Err
         Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
-            Zeile = cgivar(2)
+            zeile = cgivar(2)
     
             If left(rt!Startklasse, 3) = "RR_" Then
-                Zeile = Replace(Zeile, "_1=", "1=")
-                Zeile = Replace(Zeile, "_2=", "2=")
+                zeile = Replace(zeile, "_1=", "1=")
+                zeile = Replace(zeile, "_2=", "2=")
             End If
             
-            Werte_Array = Split(Zeile, "&")
+            Werte_Array = Split(zeile, "&")
             
             '*** prüfen ob ein oder zwei Paare im String stehen
                 Dim back, var
@@ -923,7 +923,7 @@ ObserverHTML_Fehler_Err:
 
 End Sub
 
-Public Function Get_Akropunkte(TP_ID, Runde, Akronummer)
+Public Function Get_Akropunkte(TP_ID, Runde, akronummer)
     Dim db As Database
     Dim Paare As Recordset
     Dim RundTxt, AkroText As String
@@ -941,7 +941,7 @@ Public Function Get_Akropunkte(TP_ID, Runde, Akronummer)
   
     End If
     
-    AkroText = "Wert" & Akronummer & RundTxt
+    AkroText = "Wert" & akronummer & RundTxt
     Get_Akropunkte = Paare(AkroText)
     
 End Function

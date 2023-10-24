@@ -101,12 +101,21 @@ End Sub
 ' es werden alle Einträge aus Startklasse_Wertungsrichter entfernt wenn ein WR gelöscht wird
 Public Sub Form_Close()
     Dim db As Database
+    Dim re As Recordset
     Dim sqlstr As String
     Set db = CurrentDb
     sqlstr = "DELETE * FROM Startklasse_Wertungsrichter WHERE WR_ID NOT IN (SELECT WR_ID FROM Wert_Richter);"
     db.Execute sqlstr
     sqlstr = "DELETE * FROM Startklasse_Wertungsrichter WHERE Startklasse NOT IN (SELECT Startklasse FROM Startklasse_Turnier);"
     db.Execute sqlstr
+    Set re = db.OpenRecordset("SELECT Count(Wert_Richter.WR_ID) AS AnzWR, Startklasse FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (WR_Azubi=False AND WR_Function <> 'Ob') GROUP BY Startklasse;")
+    If re.RecordCount > 0 Then re.MoveFirst
+    Do Until re.EOF
+        If re!anzWR > 8 Then
+            MsgBox "Die Anzahl der aktiven Wertungsrichter bei " & re!Startklasse & " überschreitet die maximale Anzahl des TLP."
+        End If
+        re.MoveNext
+    Loop
 End Sub
 
 Private Sub Form_Open(Cancel As Integer)
@@ -118,7 +127,7 @@ Private Sub Form_Open(Cancel As Integer)
 
     If Not re.EOF Then re.MoveFirst
     lo = 1
-    Do Until (re.EOF Or lo = 18)
+    Do Until (re.EOF Or lo = 21)
         If re!WR_AzuBi = True Then
             Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).BackStyle = 1
         Else
@@ -139,8 +148,8 @@ End Sub
 
 Private Sub Form_Resize()
     If Me.WindowHeight > 6600 Then
-        Me.RegisterStr65.Height = Me.WindowHeight - 2100
-        Me.Offizielle.Height = Me.WindowHeight - 5700
+        Me.RegisterStr65.Height = Me.WindowHeight - 1600
+        Me.Offizielle.Height = Me.WindowHeight - 5250
         Me.UForm_wr_liste.Height = Me.WindowHeight - 2800
         Me.Detailbereich.Height = Me.WindowHeight - 200
     End If
@@ -172,10 +181,11 @@ Private Sub RegisterStr65_Change()
         If Me!UForm_wr_liste.Form.RecordsetClone.RecordCount > 0 Then
             If Me!RegisterStr65.Value = 1 Then
                 Me!UForm_wr_liste.Form.CTRL01.SetFocus
-                For lo = 2 To 16
+                For lo = 2 To 20
                     Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).Visible = False
                     Me!UForm_wr_liste.Form.Controls("CTRL" & Format(lo, "0#")).Visible = False
                     Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).Caption = ""
+                    Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).BackStyle = 0
                 Next lo
             
                 Call Form_Open(1)
@@ -193,24 +203,6 @@ Private Sub RegisterStr65_Change()
     Me.Requery
 
 End Sub
-'
-'Function Einteil()
-'    Dim sqlcmd As String
-'    Dim sel As String
-'
-'    Set dbs = CurrentDb
-'
-'    sel = Screen.ActiveControl.Name
-'    If Screen.ActiveControl = "X" Then
-'        Screen.ActiveControl = ""
-'        sqlcmd = "delete from Startklasse_wertungsrichter skwr where (skwr.wr_id=" & Me.Controls("W" & left(sel, 1)).ControlTipText & " and skwr.startklasse=""" & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
-'    Else
-'        Screen.ActiveControl = "X"
-'        sqlcmd = "insert into Startklasse_wertungsrichter( WR_ID, startklasse)"
-'        sqlcmd = sqlcmd & " values(" & Me.Controls("W" & left(sel, 1)).ControlTipText & ", """ & Me.Controls("Klasse" & Format(Mid(sel, 2, 2), "#0")).ControlTipText & """);"
-'    End If
-'    dbs.Execute (sqlcmd)
-'End Function
 
 Private Sub Wertungsrichterdeckblatt_Click()
     If Me!druck Then

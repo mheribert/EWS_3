@@ -2,7 +2,9 @@ Option Compare Database
 Option Explicit
         
     Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
-
+    Dim ZipFileName
+    Dim DefPath As String
+    Dim i As Integer
     
 Sub send_zeitplan(Turniernr)
     Dim re As Recordset
@@ -48,12 +50,9 @@ Sub send_zeitplan(Turniernr)
 End Sub
 
 Sub Gen_Mail()
-    Dim DefPath As String
     Dim FileToZip
     Dim empf As String
     Dim tur_ber As Boolean
-    Dim ZipFileName
-    Dim i As Integer
     
     DefPath = gen_Ordner(getBaseDir & "_Versand\") & get_TerNr
     
@@ -66,63 +65,49 @@ Sub Gen_Mail()
         DoCmd.OutputTo acOutputReport, "Turnierbericht", acFormatRTF, FileToZip, False, ""
         zip_file ZipFileName, FileToZip, i
         
-        FileToZip = DefPath & "_Rangliste.xls"
-        DoCmd.OutputTo acQuery, "Ergebnisliste_Text", "MicrosoftExcel(*.xls)", FileToZip, False, ""
-        zip_file ZipFileName, FileToZip, i
-        
         FileToZip = getBaseDir & get_TerNr & "_TDaten.mdb"
         zip_file ZipFileName, FileToZip, i
         
-        FileToZip = DefPath & "_Ergebnisliste.txt"
-        Call writeErgebnisliste(CStr(FileToZip))
-        zip_file ZipFileName, FileToZip, i
-
-        FileToZip = DefPath & "_Ergebnisliste.html"
-        zip_file ZipFileName, FileToZip, i
-
         Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
             Case "BW"
                 empf = "breitensport@bwrrv.de"
                 tur_ber = False
+                
+                zipping_rangliste
+                zipping_ergebnisliste
+           
+           Case "BY"
+                empf = ""
+                tur_ber = False
+                
+                zipping "Paare"
+                zipping "Rundentab"
+                zipping "Turnier"
+                zipping "Turnierleitung"
+                zipping "Wert_Richter"
+                zipping "Paare_Rundenqualifikation"
+                zipping "Auswertung"
+                    
             Case Else
                 empf = "turnierueberwachung@drbv.de"
                 tur_ber = True
+                
                 FileToZip = DefPath & "_Abgegebene_Wertungen.csv"
                 export_tabelle "Abgegebene_Wertungen", FileToZip
                 zip_file ZipFileName, FileToZip, i
 
-                FileToZip = DefPath & "_Paare.csv"
-                DoCmd.TransferText acExportDelim, "Paare Exportspezifikation", "Paare", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
+                zipping_rangliste
+                zipping "Paare"
+                zipping "Majoritaet"
+                zipping "Rundentab"
+                zipping "Turnier"
+                zipping "Turnierleitung"
+                zipping "Wert_Richter"
+                zipping "Paare_Rundenqualifikation"
+                zipping "Auswertung"
 
-                FileToZip = DefPath & "_Majoritaet.csv"
-                DoCmd.TransferText acExportDelim, "Majoritaet Exportspezifikation", "Majoritaet", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Rundentab.csv"
-                DoCmd.TransferText acExportDelim, "Rundentab Exportspezifikation", "Rundentab", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Turnier.csv"
-                DoCmd.TransferText acExportDelim, "Turnier Exportspezifikation", "Turnier", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Turnierleitung.csv"
-                DoCmd.TransferText acExportDelim, "Turnierleitung Exportspezifikation", "Turnierleitung", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Wert_Richter.csv"
-                DoCmd.TransferText acExportDelim, "Wert_Richter Exportspezifikation", "Wert_Richter", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Paare_Rundenqualifikation.csv"
-                DoCmd.TransferText acExportDelim, "Paare_Rundenqualifikation Exportspezifikation", "Paare_Rundenqualifikation", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
-                FileToZip = DefPath & "_Auswertung.csv"
-                DoCmd.TransferText acExportDelim, "Auswertung Exportspezifikation", "Auswertung", FileToZip, True
-                zip_file ZipFileName, FileToZip, i
-
+                zipping_ergebnisliste
+           
         End Select
 
         If OutlookInstalliert Then
@@ -149,6 +134,22 @@ Sub Gen_Mail()
         MsgBox "Erstellen einer ZIP-Datei funktioniert nicht auf einem Wechseldatenträger!"
     End If
 End Sub
+
+Function zipping(tbl)
+    DoCmd.TransferText acExportDelim, tbl & " Exportspezifikation", tbl, DefPath & "_" & tbl & ".csv", True
+    zip_file ZipFileName, DefPath & "_" & tbl & ".csv", i
+End Function
+
+Function zipping_rangliste()
+    DoCmd.OutputTo acQuery, "Ergebnisliste_Text", "MicrosoftExcel(*.xls)", DefPath & "_Rangliste.xls", False, ""
+    zip_file ZipFileName, DefPath & "_Rangliste.xls", i
+End Function
+
+Function zipping_ergebnisliste()
+    Call writeErgebnisliste(CStr(DefPath & "_Ergebnisliste.txt"))
+    zip_file ZipFileName, DefPath & "_Ergebnisliste.txt", i
+    zip_file ZipFileName, DefPath & "_Ergebnisliste.html", i
+End Function
 
 Sub send_outlook(empf, bcc, betreff, text, anhang)
     Dim objOutlook, objOLAtt, objOutMsg As Object

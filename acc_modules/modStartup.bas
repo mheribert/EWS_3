@@ -17,9 +17,11 @@ Public Function bindTables()
     ' Setzen des ICONs relativ zum Pfad
 
     CurrentDb.Properties("AppIcon") = dirName & "DRBV.ico"
+'   CurrentDb.Properties("AppIcon") = dirName & "DRBV.i c o"
     Application.RefreshTitleBar
     
     Application.SetOption ("Auto Compact"), 1
+
 MyExit:
       Exit Function
     

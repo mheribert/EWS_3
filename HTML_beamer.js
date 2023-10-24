@@ -1,4 +1,4 @@
-var ver = 'V3.2017';
+var ver = 'V3.2018';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -39,6 +39,7 @@ exports.beamer_seite = function (next) {
 exports.beamer_runde = function (io, runden_info, runde, rd_ind) {
     // Kopf Text
     // var rd_ind = 0;
+    if (typeof runden_info[0] === "undefined") { return; }
     if (runde <= runden_info[0].Tanzrunde_MAX) {
         /*for (i = 0; i < runden_info.length; i++) {
             if (runden_info[i].Rundennummer < runde) {
@@ -180,7 +181,7 @@ exports.beamer_ranking = function (io, runden_info, runde) {
                 HTML_Inhalt += '<td style="font-size:1.6vw;">' + ratings[p].ersteRunde.toFixed(2) + ' + ' + ratings[p].Punkte.toFixed(2) + '</td>';
             }
             punkte = ratings[p].ersteRunde + ratings[p].Punkte;
-            HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ',');
+            HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ','); // + ins_A20(ratings[p].a20);
         }
     }
     HTML_Inhalt += '</tbody>';
@@ -188,6 +189,15 @@ exports.beamer_ranking = function (io, runden_info, runde) {
 
     io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
     io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
+
+    function ins_A20(vorh) {
+        if (vorh) {
+            return "&nbsp;A20&nbsp;";
+        } else {
+            return "&nbsp;";
+        }
+    }
+
 };
 
 exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {

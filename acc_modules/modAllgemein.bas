@@ -222,6 +222,7 @@ Public Sub start_config_webserver()
         write_config_json nodePfad
         '
         retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\server.js""", vbMinimizedNoFocus)
+        
         If get_mk <> "" Then    ' MehrkampfWR schonmal eintragen
             db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE (((Startklasse_Wertungsrichter.WR_function) Like 'M*'));"
         End If
@@ -229,6 +230,7 @@ Public Sub start_config_webserver()
         Do While Timer < SngSec
             DoEvents
         Loop
+        ' wg Logowechsel bei laufendem Turnier
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&cont=reload")
 
     End If

@@ -7,7 +7,7 @@ On Error GoTo raus
     Me!Funktion = Forms!reisekostenabrechnung!Funktion
     Me!Anschrift = Forms!reisekostenabrechnung!Anschrift
     Me!von_nach = Forms!reisekostenabrechnung!Reise_von & ("  /  " + Forms!reisekostenabrechnung!Reise_nach)
-    Me!grund_reise = Forms!reisekostenabrechnung!GrundReise
+'    Me!grund_reise = Forms!reisekostenabrechnung!GrundReise
     Me!ReiseBD = Forms!reisekostenabrechnung!BeginnR
     Me!ReiseBU = Format(Forms!reisekostenabrechnung!UhrzeitBR, "hh:mm")
     Me!ReiseED = Forms!reisekostenabrechnung!EndeR
@@ -39,21 +39,15 @@ On Error GoTo raus
         Me!Stunden14 = Forms!reisekostenabrechnung!Stunden14Tage
         Me!Stunden24 = Forms!reisekostenabrechnung!Stunden24Tage
         Me!Frühstück_Tg = Forms!reisekostenabrechnung!Frühstück
-        Me!Stunden8sum = Me!Stunden8 * 6
-        Me!Stunden14sum = Me!Stunden14 * 12
-        Me!Stunden24sum = Me!Stunden24 * 24
-        Me!Frühstücksum = Me!Frühstück_Tg * 4.5
+        Me!Stunden8sum = Me!Stunden8 * 14
+        Me!Stunden14sum = Me!Stunden14 * 14
+        Me!Stunden24sum = Me!Stunden24 * 28
+        Me!Frühstücksum = Me!Frühstück_Tg * 5.6
         Me!Tagegeld = Nz(Me!Stunden8sum) + Nz(Me!Stunden14sum) + Nz(Me!Stunden24sum) - Nz(Me!Frühstücksum)
     End If
     If Nz(Forms!reisekostenabrechnung!ÜKosten) > 0 Then
         Me!ÜKostentext = Forms!reisekostenabrechnung!Ü_Text
         Me!ÜKosten = Forms!reisekostenabrechnung!ÜKosten
-    End If
-    If (Me!VorZuname = "Mießlinger Heribert" And Not IsNull(Me!ÜKosten)) Then
-        Me.Bezeichnungsfeld83.Caption = "sonstige Kosten"
-        Me.Bezeichnungsfeld193.Visible = False
-        Me!ÜKostentext = "Versandkosten, Papier und Kleinmaterial"
-        Me.Bezeichnungsfeld88.Visible = False
     End If
     sum = Nz(Me!erg_km) + Nz(Me!erg_bahn) + Nz(Me!Tagegeld) + Nz(Me!ÜKosten)
     If sum > 0 Then

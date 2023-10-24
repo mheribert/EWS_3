@@ -1,4 +1,4 @@
-var ver = 'V3.2017';
+var ver = 'V3.2018';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -117,7 +117,11 @@ exports.wr = function (io, wertungsrichter) {
     var HTML_Inhalt = "";
     for (var i in wertungsrichter) {
         if (wertungsrichter[i].WR_func !== "" && wertungsrichter[i].WR_func !== null) {
-            HTML_Inhalt += '<tr><td class="mod_n" width=15%>' + wertungsrichter[i].WR_Kuerzel + '</td>';
+            if (wertungsrichter[i].WR_Azubi === true) {
+                HTML_Inhalt += '<tr><td class="mod_az" width=15%>' + wertungsrichter[i].WR_Kuerzel + '</td>';
+            } else {
+                HTML_Inhalt += '<tr><td class="mod_n" width=15%>' + wertungsrichter[i].WR_Kuerzel + '</td>';
+            }
             HTML_Inhalt += '<td class="mod_n" width=65%>' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td >';
             HTML_Inhalt += '<td class="mod_n" width=20%>' + wertungsrichter[i].WR_func + '</td></tr>';
         }

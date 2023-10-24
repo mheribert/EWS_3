@@ -108,6 +108,7 @@ Private Sub MehrkampfStationen_AfterUpdate()
         Case "Bodenturnen und Trampolin"
             Me!Trampolin.Visible = True
             Me!Bodenturnen.Visible = True
+            clr_MK_Felder
         Case "Kondition und Koordination"
             mk_visible True
         Case "Breitensportwettbewerb"
@@ -115,14 +116,18 @@ Private Sub MehrkampfStationen_AfterUpdate()
             Me!Balance.Visible = True
             Me!Kondition.Visible = True
         Case Else
-            Me!MK_11 = ""
-            Me!MK_12 = ""
-            Me!MK_13 = ""
-            Me!MK_21 = ""
-            Me!MK_22 = ""
-            Me!MK_23 = ""
+            clr_MK_Felder
     End Select
 End Sub
+
+Function clr_MK_Felder()
+    Me!MK_11 = ""
+    Me!MK_12 = ""
+    Me!MK_13 = ""
+    Me!MK_21 = ""
+    Me!MK_22 = ""
+    Me!MK_23 = ""
+End Function
 
 Function mk_visible(vi)
     Me!MK_11.Visible = vi
@@ -150,3 +155,20 @@ Function MK_test(fld)
         End If
     Next
 End Function
+
+Private Sub Mo_Name_Enter()
+    Me!Mo_Name.Format = ""
+End Sub
+
+Private Sub Mo_Name_Exit(Cancel As Integer)
+    Me!Mo_Name.Format = "@;""Vorname Name""[Blue]"
+End Sub
+
+Private Sub Tanzfläche_Enter()
+    Me!Tanzfläche.Format = ""
+End Sub
+
+Private Sub Tanzfläche_Exit(Cancel As Integer)
+    Me!Tanzfläche.Format = "@;""z.B. 6m x 6 m""[Blue]"
+End Sub
+

@@ -1,4 +1,4 @@
-﻿/*   Version V3.2017  */
+﻿/*   Version V3.2018  */
 .runden             { vertical-align:middle; text-align:center; background-color:#FFA; height:40px; }
 .kopf_1             { font-family: Arial; vertical-align:middle; text-align:center; font-size:1.4em; font-weight:bold; }
 .rd_o               { font-family: Arial; font-size:24px; vertical-align:middle; text-align:left;  color:#000; background-color:#CDC;  padding-left:10px; width:900px; }
@@ -81,6 +81,7 @@ a                   { text-decoration: none; }
 /* moderator */
 .mod_kopf           { font-family: Verdana; font-size: 5vw; vertical-align:middle; text-align: center; background-color:#FFA; height:6vw; border:1px solid #000; border-radius: 10px; width: 33%; }
 .mod_n              { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #FFFFFF; height: 25px; }
+.mod_az             { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #000000; background-color: #F4B183; height: 25px; }
 .mod_nb             { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #55f; background-color: #FFFFFF; height: 25px; }
 .mod_ns             { font-family: Verdana; font-size: 4.5vw; vertical-align: middle; text-align: left; color: #fa6; background-color: #FFFFFF; height: 25px; }
 .mod_m              { font-family: Verdana; font-size: 4vw; vertical-align:middle; text-align:left; color:#000000; background-color:#FFFFFF; height:25px; padding-right:30px; }
