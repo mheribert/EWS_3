@@ -63,10 +63,10 @@ Sub Gen_Mail()
         i = 1
         FileToZip = DefPath & "_Turnierbericht.rtf"
         DoCmd.OutputTo acOutputReport, "Turnierbericht", acFormatRTF, FileToZip, False, ""
-        zip_file ZipFileName, FileToZip, i
+        zip_file ZipFileName, FileToZip, i, False
         
         FileToZip = getBaseDir & get_TerNr & "_TDaten.mdb"
-        zip_file ZipFileName, FileToZip, i
+        zip_file ZipFileName, FileToZip, i, False
         
         Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
             Case "BW"
@@ -92,11 +92,11 @@ Sub Gen_Mail()
                 empf = "turnierueberwachung@drbv.de"
                 tur_ber = True
                 
-                FileToZip = DefPath & "_Abgegebene_Wertungen.csv"
-                export_tabelle "Abgegebene_Wertungen", FileToZip
-                zip_file ZipFileName, FileToZip, i
+'                FileToZip = DefPath & "_Abgegebene_Wertungen.csv"
+'                export_tabelle "Abgegebene_Wertungen", FileToZip
+'                zip_file ZipFileName, FileToZip, i, true
 
-                zipping_rangliste
+'                zipping_rangliste
                 zipping "Paare"
                 zipping "Majoritaet"
                 zipping "Rundentab"
@@ -106,7 +106,7 @@ Sub Gen_Mail()
                 zipping "Paare_Rundenqualifikation"
                 zipping "Auswertung"
 
-                zipping_ergebnisliste
+'                zipping_ergebnisliste
            
         End Select
 
@@ -126,10 +126,11 @@ Sub Gen_Mail()
                 empf = "geschaeftsstelle@drbv.de"
                 text = "Hallo," & vbCrLf & vbCrLf & "hier der Turnierbericht " & Forms![A-Programmübersicht]![Turnierbez] & _
                         vbCrLf & vbCrLf & "Gruß "
-                send_outlook empf, "", betreff, text, DefPath & "_Ergebnisliste.txt;" & DefPath & "_Turnierbericht.rtf"
+                send_outlook empf, "", betreff, text, DefPath & "_Turnierbericht.rtf"
             End If
         
         End If
+        Kill DefPath & "_Turnierbericht.rtf"
     Else
         MsgBox "Erstellen einer ZIP-Datei funktioniert nicht auf einem Wechseldatenträger!"
     End If
@@ -137,18 +138,18 @@ End Sub
 
 Function zipping(tbl)
     DoCmd.TransferText acExportDelim, tbl & " Exportspezifikation", tbl, DefPath & "_" & tbl & ".csv", True
-    zip_file ZipFileName, DefPath & "_" & tbl & ".csv", i
+    zip_file ZipFileName, DefPath & "_" & tbl & ".csv", i, True
 End Function
 
 Function zipping_rangliste()
     DoCmd.OutputTo acQuery, "Ergebnisliste_Text", "MicrosoftExcel(*.xls)", DefPath & "_Rangliste.xls", False, ""
-    zip_file ZipFileName, DefPath & "_Rangliste.xls", i
+    zip_file ZipFileName, DefPath & "_Rangliste.xls", i, True
 End Function
 
 Function zipping_ergebnisliste()
     Call writeErgebnisliste(CStr(DefPath & "_Ergebnisliste.txt"))
-    zip_file ZipFileName, DefPath & "_Ergebnisliste.txt", i
-    zip_file ZipFileName, DefPath & "_Ergebnisliste.html", i
+    zip_file ZipFileName, DefPath & "_Ergebnisliste.txt", i, True
+    zip_file ZipFileName, DefPath & "_Ergebnisliste.html", i, True
 End Function
 
 Sub send_outlook(empf, bcc, betreff, text, anhang)
@@ -186,7 +187,7 @@ Sub NewZip(sPath)
     Close #1
 End Sub
 
-Function zip_file(ZipFileName, fName, i)
+Function zip_file(ZipFileName, fName, i, loeschen)
     ' copy File in ZIP und warte
     Dim oApp As Object
     Set oApp = CreateObject("Shell.Application")
@@ -197,6 +198,7 @@ Function zip_file(ZipFileName, fName, i)
         Do Until oApp.Namespace(ZipFileName).items.Count = i
         Loop
         i = i + 1
+        If loeschen Then Kill fName
     Else
         MsgBox fName & " wurde noch nicht erzeugt", vbOKOnly
     End If
@@ -295,3 +297,30 @@ Sub alle_Paare_anschreiben()
     send_outlook empf, mails, "Betreff", "Text", ""
 End Sub
 
+Public Sub versand_ausschreibung(turnier)
+    Dim fName As String
+    OpenFile.lpstrFilter = "Turnierdatenbanken (*.pdf)" & Chr(0) & "*.pdf" & Chr(0)
+    OpenFile.lpstrInitialDir = getBaseDir
+    If get_Filename(0) <> "" Then
+        fName = OpenFile.lpstrFile
+        FileCopy fName, getBaseDir & turnier & "_" & "Ausschreibung.pdf"
+    End If
+    If OutlookInstalliert Then
+        Dim objOutlook, objOLAtt, objOutMsg As Object
+        Dim oApp As Object
+    
+        Set objOutlook = CreateObject("Outlook.Application")
+        Set objOutMsg = objOutlook.CreateItem(0)
+        With objOutMsg
+            .To = "turnierueberwachung@drbv.de"
+            .Subject = turnier & "Ausschreibung"
+            .body = turnier & "Ausschreibung"
+        End With
+'        Set objOLAtt = objOutMsg.Attachments.Add(zFileName)
+        objOutMsg.Display
+        'objOutMsg.Send
+    
+        Set objOutMsg = Nothing
+        Set objOutlook = Nothing
+    End If
+ End Sub

@@ -106,6 +106,9 @@ Private Sub Form_Open(Cancel As Integer)
 '        Me!btn_ausw_2.Visible = True
 '        Me!btn_ausw_1.Visible = True
     End If
+    If get_properties("sort_ablauf") Then
+        Me!Startklasse.RowSource = "SELECT  * FROM Runden4AuswertenWeiternehmen ORDER BY Rundentab.Rundenreihenfolge;"
+    End If
 End Sub
 
 Private Sub btnPaareWeiternehmen_Click()
@@ -323,6 +326,19 @@ Private Function no_runde_selected()
     End If
 End Function
 
+Function ueberschrift(cap)
+    Dim ar, i
+    If InStr(cap, ",") = 0 Then
+        Me!ausw_anz.Caption = cap
+    Else
+        ar = Split(cap, ",")
+        For i = 1 To 7
+            Me("rde" & i).Caption = ar(i - 1)
+        Next
+    End If
+
+End Function
+
 Public Sub Startklasse_Change()
     
     Dim dbs As Database
@@ -341,25 +357,25 @@ Public Sub Startklasse_Change()
     ' RR   BW   F   BS
     If UBound(ausw_anz) > 0 Then
         If Startklasse.Column(7) = "MK_5_TNZ" And DLookup("Mehrkampfstationen", "Turnier", "Turniernum = 1") = "Kondition und Koordination" Then
-            Me!ausw_anz.Caption = ausw_anz(1)
+            ueberschrift ausw_anz(1)
         Else
             Select Case left(Startklasse.Column(3), 3)
                 Case "RR_"
-                    Me!ausw_anz.Caption = ausw_anz(0)
+                    ueberschrift ausw_anz(0)
                 Case "BW_"
-                    Me!ausw_anz.Caption = ausw_anz(1)
+                    ueberschrift ausw_anz(1)
                 Case "F_R"
-                    Me!ausw_anz.Caption = ausw_anz(2)
+                    ueberschrift ausw_anz(2)
                 Case "F_B"
-                    Me!ausw_anz.Caption = ausw_anz(1)
+                    ueberschrift ausw_anz(1)
                 Case "BS_"
-                    Me!ausw_anz.Caption = ausw_anz(3)
+                    ueberschrift ausw_anz(3)
                 Case Else
-                    Me!ausw_anz.Caption = ""
+                    ueberschrift " "
             End Select
         End If
     Else
-        Me!ausw_anz.Caption = Nz(DLookup("ausw_anz", "Tanz_Runden_fix", "Runde='" & Startklasse.Column(7) & "'"))
+        ueberschrift Nz(DLookup("ausw_anz", "Tanz_Runden_fix", "Runde='" & Startklasse.Column(7) & "'"))
     End If
     '***** 14_11 ***** Abfrage ob schon Wertungen vorhanden sind falls nein keine automatische Auswertung
     Set rs = dbs.OpenRecordset("SELECT count(*) as anzahl FROM Auswertung a INNER JOIN Paare_Rundenqualifikation p ON A.PR_ID = P.PR_ID WHERE p.RT_ID=" & Me!Startklasse & ";")

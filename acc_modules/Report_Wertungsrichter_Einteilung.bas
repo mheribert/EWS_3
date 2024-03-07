@@ -7,10 +7,14 @@ Private Sub Report_Open(Cancel As Integer)
     Dim n As Integer
     
     Set db = CurrentDb
-    Set re = db.OpenRecordset("SELECT Wert_Richter.Turniernr, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, Wert_Richter.WR_Kuerzel From Wert_Richter WHERE (Wert_Richter.Turniernr=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & " AND Wert_Richter.WR_Azubi = false) ORDER BY Wert_Richter.WR_Kuerzel;")
-    re.MoveFirst
+    Set re = db.OpenRecordset("SELECT Turniernr, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1, WR_Azubi, WR_Kuerzel From Wert_Richter WHERE (Wert_Richter.Turniernr=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & ") ORDER BY WR_Kuerzel;")
+    If re.RecordCount > 0 Then re.MoveFirst
     n = 1
     Do Until re.EOF
+        If re!WR_AzuBi Then
+            Me("Kopf" & Trim(str(n))).BackColor = 8631029
+            Me("Kopf" & Trim(str(n))).BackStyle = 1
+        End If
         Me("Kopf" & Trim(str(n))).Caption = re!Ausdr1
         Me("Feld" & Trim(str(n))).ControlSource = "=Get_WR(""" & re!WR_Kuerzel & """,[Startklasse])"
     

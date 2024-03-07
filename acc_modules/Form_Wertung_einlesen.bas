@@ -14,7 +14,7 @@ Private Sub AutomatischWertungenEinlesen_Click()
 End Sub
 
 Private Sub Befehl27_Click()
-    DoCmd.Close
+    DoCmd.close
 
 End Sub
 
@@ -43,7 +43,9 @@ Private Sub Form_Load()
         Case Else
             Me!Wertung_drucken.Visible = False
     End Select
-
+    If get_properties("sort_ablauf") Then
+        Me!Tanzrunde.RowSource = Mid(Me!Tanzrunde.RowSource, 1, InStr(Me!Tanzrunde.RowSource, "ORDER BY ") - 1) & "ORDER BY Rundentab.Rundenreihenfolge;"
+    End If
 End Sub
 
 Private Sub Form_Resize()
@@ -106,7 +108,7 @@ End Sub
 Private Sub Runde_auswerten_Click()
     DoCmd.OpenForm "Majoritaet_ausrechnen"
     Forms!Majoritaet_ausrechnen!Startklasse = Me!Tanzrunde
-    DoCmd.Close acForm, "Wertung_einlesen"
+    DoCmd.close acForm, "Wertung_einlesen"
 End Sub
 
 Private Sub Form_AfterUpdate()
@@ -174,7 +176,7 @@ Public Sub Runde_starten_Click()
     End If
     db.Execute "UPDATE rundentab SET gestartet = true WHERE RT_ID=" & Me!RT_ID & ";"
     rundeninfo = RT_ID
-                
+    If get_properties("Gopro") = True Then DoCmd.OpenForm "Gopro"
     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=observer_starten&text=" & rundeninfo & "&mdb=" & get_TerNr)
         SngSec = Timer + 1
         Do While Timer < SngSec
@@ -430,8 +432,8 @@ Function fetch_wr_name(WR_ID)
     Set db = CurrentDb
     Set wr = db.OpenRecordset("SELECT * FROM wert_richter WHERE WR_ID = " & WR_ID)
     fetch_wr_name = wr!WR_Vorname & " " & wr!WR_Nachname
-    wr.Close
-    db.Close
+    wr.close
+    db.close
 End Function
 
 Private Sub Plazierung_einlesen_Click()
@@ -514,7 +516,7 @@ Public Function Wertung_check(WR_ID, spalte)
     Set rstauswertung = dbs.OpenRecordset(stmt)
     Dim Count As Integer
     Count = rstauswertung!anz
-    rstauswertung.Close
+    rstauswertung.close
     If (Count > 0) Then
         Me("Feld" & spalte).BackColor = 255
         Me("Feld" & spalte).BackStyle = 1
@@ -671,7 +673,7 @@ Public Function show_wertung(PR_ID, Startnr, WR_ID)
     If re.RecordCount > 0 Then
         If Not IsNull(re!Cgi_Input) Then
             If CurrentProject.AllForms("Wertung_zeigen").IsLoaded Then
-                DoCmd.Close acForm, "Wertung_zeigen"
+                DoCmd.close acForm, "Wertung_zeigen"
             End If
             cgivar = Split(re!Cgi_Input, "&")
             

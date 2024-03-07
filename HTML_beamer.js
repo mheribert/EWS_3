@@ -1,4 +1,4 @@
-var ver = 'V3.2018';
+var ver = 'V3.2019';
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';

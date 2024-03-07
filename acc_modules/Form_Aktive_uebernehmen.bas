@@ -79,7 +79,7 @@ Public Sub Befehl114_Click()
 End Sub
 
 Private Sub Befehl12_Click()
-DoCmd.Close
+DoCmd.close
 End Sub
 
 Private Sub Befehl59_Click()
@@ -273,7 +273,7 @@ Private Sub btn_aktive_2_Click()    'gemeldete paare vom Server laden
             Set rstpaare = dbs.OpenRecordset("SELECT DISTINCT Paare.Startkl FROM Paare WHERE Turniernr =" & Akt_Turnier & ";")
             write_startklassen rstpaare
             Set rstpaare = dbs.OpenRecordset("SELECT Count(0) AS Anz FROM Paare;")
-            MsgBox "Es wurden " & rstpaare!anz & " Paare und " & vbCrLf & vbCrLf & (cnt + retl) & " von 7 Dateien importiert.", , "Turnierprogramm"
+            MsgBox "Es wurden " & rstpaare!anz & " Paare/Formationen und " & vbCrLf & vbCrLf & (cnt + retl) & " von 7 Dateien importiert.", , "Turnierprogramm"
         Else
             MsgBox " Es wurde keine Datei für dieses Turnier gefunden."
         End If

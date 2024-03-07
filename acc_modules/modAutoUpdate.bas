@@ -77,6 +77,8 @@ Public Function updateTLP(dl_data, rmldg)
             llRetVal = update_drbv_tables(tbls(i), dateien(i), destDir)
             cnt = cnt + llRetVal
         Next i
+        If Len(Dir(getBaseDir() & "Turnierleiterpaket\WR-TL-Ergänzung.txt")) > 0 Then _
+            update_drbv_tables "TLP_OFFIZIELLE", "WR-TL-Ergänzung.txt", getBaseDir() & "Turnierleiterpaket\"
         If Len(fMsg) > 1 Then fMsg = fMsg + vbCrLf
         If rmldg = True Then
             MsgBox fMsg & "Es wurden " & cnt & " Tabellen aktualisiert"
@@ -123,6 +125,11 @@ Function post_url_string()
 
 End Function
 
+Function hole_ergänzung()
+    update_drbv_tables "TLP_OFFIZIELLE", "WR-TL-Ergänzung.txt", getBaseDir() & "Turnierleiterpaket\"
+
+End Function
+
 Public Function update_drbv_tables(tbl, fName, destDir)
     Dim db As Database
     Dim re As Recordset
@@ -133,7 +140,7 @@ Public Function update_drbv_tables(tbl, fName, destDir)
     Dim i, st, en As Integer
         
     Set db = CurrentDb
-    If InStr(fName, "Anmeldung_2.txt") = 0 Then
+    If InStr(fName, "Anmeldung_2.txt") = 0 And InStr(fName, "Ergänzung") = 0 Then
         sql = "DELETE FROM " & tbl
         db.Execute sql
     End If
@@ -216,46 +223,58 @@ Private Sub Endrunden_Musik_herunterladen()
 
 End Sub
 
-Private Sub DRBV_Musik_herunterladen()
+Public Sub DRBV_Musik_herunterladen()
     Dim vars
+    Dim db As Database
+    Dim re As Recordset
+    Set db = CurrentDb()
+    Dim reihe As Integer
+    Set re = db.OpenRecordset("drbv_musik")
     Dim pfad As String
     Dim file_URL As String
     Dim dest_file As String
     Dim retl As Integer
-    Const takte = 51
+    Dim fName As String
     
-    pfad = "C:\DRBV-V16\Musik\turniermusik"
-'    pfad = gen_Ordner(getBaseDir() & "Turnierleiterpaket\" & get_TerNr() & "_Musik")
-    If Len(Dir(pfad & ".csv")) <> 0 Then
-'        Open pfad & fName & ".csv" For Input As #1
-        Open pfad & "\1230502_16829028042.csv" For Input As #1
-
-        Line Input #1, strZeile
-        Do While Not EOF(1)
+    OpenFile.lpstrFilter = "Musikdateien (*.csv)" & Chr(0) & "*.csv" & Chr(0)
+    OpenFile.lpstrInitialDir = getBaseDir() & "Musik"
+    fName = get_Filename(0)
+    fName = Mid(OpenFile.lpstrFileTitle, 1, Len(OpenFile.lpstrFileTitle))
+    If fName <> "" Then
+        reihe = 1
+        pfad = getBaseDir() & "Musik\"
+        If Len(Dir(pfad & "*.csv")) <> 0 Then
+            Open pfad & fName For Input As #1
             Line Input #1, strZeile
-            If strZeile <> "" Then
-                strZeile = del_kochkomma(strZeile)
-                da = Split(strZeile, ";")
-'                If da(5) = takte And left(da(2), 6) = "boogie" And da(8) = "swing" Then
-                    gen_Ordner (getBaseDir() & "Musik")
-                    dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & da(4) & " - " & da(3) & ".mp3"
-                    If InStr(da(1), "&") Then
-                        da(1) = Replace(da(1), "&", "&teil2=")
-                    End If
-                    If da(9) <> "" Then
-                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & Mid(da(9), InStr(da(9), "?file=") + 6)
-                        retl = get_url_to_file(da(9), dest_file)
-                    End If
-'                    Pause 1
-                    If da(10) <> "" Then
-                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & Mid(da(10), InStr(da(10), "?file=") + 6)
-                        retl = get_url_to_file(da(10), dest_file)
-                    End If
-
-'                End If
-            End If
-        Loop
-        Close #1
+            Do While Not EOF(1)
+                Line Input #1, strZeile
+                If strZeile <> "" Then
+                    strZeile = del_kochkomma(strZeile)
+                    da = Split(strZeile, ";")
+                    re.FindFirst "id = " & da(2) & ""
+    '                If da(5) = takte And left(da(2), 6) = "boogie" And da(8) = "swing" Then
+                        gen_Ordner (getBaseDir() & "Musik")
+    '                    If InStr(da(1), "&") Then
+    '                        da(1) = Replace(da(1), "&", "&teil2=")
+    '                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & re!f29 & " - " & re!f30 & ".mp3")
+    '                    End If
+    '                    If da(9) <> "" Then
+    '                        dest_file = gen_Ordner(getBaseDir() & "Musik" & "\" & da(1)) & "\" & Mid(da(9), InStr(da(9), "?file=") + 6)
+    '                        retl = get_url_to_file(da(9), dest_file)
+    '                   End If
+    '                    Pause 1
+    '                    If da(10) <> "" Then
+                        If Not re.NoMatch Then
+                            dest_file = gen_Ordner(pfad & Replace(fName, ".csv", "")) & "\" & Right("00" & reihe, 2) & "_" & re!f29 & " - " & re!f30 & ".mp3"
+                            retl = get_url_to_file(re!f28, dest_file)
+                            reihe = reihe + 1
+                        End If
+    
+    '                End If
+                End If
+            Loop
+            Close #1
+        End If
     End If
 End Sub
 

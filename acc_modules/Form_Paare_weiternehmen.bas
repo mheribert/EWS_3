@@ -1,9 +1,15 @@
 Option Compare Database
 
 Private Sub btnOK_Click()
-On Error GoTo Err_btnOK_Click
+    On Error GoTo Err_btnOK_Click
 
     Dim dbs As Database
+    Dim paareInRunde As Integer
+    Dim offset As Integer
+    Dim isStichrunde As Boolean
+    Dim vonPlatz As Integer
+    Dim bisPlatz As Integer
+    
     Set dbs = CurrentDb
     
     ' Als erstes die Dateneingabe überprüfen
@@ -30,10 +36,6 @@ On Error GoTo Err_btnOK_Click
     
     Call PaareInDieNaechsteRunde(Turniernr, cbAktuelleRunde, cbNaechsteRunde, AnzahlPaareDirektWeiter, cbNaechsteRunde.Column(1))
     
-    Dim isStichrunde As Boolean
-    Dim vonPlatz As Integer
-    Dim bisPlatz As Integer
-    
     isStichrunde = (grpHoffnungsrunde = 2)
     
     If (cbHoffnungsrundeDurchfuehren = True) Then
@@ -45,14 +47,20 @@ On Error GoTo Err_btnOK_Click
             bisPlatz = 10000
         End If
         
-        Call PaareInDieNaechsteRunde2(Turniernr, cbAktuelleRunde, cbHoffnungsrunde, vonPlatz, bisPlatz, cbNaechsteRunde.Column(1))
-        Call PaarePlatzieren(cbAktuelleRunde, GetPaareBisPlatz(cbAktuelleRunde, bisPlatz) + 1)
+        Call PaareInDieNaechsteRunde2(Turniernr, cbAktuelleRunde, cbHoffnungsrunde, vonPlatz, bisPlatz, cbHoffnungsrunde.Column(1))
+        If cbHoffnungsrunde.Column(7) = "Stich_r" Then
+            paareInRunde = GetPaareInRunde(cbNaechsteRunde)
+            vonPlatz = GetPaareBisPlatz(cbAktuelleRunde, AnzahlPaareDirektWeiter) + 1
+            offset = paareInRunde - GetPaareBisPlatz(cbAktuelleRunde, AnzahlPaareDirektWeiter)
+            
+            Call PaarePlatzierenMitHoffnungsrunde(cbAktuelleRunde, vonPlatz, offset)
+        Else
+            Call PaarePlatzieren(cbAktuelleRunde, GetPaareBisPlatz(cbAktuelleRunde, bisPlatz) + 1)
+        End If
     Else
         ' Ermitteln, wieviele Paare die nächste Runde erreicht haben
-        Dim paareInRunde As Integer
         paareInRunde = GetPaareInRunde(cbNaechsteRunde)
         vonPlatz = GetPaareBisPlatz(cbAktuelleRunde, AnzahlPaareDirektWeiter) + 1
-        Dim offset As Integer
         offset = paareInRunde - GetPaareBisPlatz(cbAktuelleRunde, AnzahlPaareDirektWeiter)
         
         Call PaarePlatzierenMitHoffnungsrunde(cbAktuelleRunde, vonPlatz, offset)
@@ -60,7 +68,7 @@ On Error GoTo Err_btnOK_Click
     
     Form_Paare_schon_qualifiziert.Requery
     
-    DoCmd.Close
+    DoCmd.Close acForm, "Paare_weiternehmen"
 
 Exit_btnOK_Click:
     Exit Sub

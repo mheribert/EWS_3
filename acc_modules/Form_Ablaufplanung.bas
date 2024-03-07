@@ -415,7 +415,7 @@ Private Sub Dauer_DblClick(Cancel As Integer)   ' berechnet  alle Zeiten neu
 End Sub
 
 Private Sub schliesssen_Click()
-    DoCmd.Close
+    DoCmd.close
 End Sub
 
 Private Sub Rundenplanung_Click()
@@ -451,7 +451,7 @@ End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
     
-    If get_properties("check_runden") = 1 Then
+    If get_properties("check_runden_on_close") = 1 Then
         runden_ergaenzen_Click
     End If
 End Sub
@@ -469,7 +469,7 @@ Private Sub Zeitplan_Click()
         
         Set out = file_handle(ht_pfad & "index.html")
         out.writeline (line)
-        out.Close
+        out.close
     Else
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_zeitplan&text=" & Me!RT_ID)
     End If

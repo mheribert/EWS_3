@@ -1181,8 +1181,11 @@ Public Function make_wr_zeitplan()
     Dim db As Database
     Dim re As Recordset
     Dim wr_zeitplan As String
+    Dim turn As String
 
     Set db = CurrentDb
+    Set re = db.OpenRecordset("Turnier")
+    turn = re!Turnier_Name
     Set re = db.OpenRecordset("SELECT RT_ID, Startzeit, Startklasse_text, Rundentext FROM Tanz_Runden INNER JOIN (Rundentab LEFT JOIN Startklasse ON Rundentab.Startklasse = Startklasse.Startklasse) ON Tanz_Runden.Runde = Rundentab.Runde WHERE (Rundentab.Rundenreihenfolge<999) ORDER BY Rundentab.Rundenreihenfolge;")
     If re.RecordCount = 0 Then Exit Function
         Open getBaseDir & "webserver\views\Zeitplan.html" For Output As #1
@@ -1190,7 +1193,7 @@ Public Function make_wr_zeitplan()
         Print #1, "</head><body style=""height: 98%; font-family: Verdana;"" id=""beamer_seite"">"
         Print #1, "<table cellpadding=""0"" frame=""void"" class=""tb1""><tr height=""20%""><td><table width=""100%"">"
         Print #1, "<tr><td class=""kopf"" width=""300px""><img src=""Logo.jpg"" width=""290"" height=""180"" alt=""DRBV""></td>"
-        Print #1, "<td class=""kopf"" width=""auto"" id=""beamer_kopf"">" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierausw) & "</td ></tr></table></td></tr>"
+        Print #1, "<td class=""kopf"" width=""auto"" id=""beamer_kopf"">" & Umlaute_Umwandeln(turn) & "</td ></tr></table></td></tr>"
         Print #1, "<tr height=""80%""><td><table style=""width: 100%; float: left; "" id=""beamer_inhalt""><tr><td>&nbsp;</td></tr>"
         
         Print #1, "<tr height=""100%""><td><table style=""width: 100%; float: left; "">"

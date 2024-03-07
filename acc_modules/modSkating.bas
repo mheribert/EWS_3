@@ -591,7 +591,7 @@ Sub PaareInDieNaechsteRunde2(Turniernr As Integer, currentRT_ID As Integer, next
                 rstquali.FindFirst ("rt_id=" & nextRT_ID)
                 If Not rstquali.NoMatch Then
                     Dim result As Integer
-                    result = MsgBox("Die Runde besteht schon, sollen die Paare in dieser Runde gelöscht werden?", vbYesNo)
+                    result = MsgBox("Die " & Rundentext & " besteht schon, sollen die Paare in dieser Runde gelöscht werden?", vbYesNo)
                     If (result = vbYes) Then
                         dbs.Execute ("Delete from Paare_rundenqualifikation where rt_id=" & nextRT_ID)
                     End If
@@ -804,38 +804,39 @@ Public Sub PaarePlatzierenMitHoffnungsrunde(RT_ID As Integer, vonPlatz As Intege
         Set rstpaare1 = dbs.OpenRecordset("Paare")
         
         '*****AB***** V14.10 für die Tanzrunde die Startklasse ermitteln, ob diese Aufstiegspunkte hat
-        Set HatAufstiegspunkte = dbs.OpenRecordset("SELECT Rundentab.RT_ID, Startklasse.hatAufstiegspunkte FROM Startklasse INNER JOIN Rundentab ON Startklasse.Startklasse = Rundentab.Startklasse WHERE (((Rundentab.RT_ID)=" & RT_ID & "));")
+        Set HatAufstiegspunkte = dbs.OpenRecordset("SELECT Rundentab.RT_ID, Startklasse.hatAufstiegspunkte, Rundentab.Runde FROM Startklasse INNER JOIN Rundentab ON Startklasse.Startklasse = Rundentab.Startklasse WHERE (((Rundentab.RT_ID)=" & RT_ID & "));")
         HatAufstiegspunkte.MoveFirst
-        
-        Do While Not rstmajoritaet1.EOF()
-            rstpaare1.FindFirst ("TP_ID=" & rstmajoritaet1!TP_ID)
-            If rstmajoritaet1!DQ_ID = 0 Then
-                If Not rstpaare1.NoMatch Then
-                     rstpaare1.Edit
-                     
-                     rstpaare1!Platz = rstmajoritaet1!Platz + offsetPlatz
-                    
-                    '*****AB***** V14.10 Startklassen ohne Aufstiegspunkte auf NULL setzen
-                     If HatAufstiegspunkte!HatAufstiegspunkte Then
-                        rstpaare1!Punkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False) + IIf(left(rstpaare1!Startkl, 3) = "RR_", 10, 0)
-                     Else
-                        rstpaare1!Punkte = Null
-                     End If
-                     rstpaare1!Ranglistenpunkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False)
-                                                                              
-                     rstpaare1!RT_ID_Ausgeschieden = RT_ID
-                     
-                     rstpaare1.Update
-                Else
-                    MsgBox ("Paar nicht gefunden: " & rstpaare1!Startnr)
+        If InStr(HatAufstiegspunkte!Runde, "r_Fuß") = 0 And InStr(HatAufstiegspunkte!Runde, "r_lang") = 0 Then
+            Do While Not rstmajoritaet1.EOF()
+                rstpaare1.FindFirst ("TP_ID=" & rstmajoritaet1!TP_ID)
+                If rstmajoritaet1!DQ_ID = 0 Then
+                    If Not rstpaare1.NoMatch Then
+                         rstpaare1.Edit
+                         
+                         rstpaare1!Platz = rstmajoritaet1!Platz + offsetPlatz
+                        
+                        '*****AB***** V14.10 Startklassen ohne Aufstiegspunkte auf NULL setzen
+                         If HatAufstiegspunkte!HatAufstiegspunkte Then
+                            rstpaare1!Punkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False) + IIf(left(rstpaare1!Startkl, 3) = "RR_", 10, 0)
+                         Else
+                            rstpaare1!Punkte = Null
+                         End If
+                         rstpaare1!Ranglistenpunkte = getPunkte(rstpaare1!Turniernr, rstpaare1!Startkl, rstpaare1!TP_ID, RT_ID, rstpaare1!Platz, rstmajoritaet1!DQ_ID, offsetPlatz, False)
+                                                                                  
+                         rstpaare1!RT_ID_Ausgeschieden = RT_ID
+                         
+                         rstpaare1.Update
+                    Else
+                        MsgBox ("Paar nicht gefunden: " & rstpaare1!Startnr)
+                    End If
                 End If
-            End If
-            rstmajoritaet1.MoveNext
-        Loop
-        rstpaare1.Close
-        rstmajoritaet1.Close
-        Call WriteRundeReport_Paare
-        
+                rstmajoritaet1.MoveNext
+            Loop
+            dbs.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('Plätze übertragen " & RT_ID & "', '" & Time & "')"
+            rstpaare1.Close
+            rstmajoritaet1.Close
+            Call WriteRundeReport_Paare
+        End If
     End If
 
 End Sub
@@ -1009,7 +1010,7 @@ Public Sub PaareInRundeNachPunktabzugPlatzieren(RT_ID As Integer, TP_ID As Integ
     'Zunächst alle Punkte auf den richtigen Endwert setzen
     
     Dim Platz As Integer
-    Dim P, Abzuege As Double
+    Dim p, Abzuege As Double
     stmt1 = "Select * from majoritaet where rt_id=" & RT_ID & " and tp_id=" & TP_ID
     Set rst1 = dbs.OpenRecordset(stmt1)
     Dim i As Integer

@@ -143,6 +143,14 @@ Private Sub btn_Dokumentation_42_Click()
     Gen_Mail
 End Sub
 
+Private Sub btn_Dokumentation_44_Click()
+    
+    If (IsNull(Akt_Turnier)) Then Exit Sub
+    
+    versand_ausschreibung get_TerNr
+
+End Sub
+
 Private Sub btnErgebnisliste_Click()    'Ergebnisliste
     If (IsNull(Forms![A-Programmübersicht]![Akt_Turnier]) Or (Forms![A-Programmübersicht]![Akt_Turnier] = 0)) Then
        MsgBox ("Bitte Turnier auswählen!")
