@@ -60,6 +60,23 @@ Private Sub Form_Close()
     End If
 End Sub
 
+Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+    Dim re As Recordset
+    Dim i, t As Integer
+    If KeyCode = 90 Then  ' z
+        Set re = Me.RecordsetClone
+        re.MoveFirst
+        For i = 1 To Me.Form.SelTop - 1
+            re.MoveNext
+        Next
+        For i = 1 To Me.Form.SelHeight
+            t = t + Nz(re!Dauer)
+            re.MoveNext
+        Next
+        MsgBox t & " Minuten", , "Zeitdauer"
+    End If
+End Sub
+
 Private Sub Form_Open(Cancel As Integer)
     Dim re As Recordset
     Dim sqlwhere, sqlstr As String
@@ -270,7 +287,7 @@ Private Sub runden_ergaenzen_Click()
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Endrunde, " & vbCrLf
                                         
                 Case "BW_MB", "BW_SB"
-                    Runde = Array("End_r", "Sieger")
+                    Runde = Array("Musik", "End_r", "Sieger")
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & " Endrunde, " & vbCrLf
                 
                 Case "BW_JA"
@@ -308,7 +325,6 @@ Private Sub runden_ergaenzen_Click()
                     dbs.Execute "DELETE * from rundentab WHERE turniernr=" & [Form_A-Programmübersicht]![Akt_Turnier] & " AND Startklasse='" & rde!Startklasse & "' AND Runde Like 'End_r_*';"
                     
                 Case "RR_S1", "RR_S2"
-                '   Debug.Print DCount("TP_ID", "Paare", "Anwesent_Status<>0 AND Startkl='" & rde!Startklasse & "'")
                     Runde = get_mk("Startbuchabgabe, Sieger")
                     
                     If make_rde(rde!Startklasse, Runde, Startklasse_text) Then msg = msg & Startklasse_text & ", " & vbCrLf
@@ -415,7 +431,7 @@ Private Sub Dauer_DblClick(Cancel As Integer)   ' berechnet  alle Zeiten neu
 End Sub
 
 Private Sub schliesssen_Click()
-    DoCmd.close
+    DoCmd.Close
 End Sub
 
 Private Sub Rundenplanung_Click()
@@ -430,6 +446,7 @@ Private Sub btnAblaufplanung_Click()
 End Sub
 
 Private Sub btnAktualisieren_Click()
+    Me.OrderBy = "[ablaufplanung].[Rundenreihenfolge]"
     Me.Requery
 End Sub
 
@@ -469,7 +486,7 @@ Private Sub Zeitplan_Click()
         
         Set out = file_handle(ht_pfad & "index.html")
         out.writeline (line)
-        out.close
+        out.Close
     Else
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_zeitplan&text=" & Me!RT_ID)
     End If

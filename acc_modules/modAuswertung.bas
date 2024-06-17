@@ -66,7 +66,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                  "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='MA' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
         Set ft_ak = db.OpenRecordset(sqlstm)    'Mehrkampf MA
         If Not ft_ak.EOF Then
-            If InStr(ft_ak!Cgi_Input, "w_dis=1") > 0 Then w_dis = 1
+'            If InStr(ft_ak!Cgi_Input, "w_dis=1") > 0 Then w_dis = 1
             bw_pu = get_mittel(ft_ak, Runde, st_kl)
             sqlstm = "SELECT Wert_Richter.WR_Kuerzel, Auswertung.* FROM Startklasse_Wertungsrichter INNER JOIN (Wert_Richter INNER JOIN Auswertung ON Wert_Richter.WR_ID = Auswertung.WR_ID) ON Startklasse_Wertungsrichter.WR_ID = Wert_Richter.WR_ID " & _
                      "WHERE (Turniernr=" & TNR & " AND Auswertung.PR_ID=" & pr!PR_ID & " AND WR_function ='MB' AND WR_Azubi=False AND Startklasse='" & st_kl & "') ORDER BY Auswertung.PR_ID, Auswertung.Punkte;"
@@ -74,6 +74,11 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             If ft_ak.RecordCount > 0 Then
                 bw_pu = bw_pu + get_mittel(ft_ak, Runde, st_kl)
             End If
+            
+            sqlstm = "SELECT PR_ID FROM Auswertung WHERE PR_ID=" & pr!PR_ID & " AND InStr([Cgi_Input],'=&')>0 ORDER BY PR_ID;"
+            Set ft_ak = db.OpenRecordset(sqlstm)
+            If ft_ak.RecordCount > 0 Then w_dis = 1
+
 '            bw_pu = bw_pu * 2 + 0.000000001
 '            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
 '            If Not IsNull(ft_ak!MK_Sum) Then ftft_pu = ft_ak!MK_Sum
@@ -94,21 +99,25 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             End If
         End If
         
-            Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " AND tp_id=" & pr!TP_ID & ";")
-            If maj.EOF Then
-                maj.AddNew
-                maj!RT_ID = rt
-                maj!TP_ID = pr!TP_ID
-            Else
-                maj.Edit
-            End If
+        Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " AND tp_id=" & pr!TP_ID & ";")
+        If maj.EOF Then
+            maj.AddNew
+            maj!RT_ID = rt
+            maj!TP_ID = pr!TP_ID
+        Else
+            maj.Edit
+        End If
             
+        
+        
         If is_wertung Then
-            If w_dis = 1 Then
+            If w_dis = 1 Then ' And maj!DQ_ID > 0 Then
+                
                 maj!DQ_ID = w_dis
-            Else
-                maj!DQ_ID = 0
+'            Else
+'                maj!DQ_ID = 0
             End If
+            maj!Ko_Sieger = False
             maj!WR1_Punkte = IIf(ft_id < 0, 0, ftft_pu)
             maj!WR2_Punkte = ft_pu
             maj!WR3_Punkte = ak_pu
@@ -153,7 +162,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
                 sum = 0
                 w_dis = 0
                 Do Until maj.EOF
-                    If maj!DQ_ID = 1 Then w_dis = 1
+                    If maj!DQ_ID > 0 Then w_dis = maj!DQ_ID
                     sum = sum + maj!Platz
                     maj.MoveNext
                 Loop
@@ -168,8 +177,8 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             Set maj = db.OpenRecordset("SELECT * FROM Majoritaet WHERE RT_ID=" & rt & " AND tp_id=" & pr!TP_ID & ";")
             If maj.RecordCount = 0 Then Exit Sub
             maj.Edit
-            Set ft_ak = db.OpenRecordset("SELECT Sum(DQ_ID) AS MK_Sum FROM Majoritaet WHERE RT_ID>=9000 AND TP_ID=" & pr!PR_ID & ";")
-            If ft_ak!MK_Sum > 0 Then maj!DQ_ID = 1
+            Set ft_ak = db.OpenRecordset("SELECT Max([DQ_ID]) AS MK_Max FROM Majoritaet WHERE RT_ID>=9000 AND TP_ID=" & pr!PR_ID & ";")
+            If ft_ak!MK_Max > 0 Then maj!DQ_ID = ft_ak!MK_Max
             Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE RT_ID=9005 AND TP_ID=" & pr!PR_ID & ";")
             maj!WR1 = ft_ak!MK_Sum
             Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
@@ -301,11 +310,11 @@ Function get_mittel(avr, Runde, st_kl)
     Dim i(8) As Double
     Dim min As Integer
     Dim max As Integer
-    Dim x As Integer
+    Dim X As Integer
     
     avr.MoveLast
-    For x = 1 To avr.RecordCount
-        i(x) = Nz(avr!Punkte)
+    For X = 1 To avr.RecordCount
+        i(X) = Nz(avr!Punkte)
         avr.MovePrevious
     Next
     
@@ -347,8 +356,8 @@ Function get_mittel(avr, Runde, st_kl)
         min = 1
         max = avr.RecordCount
     End If
-    For x = min To max
-        i(0) = i(0) + i(x)
+    For X = min To max
+        i(0) = i(0) + i(X)
     Next
     get_mittel = i(0) / (max - min + 1)
 

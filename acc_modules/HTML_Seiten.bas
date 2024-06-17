@@ -90,9 +90,9 @@ Sub build_html(pr, RT_nr, Runde)
                     
                     line = Replace(line, "x__sh1", kl_abstand & make_a_inpRRE("tk1", 10, "Technik - Grund, Haltungs und Drehtechnik"))
                     line = Replace(line, "x__th1", make_a_inpRRE("ch1", 10, "Tanz - Wertigkeit der Tanzfolge"))
-                    line = Replace(line, "x__sd1", make_a_inpRRE("tf1", 10, "Tanz - Ausführung"))
+                    line = Replace(line, "x__sd1", make_a_inpRRE("tf1", 10, "Tanz - Ausf&uuml;hrung"))
                     line = Replace(line, "x__td1", make_a_inpRRE("ab1", 10, "AF - Wertigkeit"))
-                    line = Replace(line, "x__ch1", make_a_inpRRE("aw1", 10, "AF - Ausführung)"))
+                    line = Replace(line, "x__ch1", make_a_inpRRE("aw1", 10, "AF - Ausf&uuml;hrung)"))
                     line = Replace(line, "x__da1", make_a_inpRRE("af1", 10, "AF - Wirkung") & kl_abstand)
                     
                     Select Case wr!WR_function
@@ -117,9 +117,9 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__rh1", rd)
                     line = Replace(line, "x__sh1", kl_abstand & make_a_inpRRE("tk1", 10, "Technik - Grund-, Haltungs- und Drehtechnik"))
                     line = Replace(line, "x__th1", make_a_inpRRE("ch1", 10, "Tanz - Wert inkl. Formationsfiguren und Abstimmung zur Musik"))
-                    line = Replace(line, "x__sd1", make_a_inpRRE("tf1", 10, "Tanz - Ausführung"))
+                    line = Replace(line, "x__sd1", make_a_inpRRE("tf1", 10, "Tanz - Ausf&uuml;hrung"))
                     line = Replace(line, "x__td1", make_a_inpRRE("ab1", 10, "AF - Wert der Bilder, Bildwechsel und Effekte"))
-                    line = Replace(line, "x__ch1", make_a_inpRRE("aw1", 10, "AF - Ausführung"))
+                    line = Replace(line, "x__ch1", make_a_inpRRE("aw1", 10, "AF - Ausf&uuml;hrung"))
                     line = Replace(line, "x__da1", make_a_inpRRE("af1", 10, "Gesamtwirkung") & kl_abstand)
                     If wr!WR_function = "Ob" Then
                         line = Replace(line, "x__ak" & sei_1, make_akroOBS(re, Runde, sei_1, a_check, 8, a_paare))
@@ -161,7 +161,7 @@ Sub build_html(pr, RT_nr, Runde)
                     line = Replace(line, "x__sd1", make_a_inpRRE("sd1", 10, "Technik Dame - Grundtechnik"))
                     line = Replace(line, "x__td1", make_a_inpRRE("td1", 10, "Technik Dame - Haltungs- und Drehtechnik"))
                     line = Replace(line, "x__ch1", make_a_inpRRE("ch1", 10, "Tanz - Wertigkeit"))
-                    line = Replace(line, "x__tf1", make_a_inpRRE("tf1", 10, "Tanz - Ausführung"))
+                    line = Replace(line, "x__tf1", make_a_inpRRE("tf1", 10, "Tanz - Ausf&uuml;hrung"))
                     line = Replace(line, "x__da1", make_a_inpRRE("da1", 10, "Tanz - Wirkung") & kl_abstand)
                     If wr!WR_function = "Ob" Then
                         line = Replace(line, "x__ak" & sei_1, make_akroOBS(re, Runde, sei_1, a_check, 6, a_paare))
@@ -196,7 +196,7 @@ Sub build_html(pr, RT_nr, Runde)
                         line = Replace(line, "x__sd2", make_a_inpRRE("sd2", 10, "Technik Dame - Grundtechnik"))
                         line = Replace(line, "x__td2", make_a_inpRRE("td2", 10, "Technik Dame - Haltungs- und Drehtechnik"))
                         line = Replace(line, "x__ch2", make_a_inpRRE("ch2", 10, "Tanz - Wertigkeit"))
-                        line = Replace(line, "x__tf2", make_a_inpRRE("tf2", 10, "Tanz - Ausführung"))
+                        line = Replace(line, "x__tf2", make_a_inpRRE("tf2", 10, "Tanz - Ausf&uuml;hrung"))
                         line = Replace(line, "x__da2", make_a_inpRRE("da2", 10, "Tanz - Wirkung") & kl_abstand)
                         If wr!WR_function = "Ob" Then
                             line = Replace(line, "x__ak" & sei_2, make_akroOBS(re, Runde, sei_2, a_check, 6, a_paare))
@@ -398,12 +398,12 @@ Sub build_html(pr, RT_nr, Runde)
                 Case Else
                     MsgBox "build_html" & vbCrLf & "Fehler bei der Selektion der Startklasse"
             End Select
-            line = Replace(line, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+            line = Replace(line, "x_title", Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez))
             line = Replace(line, "x_rnr", "Runde " & rd & " von " & rmax)
             line = Replace(line, "x_nPg", dNext & ".html")
-            line = Replace(line, "x_wr", wr!Ausdr1)
+            line = Replace(line, "x_wr", Umlaute_Umwandeln(wr!Ausdr1))
             line = Replace(line, "x_wid", wr!WR_ID)
-            line = Replace(line, "x_rd", rd_klasse)
+            line = Replace(line, "x_rd", Umlaute_Umwandeln(rd_klasse))
             line = Replace(line, "x_html", dNext & ".html")
             line = Replace(line, "x_vbs", "/cgi-bin/page.vbs")
             line = Replace(line, "x_rt", RT_nr)
@@ -433,7 +433,7 @@ Sub build_html(pr, RT_nr, Runde)
         ' HTML-Seite zur weiterleitung f1 ist warten  f2 an den Anfang
         Set out = file_handle(ht_pfad & tr_nr & "R" & wr!WR_Lizenznr & "_K" & RT_nr & "_1000.html")
         Set ht = open_re("All", "Warten")
-        line = Replace(ht!F2, "x_title", Forms![A-Programmübersicht]!Turnierbez) ' kein warten
+        line = Replace(ht!F2, "x_title", Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez)) ' kein warten
         line = Replace(line, "x_rd", rd_klasse)
         line = Replace(line, "x_wr", wr!Ausdr1)
         line = Replace(line, "x_html", tr_nr & "R" & wr!WR_Lizenznr & "_K" & RT_nr & "_1000.html")
@@ -609,23 +609,26 @@ Private Function make_akroRRE(re, Runde, seite, a_check, max, anz_p)
     If Runde = "End_r_Fuß" Then ' Bei A/B gibt es keine Akro in der FT-Runde
         out = "<td height=""200""></td>"
     Else
-        For t = 1 To max
-            Set ak = db.OpenRecordset("SELECT * FROM Akrobatiken WHERE Akrobatik='" & re("akro" & t & "_" & rde) & "' AND " & re!Startkl & "<> """";")
-            If ak.RecordCount > 0 Then
-                pkt = Nz(ak(re!Startkl))
-                If pkt <> 0 Then
-                    If anz_p = 1 Then
-                        out = out & make_a_inpRRE("ak" & seite & t, pkt, ak!langtext, re!Startkl) & vbCrLf
+        If re!Startkl <> "RR_S1" And re!Startkl <> "RR_S2" Then
+        
+            For t = 1 To max
+                Set ak = db.OpenRecordset("SELECT * FROM Akrobatiken WHERE Akrobatik='" & re("akro" & t & "_" & rde) & "' AND " & re!Startkl & "<> """";")
+                If ak.RecordCount > 0 Then
+                    pkt = Nz(ak(re!Startkl))
+                    If pkt <> 0 Then
+                        If anz_p = 1 Then
+                            out = out & make_a_inpRRE("ak" & seite & t, pkt, Umlaute_Umwandeln(ak!langtext), re!Startkl) & vbCrLf
+                        Else
+                            out = out & make_a_inpRRE("ak" & seite & t, pkt, Umlaute_Umwandeln(ak!langtext), re!Startkl) & vbCrLf
+                        End If
+                        a_check = a_check & Chr(34) & "wak" & seite & t & Chr(34) & ", "
                     Else
-                        out = out & make_a_inpRRE("ak" & seite & t, pkt, ak!langtext, re!Startkl) & vbCrLf
+                        out = out & tr & vbCrLf & Space(24) & "<td></td>" & vbCrLf & trn & vbCrLf
+                        out = out & tr & vbCrLf & Space(24) & "<td width=""15"" height=""15"" ></td>" & vbCrLf & trn & vbCrLf
                     End If
-                    a_check = a_check & Chr(34) & "wak" & seite & t & Chr(34) & ", "
-                Else
-                    out = out & tr & vbCrLf & Space(24) & "<td></td>" & vbCrLf & trn & vbCrLf
-                    out = out & tr & vbCrLf & Space(24) & "<td width=""15"" height=""15"" ></td>" & vbCrLf & trn & vbCrLf
                 End If
-            End If
-        Next
+            Next
+        End If
     End If
     If a_check = "" Then a_check = Chr(34) & Chr(34) & ", "
     make_akroRRE = out & kl_abstand
@@ -644,21 +647,23 @@ Private Function make_akroOBS(re, Runde, seite, a_check, max, anz_p)
     If Runde = "End_r_Fuß" Then ' Bei A/B gibt es keine Akro in der FT-Runde
         out = "<td height=""200""></td>"
     Else
-        For t = 1 To max
-            Set ak = db.OpenRecordset("SELECT * FROM Akrobatiken WHERE Akrobatik='" & re("akro" & t & "_" & rde) & "' AND " & re!Startkl & "<> """";")
-            If ak.RecordCount > 0 Then
-                pkt = Nz(ak(re!Startkl))
-                If pkt <> 0 Then
-                    out = out & tr & vbCrLf & Space(24) & "<td class=""akro"" style=""padding-top:26px;"" colspan = ""13"">" & ak!langtext & "</td>" & vbCrLf & trn & vbCrLf
-                    out = out & tr & vbCrLf & make_akrofehler("ak" & seite & t) & vbCrLf & trn & vbCrLf
+        If re!Startkl <> "RR_S1" And re!Startkl <> "RR_S2" Then
+            For t = 1 To max
+                Set ak = db.OpenRecordset("SELECT * FROM Akrobatiken WHERE Akrobatik='" & re("akro" & t & "_" & rde) & "' AND " & re!Startkl & "<> """";")
+                If ak.RecordCount > 0 Then
+                    pkt = Nz(ak(re!Startkl))
+                    If pkt <> 0 Then
+                        out = out & tr & vbCrLf & Space(24) & "<td class=""akro"" style=""padding-top:26px;"" colspan = ""13"">" & Umlaute_Umwandeln(ak!langtext) & "</td>" & vbCrLf & trn & vbCrLf
+                        out = out & tr & vbCrLf & make_akrofehler("ak" & seite & t) & vbCrLf & trn & vbCrLf
+                    End If
                 End If
-            End If
-        Next
-        out = out & "<tr style=""visibility: hidden;"">" & vbCrLf
-        For t = 1 To 10
-            out = out & "<td style=""width:25px; heigth:20px"" ><input type=""button""></td> "
-        Next
-        out = out & trn & vbCrLf
+            Next
+            out = out & "<tr style=""visibility: hidden;"">" & vbCrLf
+            For t = 1 To 10
+                out = out & "<td style=""width:25px; heigth:20px"" ><input type=""button""></td> "
+            Next
+            out = out & trn & vbCrLf
+        End If
     End If
     If a_check = "" Then a_check = Chr(34) & Chr(34) & ", "
     make_akroOBS = out & kl_abstand
@@ -761,6 +766,12 @@ Function akro_ber(s_kl, rde)        ' für Berechnung in HTML-Seite
         Case "RR_S"
             akro_ber = " 1"
             
+        Case "RR_S1"
+            akro_ber = " 1"
+            
+        Case "RR_S2"
+            akro_ber = " 1"
+            
         Case "F_RR_ST", "F_RR_GF", "F_RR_LF", "F_RR_J"
             akro_ber = "an"
                             
@@ -783,7 +794,7 @@ Public Function gen_default(pfad)   'erstellt bei Start des WebServers eine ganz
     ordner = Split(nFile, "\")
     If Dir(nFile) <> "index.html" Then
         Set out = file_handle(nFile)
-        out.writeline ("<!DOCTYPE html><html><head><title>" & Forms![A-Programmübersicht]!Turnierbez & "</title><meta http-equiv=""expires"" content=""0""></head><body><p style=""font-size:50pt;""  align=""center""><br><br>" & Forms![A-Programmübersicht]!Turnierbez & "<br>" & ordner(4) & "</p></body></html>")
+        out.writeline ("<!DOCTYPE html><html><head><title>" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez) & "</title><meta http-equiv=""expires"" content=""0""></head><body><p style=""font-size:50pt;""  align=""center""><br><br>" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez) & "<br>" & ordner(4) & "</p></body></html>")
         out.Close
     End If
 End Function
@@ -816,7 +827,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Set out = file_handle(ht_pfad & "index.html")
     wr.MoveFirst
     Set ht = open_re("All", "WR_Select")
-    line = Replace(ht!F1, "x__title", Forms![A-Programmübersicht]!Turnierbez)
+    line = Replace(ht!F1, "x__title", Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez))
     
     i = 1
     kw = "'0'"
@@ -827,7 +838,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
         loc = loc & ", '" & tr_nr & "S" & wr!WR_Lizenznr & "' "
         nwr = nwr & ", '" & wr!Ausdr1 & "' "
         twr = twr & tr & vbCrLf & Space(24) & "<td class=""wr_m"" width=""200"">" & wr!WR_Kuerzel & "</td>" & vbCrLf
-        twr = twr & Space(24) & "<td class=""wr_l"" width=""600""><a href=""javascript: weiter('" & i & "')"">" & wr!Ausdr1 & "</a></td>" & vbCrLf
+        twr = twr & Space(24) & "<td class=""wr_l"" width=""600""><a href=""javascript: weiter('" & i & "')"">" & Umlaute_Umwandeln(wr!Ausdr1) & "</a></td>" & vbCrLf
         twr = twr & trn & vbCrLf
         wr.MoveNext
         i = i + 1
@@ -846,9 +857,9 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     Do Until wr.EOF
         Set out = file_handle(ht_pfad & tr_nr & "S" & wr!WR_Lizenznr & ".html")
         re.MoveFirst
-        line = Replace(ht!F1, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+        line = Replace(ht!F1, "x_title", Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez))
         line = Replace(line, "wr_k", wr!WR_Kuerzel)
-        line = Replace(line, "wr_n", wr!Ausdr1)
+        line = Replace(line, "wr_n", Umlaute_Umwandeln(wr!Ausdr1))
         out.writeline (line)
         Do Until re.EOF
             line = ht!F2
@@ -875,7 +886,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
                 line = Replace(line, "<a href=""rt_1f"">", "")
             End If
             line = Replace(line, "rt_1f", "R" & wr!WR_Lizenznr & "_K" & re!RT_ID & "_1.html")
-            line = Replace(line, "rt_stk", re!Ausdr1)
+            line = Replace(line, "rt_stk", Umlaute_Umwandeln(re!Ausdr1))
             
             re.MoveNext
             out.writeline (line)
@@ -1017,7 +1028,7 @@ Public Sub pg_platzieren(RT_ID, WR_ID, mehrfach, pg_id, s_kl)
     html_page = fill_platzieren(ht_t!F1, re, mehrfach, fld)
     html_page = Replace(html_page, "x_ck1", Mid(a_check, 3))
     re.MoveFirst
-    html_page = Replace(html_page, "x_title", Forms![A-Programmübersicht]!Turnierbez)
+    html_page = Replace(html_page, "x_title", Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez))
     html_page = Replace(html_page, "x_wrname", re!Ausdr1)         ' Wertungsrichter Name
     html_page = Replace(html_page, "x_wrid", re!WR_ID)            ' Wertungsrichter Index
     html_page = Replace(html_page, "x_html", get_TerNr & "_index.html")         ' nächste Seite von weiter
@@ -1102,7 +1113,7 @@ Public Function Umlaute_Umwandeln(XML_String As Variant)
     Dim i As Integer
     Dim validChars As String
     
-    validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäüöÄÜÖß-_.,1234567890 á'"
+    validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäüöÄÜÖß-_.,1234567890 á'`´"
     
     If IsNull(XML_String) Then
         Umlaute_Umwandeln = ""
@@ -1115,22 +1126,24 @@ Public Function Umlaute_Umwandeln(XML_String As Variant)
     
     '*** Sonstige Sonderzeichen ersetzen
     For i = 1 To Len(XML_String)
-    If InStr(1, validChars, Mid$(XML_String, i, 1)) = 0 Then
-        XML_STRING_Neu = Replace(XML_STRING_Neu, Mid$(XML_String, i, 1), " ", , , vbBinaryCompare)
-    End If
+        If InStr(1, validChars, Mid$(XML_String, i, 1)) = 0 Then
+            XML_STRING_Neu = Replace(XML_STRING_Neu, Mid$(XML_String, i, 1), " ", , , vbBinaryCompare)
+        End If
     Next i
     
     
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ä", "&#196;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ö", "&#214;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ü", "&#220;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "ä", "&#228;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "ö", "&#246;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "ü", "&#252;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "ß", "&#223;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "á", "&#225;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "é", "&#233;", , , vbBinaryCompare)
-    XML_STRING_Neu = Replace(XML_STRING_Neu, "'", "&#39;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ä", "&Auml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ö", "&Ouml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "Ü", "&Uuml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "ä", "&auml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "ö", "&ouml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "ü", "&uuml;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "ß", "&szlig;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "á", "&aacute;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "é", "&eacute;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "'", "&rsquo;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "`", "&rsquo;", , , vbBinaryCompare)
+    XML_STRING_Neu = Replace(XML_STRING_Neu, "´", "&rsquo;", , , vbBinaryCompare)
     
     Umlaute_Umwandeln = XML_STRING_Neu
 End Function
@@ -1158,12 +1171,23 @@ Public Function ch_runde(rd)  'Hier wird ausgewählt welche Akrobatiken verwendet
         ch_runde = "ER"
     ElseIf rd = "Stich_r_1pl" Then
         ch_runde = "ER"
+    ElseIf InStr(rd, "MK_") > 0 Then
+        ch_runde = "ER"
     End If
 End Function
 
 Public Function get_bs_erg(st_kl, rueckgabe)
     If left(st_kl, 3) = "BS_" Then
-        get_bs_erg = UCase(Nz(DLookup("BS_Erg", "Turnier", "Turniernum=" & get_aktTNr))) & left(st_kl, 3)
+        Select Case left(st_kl, 5)
+            Case "BS_BW", "BS_F_"
+                get_bs_erg = "BWBS_"
+            Case "BS_BY"
+                get_bs_erg = "BYBS_"
+            Case "BS_GR", "BS_KG", "BS_PT", "BS_SO"
+                get_bs_erg = "SLBS_"
+            Case Else
+                get_bs_erg = UCase(Nz(DLookup("BS_Erg", "Turnier", "Turniernum=" & get_aktTNr))) & left(st_kl, 3)
+        End Select
     Else
         get_bs_erg = left(st_kl, rueckgabe)
     End If

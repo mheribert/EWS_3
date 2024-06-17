@@ -1,4 +1,4 @@
-var ver = 'V3.2019';
+var ver = 'V3.2020';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -73,8 +73,11 @@ function add_platz(runden_info, rd_ind) {
     if (runden_info[0].ersteRunde !== null) {
         platz += '&nbsp;&nbsp;&nbsp;' + fix2(runden_info[rd_ind].ersteRunde) + '&nbsp;+&nbsp;' + fix2(runden_info[rd_ind].Punkte) + ' = ';
     }
-    platz += fix2(runden_info[rd_ind].ersteRunde + runden_info[rd_ind].Punkte);
-    return platz + ' Punkten';
+    platz += fix2(runden_info[rd_ind].ersteRunde + runden_info[rd_ind].Punkte) + ' Punkten';
+    if (runden_info[rd_ind].a20 === true || runden_info[rd_ind].z20 === true) {
+        platz += '<b>Strafe ' + runden_info[rd_ind].PunkteOb + ' Punkte</b>';
+    }
+    return platz;
 }
 
 exports.zeitplan = function (io, connection, ab_rtid) {
@@ -94,7 +97,7 @@ exports.zeitplan = function (io, connection, ab_rtid) {
                         beginn = true;
                     }
                 }
-                if (beginn === true && data[i].Rundentext !== "Letzte Startkartenabgabe") {
+                if ((beginn === true && data[i].Rundentext !== "Letzte Startkartenabgabe") || data[i].Rundentext.indexOf("Vorstellung der ") === 0)  {
                     HTML_Inhalt += '<tr><td class="mod_z" width=18%>' + data[i].Zeit + '</td>';
                     if (data[i].Rundentext === "Vorstellung der Tanzpaare" || data[i].Rundentext === "Vorstellung der Formationen") {
                         HTML_Inhalt += '<td class="mod_nb" width=80% id="rt0">';
@@ -117,13 +120,15 @@ exports.wr = function (io, wertungsrichter) {
     var HTML_Inhalt = "";
     for (var i in wertungsrichter) {
         if (wertungsrichter[i].WR_func !== "" && wertungsrichter[i].WR_func !== null) {
-            if (wertungsrichter[i].WR_Azubi === true) {
+            if (wertungsrichter[i].WR_Azubi === true) {    //Azubi gelb
                 HTML_Inhalt += '<tr><td class="mod_az" width=15%>' + wertungsrichter[i].WR_Kuerzel + '</td>';
+                HTML_Inhalt += '<td class="mod_az" width=65%>' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td >';
+                HTML_Inhalt += '<td class="mod_az" width=20%>' + wertungsrichter[i].WR_func + '</td></tr>';
             } else {
                 HTML_Inhalt += '<tr><td class="mod_n" width=15%>' + wertungsrichter[i].WR_Kuerzel + '</td>';
+                HTML_Inhalt += '<td class="mod_n" width=65%>' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td >';
+                HTML_Inhalt += '<td class="mod_n" width=20%>' + wertungsrichter[i].WR_func + '</td></tr>';
             }
-            HTML_Inhalt += '<td class="mod_n" width=65%>' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td >';
-            HTML_Inhalt += '<td class="mod_n" width=20%>' + wertungsrichter[i].WR_func + '</td></tr>';
         }
     }
     moderator_inhalt = HTML_Inhalt;
@@ -184,11 +189,13 @@ exports.siegerehrung = function (io, connection, rt_id) {
             var cl = '';
             for (var p in data) {
                 HTML_Inhalt += '<tr id="' + data[p].RT_ID + '" class="weiter"  ' + cl + '><td class="mod_s">' + data[p].Platz + '&nbsp;</td>';
+                HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td class="mod_s">';
                 if (data[p].Name_Team === null) {
-                    HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td  class="mod_s">' + data[p].Dame + ' - ' + data[p].Herr + '</td>';
+                    HTML_Inhalt += data[p].Dame + ' - ' + data[p].Herr;
                 } else {
-                    HTML_Inhalt += '<td class="mod_s">' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
+                    HTML_Inhalt += data[p].Name_Team;
                 }
+                HTML_Inhalt += '<br><small><small><small>' + data[p].Verein_Name + '</small></small></small></td>';
                 data[p].jetztRunde = data[p].jetztRunde || 0;
                 punkte = data[p].jetztRunde.toFixed(2);
                 HTML_Inhalt += '<td class="mod_pkte">' + punkte + '</td></tr>';

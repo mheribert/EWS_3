@@ -115,6 +115,19 @@ Private Sub Nummern_eingeben_Click()
 End Sub
 
 Private Sub RegisterStr87_Click()
+    Dim re As Recordset
+    
+    If Me!RegisterStr87 = 0 Then
+        Set re = Me!Stellprobe_Liste.Form.RecordsetClone
+        re.MoveLast
+        If Not re!Stell_TP_ID = -1 Then
+            re.AddNew
+            re!Stell_TP_ID = -1
+            re!Stell_Reihe = DMax("Stell_Reihe", "Stellprobe") + 1
+            re.Update
+        End If
+        Zeit_eintragen__drucken_Click
+    End If
     If Nz(Me.stell_starten) = False Then DoCmd.Requery
 End Sub
 
@@ -173,8 +186,8 @@ Private Sub Form_Timer()
     Else
         count_down = count_down - 1
         If get_properties("EWS") = "EWS3" Then
-            If count_down > 239 Then
-                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=")
+             If count_down > Me!vorgabe - 21 Then
+'                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=")
             Else
                 st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
             End If

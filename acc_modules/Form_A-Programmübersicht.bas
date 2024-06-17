@@ -144,9 +144,8 @@ Private Sub btn_Dokumentation_42_Click()
 End Sub
 
 Private Sub btn_Dokumentation_44_Click()
-    
-    If (IsNull(Akt_Turnier)) Then Exit Sub
-    
+    If turnier_selected Then Exit Sub
+   
     versand_ausschreibung get_TerNr
 
 End Sub

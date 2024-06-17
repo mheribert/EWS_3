@@ -103,3 +103,12 @@ Function check_valid_ip()
         End If
     End If
 End Function
+
+Private Sub IPAddr_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 9 Then
+        Forms!Einstellungen!Untergeordnet72.SetFocus
+    End If
+    DoCmd.CancelEvent
+End Sub
+
+

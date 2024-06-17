@@ -1,1 +1,1 @@
-SELECT IIf([Stell_tp_id]=-1,'Pause',[Name_Team]) AS tName FROM Stellprobe LEFT JOIN Paare ON Stellprobe.Stell_TP_ID = Paare.TP_ID ORDER BY Stellprobe.Stell_Reihe;
+SELECT IIf([Stell_tp_id]=-1,'Pause',[Name_Team]) AS tName, Stellprobe.Stell_Reihe FROM Stellprobe LEFT JOIN Paare ON Stellprobe.Stell_TP_ID = Paare.TP_ID ORDER BY Stellprobe.Stell_Reihe;

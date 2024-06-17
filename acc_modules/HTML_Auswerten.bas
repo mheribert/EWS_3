@@ -114,7 +114,7 @@ End Function
 
 Private Function rechne_abzuege(PR_ID, inp)
     Dim vars
-    Dim i, rh, x As Integer
+    Dim i, rh, X As Integer
     Dim Punkte As Double
     Dim verst
     verst = Array("beobachter_zukurz", "beobachter_zulang", "beobachter_Makeup", "beobachter_schmuck", "beobachter_requsit")
@@ -123,9 +123,9 @@ Private Function rechne_abzuege(PR_ID, inp)
     i = eins_zwei(PR_ID, vars)
     rh = vars.Item("rh" & i)
     
-    For x = 0 To UBound(verst)
-        If vars.Item(verst(x)) <> "" Then
-            Punkte = Punkte + CSng(vars.Item(verst(x)))
+    For X = 0 To UBound(verst)
+        If vars.Item(verst(X)) <> "" Then
+            Punkte = Punkte + CSng(vars.Item(verst(X)))
         End If
     
     Next
@@ -246,11 +246,12 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             Select Case DLookup("Land", "Startklasse", "Startklasse ='" & s_kl & "'")
                 Case "BY"
                     kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-                    If vars.exists("wgs" & i) Then
+                    If vars.exists("wgs" & i) Or vars.exists("wverw" & i) Then
                         Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
                         Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
                         Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
                         Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
+                        Punkte = Punkte + add_verstoesse(vars, i)
                     Else
                         Punkte = 0
                     End If
@@ -337,11 +338,11 @@ End Function
 ' neu newJudgingSystem
 Function add_verstoesse(vars, i)
     Dim verst
-    Dim x As Integer
-    verst = Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw")
-    For x = 0 To UBound(verst)
-        If vars.Item(verst(x) & i) <> "" Then
-            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(x) & i))
+    Dim X As Integer
+    verst = Array("wsidebysidevw", "wakrovw", "whighlightvw", "wjuniorvw", "wkleidungvw", "wtanzbereichvw", "wtanzzeitvw", "waufrufvw", "wverw")
+    For X = 0 To UBound(verst)
+        If vars.Item(verst(X) & i) <> "" Then
+            add_verstoesse = add_verstoesse + CSng(vars.Item(verst(X) & i))
         End If
     Next
 End Function
@@ -491,7 +492,6 @@ Public Function zerlege(inp)
         If InStr(1, vars(i), "wertung_in") = 0 Then
             var = Split(vars(i), "=")
             back.Add var(0), Replace(var(1), ".", ",")
-'            Debug.Print var(0) & " = " & vars.Item(""" & var(0) & """)"
         End If
     Next
     Set zerlege = back
@@ -530,7 +530,7 @@ On Error GoTo RT_Import_Fehler_Err
     Dim Werte_Array, Werte_Array_Zwischenergebnis, Werte_Assoz_Array
     Dim SQL_String, SQL_Insert_Werte, SQL_Insert_Felder, inputSTR, fName As String
     Dim n, Akrozähler As Integer
-    Dim fs, inp, cgivar, zeile, Testarray
+    Dim fs, inp, cgivar, Zeile, Testarray
     Dim anzahl_paare As Integer
     Dim AbgegebeneWertungen, rt, html_felder As Recordset
     Dim db As Database
@@ -551,14 +551,14 @@ On Error GoTo RT_Import_Fehler_Err
         Set inp = fs.OpenTextFile(fName, 1, 0)  'reading
         Do Until inp.AtEndOfStream
             cgivar = Split(inp.Readline, ";")
-            zeile = cgivar(2)
+            Zeile = cgivar(2)
     
             If left(rt!Startklasse, 3) = "RR_" Then
-                zeile = Replace(zeile, "_1=", "1=")
-                zeile = Replace(zeile, "_2=", "2=")
+                Zeile = Replace(Zeile, "_1=", "1=")
+                Zeile = Replace(Zeile, "_2=", "2=")
             End If
             
-            Werte_Array = Split(zeile, "&")
+            Werte_Array = Split(Zeile, "&")
             
             '*** prüfen ob ein oder zwei Paare im String stehen
                 Dim back, var
@@ -663,7 +663,7 @@ Public Sub ObserverHTML(trunde)
     Dim st_kl As String
     Dim vars
     Dim AbgegebeneWertungen, Paar_Infos As Recordset
-    Dim WR_Zaehler, x, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
+    Dim WR_Zaehler, X, Paar_ID, Letzte_Runde, letzte_Tanzrunde As Integer
     Dim Anz_Paare As Integer
     Dim A_WR(2), T_WR(2) As Integer
     Dim i, t As Integer
@@ -719,7 +719,7 @@ Public Sub ObserverHTML(trunde)
     AbgegebeneWertungen.MoveFirst
     
     
-    For x = 1 To WR_Zaehler
+    For X = 1 To WR_Zaehler
         If Paar_ID = AbgegebeneWertungen!Paar_ID Then
             seite = 1
         Else
@@ -897,7 +897,7 @@ Public Sub ObserverHTML(trunde)
 '        Next seite
         AbgegebeneWertungen.MoveNext
     
-    Next x
+    Next X
         
     HTML_Website = "<H1>" & Paar_Infos!Startklasse_text & " " & Paar_Infos!Runde & "</H1><H2>" & PaarLinks & "</H2>" & HTML_Paar_links & "<br><br><H2>" & PaarRechts & "</H2>" & HTML_Paar_rechts & "<br><br>"
     

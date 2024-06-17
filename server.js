@@ -1,4 +1,4 @@
-var ver = 'V3.2019';
+var ver = 'V3.2020';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -45,6 +45,7 @@ var runde = 1;          // welche Tanzrunde gerade läuft
 var rundenende = false; // test on alle wertungen da sind
 var last_rt_id;
 var new_guidelines = true;
+var lz_start = new Date();
 
 server.listen(conf.port);
 
@@ -60,6 +61,7 @@ app.post('/login', function (req, res) {
                 sess = req.session;
                 sess.user_id = req.body.wr_id;
                 sess.user_func = data[0].WR_func;
+                sess.ip = req.ip.substring(req.ip.lastIndexOf(":") + 1);
                 res.redirect('/judge');
             } else {
                 res.redirect('/');
@@ -69,7 +71,7 @@ app.post('/login', function (req, res) {
 
 app.get('/judge', function (req, res) {
     sess = req.session;
-    if (sess.user_id) {
+    if (sess.user_id && sess.ip === req.ip.substring(req.ip.lastIndexOf(":") + 1)) {
         var wr_name = wertungsrichter[sess.user_id].WR_Nachname.substring(0, 1) + wertungsrichter[sess.user_id].WR_Vorname || "";
         if (sess.user_func === "MA" || sess.user_func === "MB") {
             HTML_erstellen.mkPage(0, wr_name, sess.user_id, runden_info, res, sess.user_func);
@@ -366,11 +368,13 @@ app.get('/hand', function (req, res) {
             break;
 
         case "status_wr":
+            var wr_st = new Object();
             for (n in wertungsrichter) {
+                wr_st[n] = wertungsrichter[n].WR_func;
                 console.log(wertungsrichter[n].WR_Nachname + '    ' + wertungsrichter[n].WR_status);
             }
             console.log('__________________');
-            res.send("log geschrieben");
+            res.send(wr_st);
             break;
 
         case "wiederherstellen":
@@ -421,7 +425,7 @@ app.get('/hand', function (req, res) {
 
         case "allranking":
             res.send(req.query.msg);
-            HTML_beamer.beamer_allranking(io, 0);
+            HTML_beamer.beamer_allranking(io, 0, runden_info);
             break;
 
         case "moderator_vorstellung":
@@ -446,6 +450,16 @@ app.get('/hand', function (req, res) {
             io.emit('chat', { msg: req.query.msg, WR: req.query.WR_ID, fld: req.query.fld, val: req.query.val});
             break;
 
+        case "Serverlaufzeit":
+            res.send("server_retour");
+            break;
+
+        case "WRlaufzeit":
+            res.send("an WR gesendet");
+            lz_start = new Date();
+            io.emit('chat', { msg: req.query.msg, WR: req.query.text });
+            break;
+
         default:
             res.send(req.query.msg + req.query.text);
             io.emit('chat', { msg: req.query.msg, text: req.query.text });
@@ -458,6 +472,8 @@ app.get('/hand', function (req, res) {
         for (var x in quelle) {
             temp[x] = quelle[x];
         }
+        delete temp.a20;
+        delete temp.z20;
         return temp;
     }
 
@@ -594,6 +610,9 @@ io.sockets.on('connection', function (socket) {
             case "reise_schreib":
                 fs.appendFileSync(conf.pfad + turnier_nr + '_Reisekosten.txt', data.text + '\r\n', encoding = 'utf8');
                 break;
+            case "WR_retour":
+                var lz_ende = new Date() - lz_start;
+                console.log(data.msg + "  " + data.text + "   " + lz_ende + " ms" );
             default:
                 io.sockets.emit('chat', { zeit: new Date(), msg: data.msg, text: data.text });		// dieser Text wird an alle anderen WR gesendet
                 break;
@@ -693,7 +712,15 @@ function verteilen(WR_ID) {
                                 case "BS_SO_TAG":
                                     HTML_Seite = HTML_erstellen.BS_SL_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
-                                default:
+                                case "BS_HE_E1":
+                                case "BS_HE_J1":
+                                case "BS_HE_J2":
+                                case "BS_HE_S1":
+                                case "BS_HE_S2":
+                                case "BS_HE_T1":
+                                    HTML_Seite = HTML_erstellen.BS_HE_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
+                                    break;
+                               default:
                                     HTML_Seite = HTML_erstellen.BS_Seite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
                             }
@@ -738,6 +765,7 @@ function verteilen(WR_ID) {
                                 case "BS_BY_BE":
                                 case "BS_BY_BS":
                                 case "BS_BY_S1":
+//                                    HTML_Seite = HTML_erstellen.BS_BY_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     break;
                                 case "BS_F_RR_JF":      // BWRRV
@@ -745,6 +773,14 @@ function verteilen(WR_ID) {
                                 case "BS_BW_HA":
                                 case "BS_BW_FO":
                                 case "BS_BW_EI":
+                                    HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
+                                    break;
+                                case "BS_HE_E1":        // Hessen
+                                case "BS_HE_J1":
+                                case "BS_HE_J2":
+                                case "BS_HE_S1":
+                                case "BS_HE_S2":
+                                case "BS_HE_T1":
                                     HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     break;
                                 default:
@@ -947,7 +983,7 @@ function storage_send(WR_ID) {
                     var Punkte = 0;
                     wtext = '';
                     if (typeof body.TP_ID1 !== "undefined") {
-                        Punkte = HTML_auswerten.rechne_wertungen(body, "1", runden_info);       // Punkte berechnen#
+                        Punkte = HTML_auswerten.rechne_wertungen(body, "1", runden_info);       // Punkte berechnen
                         temp[body.TP_ID1] = { cgi: body, Punkte: Punkte, Runde: runde, Seite: 1 };
 
                         wtext += body.TP_ID1 + ';' + body.WR_ID + ';' + cgivar + '\r\n';

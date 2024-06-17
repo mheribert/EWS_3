@@ -12,7 +12,7 @@ Private Sub Report_Open(Cancel As Integer)
     n = 1
     Do Until re.EOF
         If re!WR_AzuBi Then
-            Me("Kopf" & Trim(str(n))).BackColor = 8631029
+            Me("Kopf" & Trim(str(n))).BackColor = rgb(255, 255, 0)
             Me("Kopf" & Trim(str(n))).BackStyle = 1
         End If
         Me("Kopf" & Trim(str(n))).Caption = re!Ausdr1

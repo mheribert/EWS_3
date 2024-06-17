@@ -137,8 +137,7 @@ Private Sub Wertungsbögen_drucken_Click()
 End Sub
 
 Private Sub Wertungen_drucken_Click()
-    
-        DoCmd.OpenReport "Wertungsbogen", acViewPreview, , "wr_id = " & Me!WR_ID
+    DoCmd.OpenReport "Wertungsbogen", acViewPreview, , "wr_id = " & Me!WR_ID
                                         
 End Sub
 

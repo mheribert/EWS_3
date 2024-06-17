@@ -5,16 +5,21 @@ Option Explicit
     Dim aktuelleTanzRunde As Long
 
 Private Sub AutomatischWertungenEinlesen_Click()
+    If no_runde_selected Then
+        Me.AutomatischWertungenEinlesen = False
+        Exit Sub
+    End If
     If Me.AutomatischWertungenEinlesen = True Then
-        Me.AutomatischWertungenEinlesen.Caption = "STOP"
+        Me.AutomatischWertungenEinlesen.Caption = "STOP Wertung einlesen"
+        Wertungen_einlesen_Click
     ElseIf Me.AutomatischWertungenEinlesen = False Then
-        Me.AutomatischWertungenEinlesen.Caption = "START"
+        Me.AutomatischWertungenEinlesen.Caption = "START Wertung einlesen"
     End If
     
 End Sub
 
 Private Sub Befehl27_Click()
-    DoCmd.close
+    DoCmd.Close
 
 End Sub
 
@@ -108,7 +113,7 @@ End Sub
 Private Sub Runde_auswerten_Click()
     DoCmd.OpenForm "Majoritaet_ausrechnen"
     Forms!Majoritaet_ausrechnen!Startklasse = Me!Tanzrunde
-    DoCmd.close acForm, "Wertung_einlesen"
+    DoCmd.Close acForm, "Wertung_einlesen"
 End Sub
 
 Private Sub Form_AfterUpdate()
@@ -119,7 +124,7 @@ Private Sub Text162_GotFocus()
     Me!pu1.SetFocus
 End Sub
 
-Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Umschaltfläche147_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dim st As String    'Beitensport Taktung
     If Me!Umschaltfläche147.Caption = "Runde starten" Then
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Runde_starten&text=")
@@ -167,7 +172,7 @@ Public Sub Runde_starten_Click()
     End If
     If retl = vbNo Then Exit Sub
     
-    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('" & Me!Tanzrunde.Column(1) & " gestartet', '" & Time & "')"
+    db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('" & Me!Tanzrunde.Column(1) & " gestartet', '" & Time & "')"
     db.Execute "UPDATE wert_richter Set WR_func='', WR_status='';"
     db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE Startklasse='" & Me!Tanzrunde.Column(3) & "';"
     db.Execute "UPDATE wert_richter Set WR_status='runde' WHERE WR_func='Ob';"
@@ -206,7 +211,7 @@ Private Sub Runde_beenden_Click()
         End If
     End If
     db.Execute ("UPDATE rundentab SET [HTML] = 0 WHERE RT_ID =" & Me!Tanzrunde & ";")
-    db.Execute "INSERT INTO Analyse (CGI_Input, zeit, RT_ID) VALUES ('" & Me!Tanzrunde.Column(1) & " beendet', '" & Time & "', '" & Me!Tanzrunde & "')"
+    db.Execute "INSERT INTO " & w_list & " (CGI_Input, zeit, RT_ID) VALUES ('" & Me!Tanzrunde.Column(1) & " beendet', '" & Time & "', '" & Me!Tanzrunde & "')"
     If get_properties("EWS") = "EWS1" Then
         Start_Seite "T" & Forms![A-Programmübersicht]!Turnier_Nummer
         make_a_schedule
@@ -231,7 +236,7 @@ Private Sub sende_msg_Click()
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=" & Me!bereich_msg & "&WR_ID=" & Me!sende_text)
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&kopf=Vorrunde&inhalt=<table style=""width: 100%; float: left; padding-left:100px"" id=""table_timetable""><thead><tr role=""row""><th style=""width: 250px;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Beginn</th><th style=""width: auto;"" colspan=""1"" rowspan=""1"" class=""sorting_disabled"">Runde</th></tr></thead><tbody style=""font-size: 1.8vw;""> <tr class=""odd""> <td>19:00</td><td>Vorrunde  Juniorenklasse</td> </tr> <tr class=""odd""><td>19:10</td><td>Endrunde  Schülerklasse</td></tr>")
 '    st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&seite=&inhalt=bodytext&kopf=heribert&wr_info=")
-    
+'    Debug.Print st
 End Sub
 
 Sub Tanzrunde_AfterUpdate()
@@ -244,8 +249,11 @@ Sub Tanzrunde_AfterUpdate()
     Dim re As Recordset
     Dim AnzahlWRVorgabe, t As Integer
     If Not IsNull(Tanzrunde) Then
+        Me.AutomatischWertungenEinlesen = False
+        Me.AutomatischWertungenEinlesen.Caption = "START Wertung einlesen"
+
         Me.Status_Wertungen_Einlesen.Visible = False
-        Me!Wertungen_einlesen.ControlTipText = Tanzrunde
+        Me!AutomatischWertungenEinlesen.ControlTipText = Tanzrunde
         sqlstr = "SELECT Paare_Rundenqualifikation.RT_ID, Paare.Startkl, Paare_Rundenqualifikation.Rundennummer, Paare.Startnr, Paare_Rundenqualifikation.PR_ID, Paare_Rundenqualifikation.nochmal, Paare_Rundenqualifikation.TP_ID, [Rundennummer ] Mod 2 AS Ausdr1 FROM (Paare INNER JOIN Paare_Rundenqualifikation ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID= " & Me!Tanzrunde & " AND Paare_Rundenqualifikation.Anwesend_Status=1) ORDER BY Paare_Rundenqualifikation.Rundennummer, Paare.Startnr;"
         Set dbs = CurrentDb
         Set re = dbs.OpenRecordset(sqlstr)
@@ -411,9 +419,9 @@ Private Sub Wertungen_einlesen_Click()
             If fWertu <> "" And Me.AutomatischWertungenEinlesen = False Then MsgBox "Bei " & fWertu & vbCrLf & "fehlen noch Wertungen!"
             If fWertu = "" And Me.AutomatischWertungenEinlesen = True Then
                 Me.AutomatischWertungenEinlesen = False
-                Me.AutomatischWertungenEinlesen.Caption = "START"
+                Me.AutomatischWertungenEinlesen.Caption = "START Wertungen einlesen"
             End If
-            
+            db.Execute "INSERT INTO " & w_list & "(CGI_Input, zeit, RT_ID) VALUES ('" & Me!Tanzrunde.Column(1) & " einlesen', '" & Time & "', '" & Me!Tanzrunde & "')"
             '*****AB***** V13.02 - zusätzlich die Wertungen für das Observer Plugin bereitstellen
             '*****AB***** KRITISCH - wenn fehlerhaft, einfach nächste Zeile auskommentieren!!!
             Import_RT_txt Me.Tanzrunde
@@ -432,8 +440,8 @@ Function fetch_wr_name(WR_ID)
     Set db = CurrentDb
     Set wr = db.OpenRecordset("SELECT * FROM wert_richter WHERE WR_ID = " & WR_ID)
     fetch_wr_name = wr!WR_Vorname & " " & wr!WR_Nachname
-    wr.close
-    db.close
+    wr.Close
+    db.Close
 End Function
 
 Private Sub Plazierung_einlesen_Click()
@@ -516,7 +524,7 @@ Public Function Wertung_check(WR_ID, spalte)
     Set rstauswertung = dbs.OpenRecordset(stmt)
     Dim Count As Integer
     Count = rstauswertung!anz
-    rstauswertung.close
+    rstauswertung.Close
     If (Count > 0) Then
         Me("Feld" & spalte).BackColor = 255
         Me("Feld" & spalte).BackStyle = 1
@@ -673,7 +681,7 @@ Public Function show_wertung(PR_ID, Startnr, WR_ID)
     If re.RecordCount > 0 Then
         If Not IsNull(re!Cgi_Input) Then
             If CurrentProject.AllForms("Wertung_zeigen").IsLoaded Then
-                DoCmd.close acForm, "Wertung_zeigen"
+                DoCmd.Close acForm, "Wertung_zeigen"
             End If
             cgivar = Split(re!Cgi_Input, "&")
             
@@ -697,7 +705,7 @@ Private Sub wertungen_löschen_Click()
 '    Überflüssiges_löschen
 End Sub
 
-Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 1
@@ -705,7 +713,7 @@ Private Sub Zeitplan_MouseUp(Button As Integer, Shift As Integer, x As Single, y
     Beamer_generieren
 End Sub
 
-Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 2
@@ -713,7 +721,7 @@ Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, x As Single, y As
     Beamer_generieren
 End Sub
 
-Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 3
@@ -722,14 +730,14 @@ Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, x As 
     Beamer_generieren
 End Sub
 
-Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Zeitplan_ganz_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     
     Forms!Wertung_einlesen!HTML_Select = 4
     Beamer_generieren
 End Sub
 
-Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     If get_properties("EWS") = "EWS1" Then
         Forms!Wertung_einlesen!HTML_Select = 5
@@ -742,7 +750,7 @@ Private Sub Rundenergebnis_MouseUp(Button As Integer, Shift As Integer, x As Sin
     End If
 End Sub
 
-Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Siegerehrung_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dim st As String
     Dim Runde As String
     If no_runde_selected Then Exit Sub

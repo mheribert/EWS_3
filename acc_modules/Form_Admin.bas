@@ -5,6 +5,26 @@ Private Sub close_Click()
     DoCmd.Close
 End Sub
 
+Private Sub lauf_Click()
+    Dim st As String
+    Dim lz_start, lz_stop As Single
+    If get_properties("EWS") = "EWS3" Then
+        lz_start = Timer
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=Serverlaufzeit&text=" & WR_ID)
+        lz_stop = Timer
+        If st = "server_retour" Then Me!laufzeit = (lz_stop - lz_start) * 1000
+    End If
+
+End Sub
+
+Private Sub WR_Laufzeit_Click()
+    Dim st As String
+    If get_properties("EWS") = "EWS3" Then
+        st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=WRlaufzeit&text=" & WR_ID)
+    End If
+
+End Sub
+
 Private Sub Umschaltfläche61_Click()
     Dim st As String
     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=status_wr&text=")

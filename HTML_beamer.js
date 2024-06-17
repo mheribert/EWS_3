@@ -1,4 +1,4 @@
-var ver = 'V3.2019';
+var ver = 'V3.2020' ;
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -107,6 +107,8 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     if (!runden_info[0].ranking_anzeige ) { return; }
     var ratings = new Object();
     var temp = new Object;
+    var ko_rde = new Object();
+    var rde; 
     var anz = 0;
     // Kopf Text
     HTML_Kopf = runden_info[0].Turnier_Name  + '<br>' + runden_info[0].Tanzrunde_Text;
@@ -115,23 +117,38 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var sum2;
     for (var p in runden_info) {
         runden_info[p].Platz = "";
+        rde = runden_info[p].Rundennummer || 0;
         if (runden_info[p].Rundennummer <= runde && runden_info[p].nochmal === false) {
             ratings[anz] = runden_info[p];
-            ratings[anz].rd_info = anz; 
+            ratings[anz].rd_info = p;
             sum1 = parseFloat(ratings[anz].Punkte);
             if (ratings[anz].ersteRunde !== null) {
                 sum1 += parseFloat(ratings[anz].ersteRunde);
             }
             ratings[anz].summe = sum1;
+             // Rundensieger für KO-Runde
+            if (ko_rde[rde] < sum1 || ko_rde[rde] === undefined) {
+                ko_rde[rde] = sum1;
+                ko_rde["p"+ rde] = p;
+            }
             anz++;
         }
     }
+    // KO-Runde offset 
+    if (runden_info[0].Runde.indexOf("KO_r") > -1) {
+        for (p in ko_rde) {
+            if (p.substring(0, 1) === "p") {
+                runden_info[ko_rde[p]].kosieger = true;
+            }
+        }
+    }   
+
     // sortieren nach punkten
     anz--;
     for (var s = 0; s < anz; s++) {
         for (var t = 0; t < anz; t++) {
-            sum1 = parseFloat(ratings[t].summe);
-            sum2 = parseFloat(ratings[t + 1].summe);
+            sum1 = parseFloat(ratings[t].summe) + (ratings[t].kosieger === true ? 2000 : 0);
+            sum2 = parseFloat(ratings[t + 1].summe + (ratings[t + 1].kosieger === true ? 2000 : 0));
             if (sum1 < sum2) {
                 temp = ratings[t];
                 ratings[t] = ratings[t + 1];
@@ -147,7 +164,7 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var linie = false;
     var max_paare = 8;
     HTML_Inhalt = make_thead('') + '<tbody>';
-    allranking = ratings;
+    allranking = new Object();
 
     for (p in ratings) {
         if ((ratings[p].ersteRunde + ratings[p].Punkte) !== punkte) {
@@ -157,7 +174,7 @@ exports.beamer_ranking = function (io, runden_info, runde) {
         //        HTML_class = '<tr class="raus">';
         //    }
         }
-        allranking[p].punkte = platz;
+        allranking[parseInt(p) + 1] = ratings[p].rd_info;
         runden_info[ratings[p].rd_info].Platz = platz;
         if (platz <= max_paare || ratings[p].Rundennummer === runde) {
             if (platz > max_paare && !linie) {
@@ -177,25 +194,30 @@ exports.beamer_ranking = function (io, runden_info, runde) {
             } else {
                 HTML_Inhalt += '<td class="text_left">' + ratings[p].Name_Team + '</td>';
             }
-            if (ratings[p].ersteRunde !== null) {
-                HTML_Inhalt += '<td style="font-size:1.6vw;">' + ratings[p].ersteRunde.toFixed(2) + ' + ' + ratings[p].Punkte.toFixed(2) + '</td>';
-            }
-            punkte = ratings[p].ersteRunde + ratings[p].Punkte;
-            HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ','); // + ins_A20(ratings[p].a20);
+ //           if (ratings[p].punkte_anzeige === true) {       // keine Punkte anzeigen
+                if (ratings[p].ersteRunde !== null) {
+                    HTML_Inhalt += '<td style="font-size:1.6vw;">' + ratings[p].ersteRunde.toFixed(2) + ' + ' + ratings[p].Punkte.toFixed(2) + '</td>';
+                }
+                punkte = ratings[p].ersteRunde + ratings[p].Punkte;
+                HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ',') + ins_strafe(ratings[p]) + '</td>';
+//            }
+            HTML_Inhalt += '</tr>'
         }
     }
     HTML_Inhalt += '</tbody>';
     allranking.lenght = s + 1;
-
     io.emit('chat', { msg: 'beamer', bereich: 'beamer_kopf', cont: HTML_Kopf });
     io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
 
-    function ins_A20(vorh) {
-        if (vorh) {
-            return "&nbsp;A20&nbsp;";
-        } else {
-            return "&nbsp;";
+    function ins_strafe(strafe) {
+        var back = "";
+        if (strafe.a20 === true) {
+            back = "&nbsp;<b>A</b>";
         }
+        if (strafe.z20 === true) {
+            back += "&nbsp;<b>Z</b>";
+        }
+        return back;
     }
 
 };
@@ -230,7 +252,7 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
         });
 };
 
-exports.beamer_allranking = function (io, runde) {
+exports.beamer_allranking = function (io, runde, runden_info) {
     if (allranking === undefined) { return; }
 
     if (runde + 1> allranking.lenght) {
@@ -243,24 +265,24 @@ exports.beamer_allranking = function (io, runde) {
         if (p + 1 > allranking.lenght) {
             break;
         }
-        HTML_Seite += '<tr class="weiter"><td>' + allranking[p].Platz + '&nbsp;</td>';
-        HTML_Seite += '<td>' + allranking[p].Startnr + '</td>';
-        if (allranking[p].Name_Team === null) {
-            HTML_Seite += '<td class="text_left">' + allranking[p].Dame + ' - ' + allranking[p].Herr + '</td>';
+        HTML_Seite += '<tr class="weiter"><td>' + runden_info[allranking[p + 1]].Platz + '&nbsp;</td>';
+        HTML_Seite += '<td>' + runden_info[allranking[p + 1]].Startnr + '</td>';
+        if (runden_info[allranking[p + 1]].Name_Team === null) {
+            HTML_Seite += '<td class="text_left">' + runden_info[allranking[p + 1]].Dame + ' - ' + runden_info[allranking[p + 1]].Herr + '</td>';
         } else {
-            HTML_Seite += '<td class="text_left">' + allranking[p].Name_Team + '</td>';
+            HTML_Seite += '<td class="text_left">' + runden_info[allranking[p + 1]].Name_Team + '</td>';
         }
-        if (allranking[p].ersteRunde !== null) {
-            HTML_Seite += '<td style="font-size:1.6vw;">' + allranking[p].ersteRunde.toFixed(2) + ' + ' + allranking[p].Punkte.toFixed(2) + '</td>';
+        if (runden_info[allranking[p + 1]].ersteRunde !== null) {
+            HTML_Seite += '<td style="font-size:1.6vw;">' + runden_info[allranking[p + 1]].ersteRunde.toFixed(2) + ' + ' + runden_info[allranking[p + 1]].Punkte.toFixed(2) + '</td>';
         }
-        punkte = (allranking[p].summe).toFixed(2);
+        punkte = (runden_info[allranking[p + 1]].summe).toFixed(2);
         HTML_Seite += '<td>' + punkte.replace('.', ',') + '</td></tr>';
     }
     HTML_Seite += '</tbody>';
 
     io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Seite });
         setTimeout(function () {
-            exports.beamer_allranking(io, p);
+            exports.beamer_allranking(io, p, runden_info);
         }, 4000);
 
 };
@@ -281,7 +303,7 @@ exports.beamer_stellprobe = function (io, connection, teams, title) {
                 .query('SELECT * FROM paare WHERE TP_ID =' + tp_id[1] + ';')
                 .on('done', function (data) {
 
-                    HTML_Inhalt += '<tr"><td height = "30hv" colspan="2" id="beamer_minute" style="text-align:center; font-size:7vw;">4:00</td></tr>';
+                    HTML_Inhalt += '<tr"><td height = "30hv" colspan="2" id="beamer_minute" style="text-align:center; font-size:7vw;">&nbsp;</td></tr>';
                     HTML_Inhalt += '<tr class="runde"><td height = "25hv" >Danach:</td><td>';
                     if (tp_id[1] === '-1') {
                         HTML_Inhalt += 'Pause</td></tr>';

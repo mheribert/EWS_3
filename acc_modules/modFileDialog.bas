@@ -184,7 +184,7 @@ Public Function gen_Ordner(pfad)
 
 End Function
 
-Public Sub Bilderspeichern()
+Public Sub Bilderspeichern(ews)
     Dim db As Database
     Dim ht As Recordset
     Dim out
@@ -194,13 +194,16 @@ Public Sub Bilderspeichern()
     
     Set db = CurrentDb
 
-    If get_properties("EWS") = "EWS3" Then
+    If ews = "EWS3" Then
         base = getBaseDir & "webserver\views\"
         Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and F1 = 'favicon.ico';")
         ht.MoveFirst
         out_bild ht, base
     Else
-        base = getBaseDir & "Apache2\htdocs\"
+        base = gen_Ordner(getBaseDir & "Apache2")
+        gen_Ordner (base & "\" & "cgi-bin")
+        base = gen_Ordner(base & "\" & "htdocs") & "\"
+'        getBaseDir & "Apache2\htdocs\"
         Set ht = db.OpenRecordset("Select * FROM HTML_Block WHERE Seite = 'All' and Bereich = 'Bild';")
         ht.MoveFirst
         gen_default base

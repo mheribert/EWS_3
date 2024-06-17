@@ -24,6 +24,7 @@ Err_Befehl12_Click:
 End Sub
 
 Private Sub btnAktualisieren_Click()
+    Me.OrderBy = "[Tanzpaare_aufnehmen].[Startkl], [Tanzpaare_aufnehmen].[Startnr]"
     Requery
 End Sub
 
@@ -118,6 +119,7 @@ Private Sub Form_Load()
             Me.Akro_anzeigen.Visible = False
         Case Else
     End Select
+    Me!Wertungen_ausdrucken.Visible = get_properties("Giveaway")
     Call test_akros
 
 End Sub
@@ -139,7 +141,7 @@ Private Sub Kombinationsfeld36_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
-Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Dim st As String
     If get_properties("EWS") = "EWS1" Then
         make_a_Vorstellungslist
@@ -253,7 +255,7 @@ If Anwesent_Status = 1 Then
                 rststartnr.Update
                 MsgBox ("Das Paar " & Startnr & " aus der Startklasse " & Startkl & " wurde für den WR " & WR_K & ", an die bereits begonnene Eingabe der Wertungen, angefügt")
                 rstauswertung.FindNext ("wert_ken <> '" & WR_K & "' and startkl = '" & Startkl & "' and t_runde = '" & akt_r & "'")
-                Loop
+            Loop
         End If
         ' ende 02.06.04
     End If
@@ -395,5 +397,12 @@ Private Sub Startnummernvergabe_Click()
 End Sub
 
 Private Sub Wertungen_ausdrucken_Click()
-    If Not IsNull(Me!TP_ID) Then DoCmd.OpenReport "Giveaway", acViewPreview, , "TP_ID = " & Me!TP_ID
+    Call read_raw
+    If Not IsNull(Me!TP_ID) Then
+        If get_properties("Giveaway_direct") Then
+            DoCmd.OpenReport "Wertung_Paare", acViewNormal, , "TP_ID = " & Me!TP_ID
+        Else
+            DoCmd.OpenReport "Wertung_Paare", acViewPreview, , "TP_ID = " & Me!TP_ID
+        End If
+    End If
 End Sub

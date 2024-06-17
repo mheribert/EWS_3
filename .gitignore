@@ -365,3 +365,5 @@ config.json
 /views/wertungsbogen.html
 /views/logo.jpg
 *.jpg
+/webserver - Kopie.njsproj
+/package-lock.json

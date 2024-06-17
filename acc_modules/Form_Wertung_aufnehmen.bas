@@ -4,8 +4,7 @@ Option Explicit
 Private Sub Befehl27_Click()
 On Error GoTo Err_Befehl27_Click
 
-
-    DoCmd.close
+    DoCmd.Close
 
 Exit_Befehl27_Click:
     Exit Sub
@@ -77,7 +76,7 @@ Sub Tanzrunde_AfterUpdate()
           End If
     End If
     AnzahlWRVorgabe = rs!AnzahlWR
-    rs.close
+    rs.Close
     
     If (Not [Form_A-Programmübersicht]!Getrennte_Auslosung) Then
      '*****AB***** V13.02 if-Clause um neue Boogie Startklassen erweitert
@@ -168,7 +167,7 @@ Private Sub mehrkampf_von_tablett_Click()
      
         re.MoveNext
     Loop
-    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Tabletts einlesen gestartet', '" & Time & "')"
+    db.Execute "INSERT INTO Analyse (CGI_Input,zeit) VALUES ('MK Tabletts holen gestartet', '" & Time & "')"
     DoCmd.Hourglass False
 End Sub
 
@@ -214,7 +213,7 @@ Public Sub Wertung_aufnehmen1_Unterformular_Exit(Cancel As Integer)
     Set rstauswertung = dbs.OpenRecordset(stmt)
     Dim Count As Integer
     Count = rstauswertung!anz
-    rstauswertung.close
+    rstauswertung.Close
     If (Count > 0) Then
         Exit Sub
     End If
@@ -329,7 +328,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         rsAddWertung.MoveNext
     Loop
     
-    rsAddWertung.close
+    rsAddWertung.Close
     
     ' Wertungen löschen, die nicht rein gehören
     sqlcmd = "select distinct pr.pr_id from Paare_Rundenqualifikation pr, Auswertung a where a.pr_id=pr.pr_id and pr.rt_id=" & rtid & " and anwesend_Status<>1"
@@ -343,7 +342,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         Qualifikation.MoveNext
     Loop
     
-    Qualifikation.close
+    Qualifikation.Close
     
     ' Wertungen noch in die richtige Reihenfolge bringen
     sqlcmd = "select * from Paare_Rundenqualifikation pr where rt_id=" & rtid & " and anwesend_Status=1 and rundennummer is not null"
@@ -359,7 +358,7 @@ Private Sub Wertungsrichter_einstellen_AfterUpdate()
         rstauswertung.MoveNext
     Loop
     
-    rstauswertung.close
+    rstauswertung.Close
     
     [Form_Wertung aufnehmen1 Unterformular].Requery
     Form_Paare_ohne_Punkte_UF.Requery

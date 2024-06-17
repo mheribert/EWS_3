@@ -29,3 +29,10 @@ Private Sub Rundentext_Change()
     Me!R_NAME_ABLAUF = Me!Rundentext.text
     If Nz(Me!Runde) = "" Then Me!Runde = "Erg_" & Me!Runden_ID
 End Sub
+
+Private Sub Rundentext_KeyDown(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 9 And Me.NewRecord = True Then
+        Forms!Einstellungen!Einstellungen_Deckblatt.SetFocus
+    End If
+End Sub
+

@@ -1,6 +1,7 @@
 Option Compare Database
 
     Public sel_fld As String
+    Public Const w_list = "analyse"
 
 Sub Tabellen_leeren()
     Dim db As Database
@@ -196,13 +197,22 @@ Public Sub start_config_webserver()
     Dim neuPfad As String
     Dim nodePfad As String
     Dim st As String
+    Dim EWS, EWSser As String
     Dim db As Database
     Set db = CurrentDb()
     Dim retVal
+    EWS = get_properties("EWS")
+    EWSser = get_properties("EWS1_NodeServer")
     
-    Call Bilderspeichern
+    Call Bilderspeichern(EWS)
     neuPfad = getBaseDir & "Apache2"
-    If get_properties("EWS") = "EWS1" And Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
+    If EWS = "EWS1" And EWSser = 1 Then
+        nodePfad = getBaseDir & "webserver"
+        retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\miniserver.js""", vbMinimizedNoFocus)
+        db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('EWS1 Server gestartet', '" & Time & "')"
+        If retVal = 0 Then MsgBox "Der WebServer konnte nicht gestartet werden!"
+    End If
+    If EWS = "EWS1" And EWSser = 0 And Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
         Open neuPfad & "\conf\httpd.conf.original" For Input As #1          ' original
         Open neuPfad & "\conf\httpd.conf" For Output As #2                  ' in conf mit akt. pfad
         Do While Not EOF(1)
@@ -214,9 +224,10 @@ Public Sub start_config_webserver()
         Close #1
         Close #2
         retVal = Shell(neuPfad & "\bin\apache.exe", vbMinimizedNoFocus)
+        db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('Apache2 Server gestartet', '" & Time & "')"
         If retVal = 0 Then MsgBox "Der WebServer konnte nicht gestartet werden!"
     End If
-    If get_properties("EWS") = "EWS3" Then
+    If EWS = "EWS3" Then
         make_wr_zeitplan
         nodePfad = getBaseDir & "webserver"
         write_config_json nodePfad
@@ -231,6 +242,7 @@ Public Sub start_config_webserver()
             DoEvents
         Loop
         ' wg Logowechsel bei laufendem Turnier
+        db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('EWS3 Server gestartet', '" & Time & "')"
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&cont=reload")
 
     End If

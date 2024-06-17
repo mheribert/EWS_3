@@ -151,7 +151,8 @@ End Sub
 Private Sub DQ_ID_AfterUpdate()
 ' HK 27.11.2011  Disqualifikation bei Eingabe in das Feld berechnen und nicht mehr
 '                 über einen separaten Button
-majori_Click
+    SendKeys "+{ENTER}"
+    majori_Click
 Exit Sub
     
     

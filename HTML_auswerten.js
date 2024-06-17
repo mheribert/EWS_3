@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2019';
+﻿var ver = 'V3.2020';
 var fs = require('fs');
 var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
 
@@ -127,10 +127,11 @@ function rechne_wertungen(body, seite, runden_info) {
                 case "BS_BY_BE":
                 case "BS_BY_BS":
                 case "BS_BY_S1":
-                    Punkte =  parseFloat(body["wgs" + seite]) * kl_punkte[0] / 10;  // Grundschritt
-                    Punkte += parseFloat(body["wbd" + seite]) * kl_punkte[1] / 10;  // Basic Dancing, Lead & Follow, Harmonie
-                    Punkte += parseFloat(body["wtf" + seite]) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
-                    Punkte += parseFloat(body["win" + seite]) * kl_punkte[3] / 10;  // Interpretation (Figuren, spontane Interpretation)
+                    Punkte =  parseFloat(body["wgs" + seite] || 0) * kl_punkte[0] / 10;  // Grundschritt
+                    Punkte += parseFloat(body["wbd" + seite] || 0) * kl_punkte[1] / 10;  // Basic Dancing, Lead & Follow, Harmonie
+                    Punkte += parseFloat(body["wtf" + seite] || 0) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
+                    Punkte += parseFloat(body["win" + seite] || 0) * kl_punkte[3] / 10;  // Interpretation (Figuren, spontane Interpretation)
+                    Punkte += parseFloat(body["wverw" + seite] || 0);               // Fehlerabzüge)
                     break;
                 case "BS_BW_EI":        // BWRRV
                 case "BS_BW_FO":
@@ -142,6 +143,18 @@ function rechne_wertungen(body, seite, runden_info) {
                     Punkte += parseFloat(body["wta" + seite]);   
                     Punkte += parseFloat(body["wak" + seite]);
                     Punkte -= parseFloat(body["wfe" + seite]);  
+                    break;
+                case "BS_HE_E1":        // Hessen HRBV
+                case "BS_HE_J1":
+                case "BS_HE_J2":
+                case "BS_HE_S1":
+                case "BS_HE_S2":
+                case "BS_HE_T1":
+                    Punkte = parseFloat(body["wth" + seite]);
+                    Punkte += parseFloat(body["wtd" + seite]);
+                    Punkte += parseFloat(body["wta" + seite]);
+                    Punkte += parseFloat(body["wak" + seite]);
+                    Punkte -= parseFloat(body["wfe" + seite]);
                     break;
                 case "BS_GR_GS":        //Schulsport Saarland
                 case "BS_GR_GSV":
@@ -229,7 +242,10 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
                                         }
                                             
                                     }
-                                break;
+                                    break;
+                                case "BS_":
+                                    PunkteOb[PunkteOb.length - 1][2] += to_zahl(wertungen[i][x].Punkte);
+                                    break;
                                 default:
                             }
                             write_back(wertungen, PunkteAe, x, i);  //  wertungen, PunkteAe, TP_ID, WR, filename
@@ -265,8 +281,13 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
             runden_info[s].PunkteAk = get_mittel(PunkteAk, wertungen, st_kl);
             runden_info[s].PunkteOb = get_mittel(PunkteOb, wertungen, st_kl);
             runden_info[s].Punkte = runden_info[s].PunkteFt + runden_info[s].PunkteAk - runden_info[s].PunkteOb;
-            if (PunkteOb[0][4]["tfl" + PunkteOb[0][5] + "a20"] === "A20") {
-                runden_info[s].a20 = true;
+            if (PunkteOb[0][4]["tfl" + PunkteOb[0][5] + "a20"] !== undefined) {
+                if (PunkteOb[0][4]["tfl" + PunkteOb[0][5] + "a20"].indexOf("A20") > -1) {
+                    runden_info[s].a20 = true;
+                }
+                if (PunkteOb[0][4]["tfl" + PunkteOb[0][5] + "a20"].indexOf("Z20") > -1) {
+                    runden_info[s].z20 = true;
+                }
             }
             if (runden_info[s].Punkte < 0) { runden_info[s].Punkte = 0; }
             if (runden_info[s].Rundennummer === runde) {
@@ -306,17 +327,19 @@ exports.berechne_punkte = function (wertungen, runden_info, runde, wertungsricht
         var poststring;
         var p;
         for (wr in wertungen) {
-            for (pr in wertungen[wr]) {
-                if (wertungen[wr][pr].cgi.TP_ID1 === TP_ID || wertungen[wr][pr].cgi.TP_ID2 === TP_ID) {
-                    for (p in PunkteAe) {
-                        if (typeof wertungen[wr][pr].cgi[p] !== "undefined") {
-                            if (p.substring(0, 3) !== "wak") {
-                                wertungen[wr][pr].cgi[p] = wertungen[i][TP_ID][p];
-                                wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(wertungen[i][TP_ID]["w" + p.substring(1, 10)]);
-                            } else {
-                                wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(PunkteAe[p]);
-                            }
+            if (wertungsrichter[wr].WR_Azubi === false) {
+                for (pr in wertungen[wr]) {
+                    if (wertungen[wr][pr].cgi.TP_ID1 === TP_ID || wertungen[wr][pr].cgi.TP_ID2 === TP_ID) {
+                        for (p in PunkteAe) {
+                            if (typeof wertungen[wr][pr].cgi[p] !== "undefined") {
+                                if (p.substring(0, 3) !== "wak") {
+                                    wertungen[wr][pr].cgi[p] = wertungen[i][TP_ID][p];
+                                    wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(wertungen[i][TP_ID]["w" + p.substring(1, 10)]);
+                                } else {
+                                    wertungen[wr][pr].cgi["w" + p.substring(1, 10)] = to_zahl(PunkteAe[p]);
+                                }
 
+                            }
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 Option Compare Database
 
 Private Sub btnAbbrechen_Click()
-    DoCmd.close acForm, "Turnier_uebernehmen"
+    DoCmd.Close acForm, "Turnier_uebernehmen"
 End Sub
 
 Private Sub btnOK_Click()
@@ -13,6 +13,10 @@ Private Sub btnOK_Click()
     If Me!T_Name = "" Or Nz(Me!T_Nr) = "" Then
         MsgBox "Bitte Turniername und Turniernummer eingeben!"
     Else
+        Forms![A-Programmübersicht]!Turnierausw = Null
+        Forms![A-Programmübersicht]!Turnierveranstalter = ""
+        Forms![A-Programmübersicht]!Tur_Datum = ""
+        Forms![A-Programmübersicht]!Turnier_Nummer = ""
         If Len(Me!T_Nr) < 6 Or Not IsNumeric(Me!T_Nr) Then
             MsgBox "Die Turniernummer muss mindestens 7 Zahlen lang sein."
             Exit Sub
@@ -73,7 +77,7 @@ Private Sub btnOK_Click()
             ziel!Art = "TL"
             ziel.Update
         End If
-        rst.close
+        rst.Close
         btnAbbrechen_Click
     End If
 End Sub

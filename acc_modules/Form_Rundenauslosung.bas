@@ -78,10 +78,7 @@ Private Sub btnDruckRundeneinteilung_Click()
         If re.RecordCount > 0 Then
             Call FolieRunden_Click
         End If
-        Set re = db.OpenRecordset("Select * from Kopien where T_ID =" & get_aktTNr & " AND Kopie_an= ""HTML-Seiten"";")
-        If re.RecordCount > 0 Then
-            HTML_Seiten_Click
-        End If
+        HTML_Seiten_Click
         
         
         [Form_A-Programmübersicht].Report_RT_ID = Me.Runde_suchen
@@ -383,19 +380,23 @@ Private Sub umgekehrte_Reihenfolge()
             rs.MovePrevious
             fil = fil & " OR Paare_Rundenqualifikation.RT_ID=" & rs!RT_ID
         End If
+        rs.FindFirst "Rundentab.Runde = 'MK_5_TNZ'"
+            If Not rs.NoMatch Then
+                fil = rs!RT_ID
+            End If
     Else
         MsgBox "Es gibt keine Tanzunde vor    " & Me!Feld138
         Exit Sub
     End If
     If Me!Feld52 = 2 Then
-        ' Startreihenfolge
+        ' umgekehrte Startreihenfolge
         Set rstpaare = dbs.OpenRecordset("SELECT Paare_Rundenqualifikation.TP_ID, Count(Paare_Rundenqualifikation.RT_ID) AS AnzahlvonRT_ID, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Paare_Rundenqualifikation WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Paare_Rundenqualifikation.TP_ID ORDER BY Count(Paare_Rundenqualifikation.RT_ID) DESC, Last(Paare_Rundenqualifikation.Rundennummer) DESC;")
     ElseIf Me!Feld52 = 3 Then
         ' umgekehrte Platzierung
         Set rstpaare = dbs.OpenRecordset("SELECT Majoritaet.TP_ID, Count(Majoritaet.RT_ID) AS AnzahlvonRT_ID, Min(Majoritaet.Platz) AS Platzierung, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Majoritaet INNER JOIN Paare_Rundenqualifikation ON (Majoritaet.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (Majoritaet.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Majoritaet.TP_ID ORDER BY Count(Majoritaet.RT_ID) DESC, Min(Majoritaet.Platz) DESC;")
     ElseIf Me!Feld52 = 4 Then
-        ' gleiche Platzierung
-        Set rstpaare = dbs.OpenRecordset("SELECT Majoritaet.TP_ID, Count(Majoritaet.RT_ID) AS AnzahlvonRT_ID, Min(Majoritaet.Platz) AS Platzierung, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Majoritaet INNER JOIN Paare_Rundenqualifikation ON (Majoritaet.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (Majoritaet.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Majoritaet.TP_ID ORDER BY Count(Majoritaet.RT_ID), Min(Majoritaet.Platz) DESC;")
+        ' gleiche Startreihenfolge
+        Set rstpaare = dbs.OpenRecordset("SELECT Majoritaet.TP_ID, Count(Majoritaet.RT_ID) AS AnzahlvonRT_ID, Min(Majoritaet.Platz) AS Platzierung, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Majoritaet INNER JOIN Paare_Rundenqualifikation ON (Majoritaet.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (Majoritaet.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Majoritaet.TP_ID ORDER BY Last(Paare_Rundenqualifikation.Rundennummer);")
     Else
         MsgBox "Fehler bei der Sortierreihenfolge!"
     End If
@@ -714,6 +715,31 @@ Private Sub Runde_übertragen(Tanzrund, Startklasse)
          Loop
     End If
 
+End Sub
+
+Private Sub Form_Close()
+    Call Runde_suchen_Enter
+End Sub
+
+Private Sub Runde_suchen_Enter()
+    Dim db As Database  ' Prüft ob die Rundennummern durchlaufen
+    Dim re As Recordset
+    Dim reihe As Integer
+    If Nz(Me!Runde_suchen) <> "" Then
+        Set db = CurrentDb()
+        reihe = 0
+        Set re = db.OpenRecordset("SELECT DISTINCT Rundennummer, RT_ID FROM Paare_Rundenqualifikation WHERE RT_ID=" & Me!Runde_suchen & " ORDER BY Rundennummer;")
+        If re.RecordCount > 0 Then re.MoveFirst
+        Do Until re.EOF()
+            If re!Rundennummer = reihe + 1 Then
+                reihe = re!Rundennummer
+            Else
+                MsgBox "Die Reihenfolge der Rundennummern stimmt nicht, bitte prüfen."
+                Exit Sub
+            End If
+            re.MoveNext
+        Loop
+    End If
 End Sub
 
 Private Sub Übertrag_EXCEL_Click()

@@ -735,7 +735,7 @@ Public Sub WriteRundeReport_Paare()
 
     Dim rst As Recordset
     Set rst = dbs.OpenRecordset("Select * from Paare where platz<>0 order by turniernr, startkl, platz")
-    rst.MoveFirst
+    If rst.RecordCount > 0 Then rst.MoveFirst
     
     Dim lastRT_ID As Integer
     Dim currentRT_ID As Integer
@@ -806,7 +806,7 @@ Public Sub PaarePlatzierenMitHoffnungsrunde(RT_ID As Integer, vonPlatz As Intege
         '*****AB***** V14.10 für die Tanzrunde die Startklasse ermitteln, ob diese Aufstiegspunkte hat
         Set HatAufstiegspunkte = dbs.OpenRecordset("SELECT Rundentab.RT_ID, Startklasse.hatAufstiegspunkte, Rundentab.Runde FROM Startklasse INNER JOIN Rundentab ON Startklasse.Startklasse = Rundentab.Startklasse WHERE (((Rundentab.RT_ID)=" & RT_ID & "));")
         HatAufstiegspunkte.MoveFirst
-        If InStr(HatAufstiegspunkte!Runde, "r_Fuß") = 0 And InStr(HatAufstiegspunkte!Runde, "r_lang") = 0 Then
+        If InStr(HatAufstiegspunkte!Runde, "r_Fuß") = 0 And InStr(HatAufstiegspunkte!Runde, "r_lang") = 0 And InStr(HatAufstiegspunkte!Runde, "End_r_1") = 0 Then
             Do While Not rstmajoritaet1.EOF()
                 rstpaare1.FindFirst ("TP_ID=" & rstmajoritaet1!TP_ID)
                 If rstmajoritaet1!DQ_ID = 0 Then

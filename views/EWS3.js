@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2019';
+﻿    var ver =  'V3.2020';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -47,9 +47,15 @@ function start() {
                             btn.value = data.val / 2;
                             break;
                         default:
-                            btn = document.getElementById(data.fld.substring(1));
-                            btn = btn.children[data.val];
-                            paint_bar(btn);
+                            var such = "wsbs1 wsbs2 wakro whigh";
+                            if (such.indexOf(data.fld.substring(0, data.fld.length - 1)) > -1) {
+                                btn = document.getElementById(data.fld);
+                                btn.value = data.val /2;
+                            } else {
+                                btn = document.getElementById(data.fld.substring(1));
+                                btn = btn.children[data.val];
+                                paint_bar(btn);
+                            }
                     }
                 }
             }
@@ -93,6 +99,9 @@ function start() {
                 localStorage.setItem('eintraege', '');
                 fill_station();
             }
+        }
+        if (data.msg === 'WRlaufzeit' && parseInt(data.WR) === WR_ID) {
+            socket.emit('chat', { msg: 'WR_retour', text: WR_ID });
         }
     });
     if (document.title === 'judgetool') {
@@ -160,9 +169,13 @@ function wr_delmistake(e) {
         pu = document.getElementById("wfl" + s);
         pu.value = parseInt(pu.value) - parseInt(fl);
         tar.parentNode.removeChild(tar);
-        if (tar.innerText === "A20") {
-            senden("WR-Info" + s.substring(0, 1), "A20 wurde gelöscht");
-        }
+      /*  if (tar.innerText === "A20") {
+            if (t.childElementCount === 0) {
+                senden("WR-Info" + s.substring(0, 1), "alle A20 wurden gelöscht");
+            } else {
+                senden("WR-Info" + s.substring(0, 1), t.childElementCount + " A20 wurde(n) vergeben");
+            }
+        }*/
     }
 }
 
@@ -241,7 +254,7 @@ function poll_mistakes() {
         }
     }
     function check_inhalt(mis) {
-        var mistakes = ['-', 'T2' ,'T10', 'T20', 'U2', 'U10', 'U20', 'S20', 'V5','P0','A20'];
+        var mistakes = ['-', 'T2' ,'T10', 'T20', 'U2', 'U10', 'U20', 'S20', 'V5','P0','A20', 'Z20'];
         var fld = document.getElementById('w' + mis.name.substr(1,8));
         fld.value = 0;
         mis.value = mis.value.replace(/x/gi, "-");
@@ -286,11 +299,13 @@ function senden_WRInfo() {
 
 function senden_mk() {
     var eintraege = localStorage.getItem('eintraege').split(", ");
+    format_zeit();
+    var sende_zeit = document.getElementsByName("wtim")[0].value;
     for (var i = 0; i < eintraege.length - 1; i++) {
         var werte = localStorage.getItem('w_' + eintraege[i]);
         if (werte !== null) {
             var couple = JSON.parse(localStorage.getItem(eintraege[i]));
-            var cgivar = 'MK_check=1&TP_ID1=' + couple.value.TP_ID + '&rh1=1&rt_ID=' + couple.value.RT_ID + '&' + werte + '&WR_ID=' + WR_ID;
+            var cgivar = 'MK_check=1&TP_ID1=' + couple.value.TP_ID + '&rh1=1&rt_ID=' + couple.value.RT_ID + '&' + werte + '&WR_ID=' + WR_ID + '&wtim=' + sende_zeit;
 
             senden('auswerten', cgivar);
         }
@@ -307,9 +322,9 @@ function wr_addmistake(e) {
     var fl = tar.innerText.substr(1,2);
 
     var mist = document.getElementById("mistakes-list" + s);
-    if ( mist.childElementCount < 4 ) {
+    if ( mist.childElementCount < 5 ) {
         if (tar.className === "btn-attention" ) {
-            if (mist.innerText.indexOf("P0") === -1 ) {
+            if (mist.innerText.indexOf(tar.innerText) === -1 ) {
                 mist.innerHTML += '<div class="btn-danger">' + tar.innerText + '</div>';
                 pu = document.getElementById("tfl" + s);
                 pu.value += " " + tar.innerText;
@@ -322,9 +337,9 @@ function wr_addmistake(e) {
             pu.value += " " + tar.innerText;
             pu = document.getElementById("wfl" + s);
             pu.value = parseInt(pu.value) + parseInt(fl);
-            if (tar.innerText === "A20") {
-                senden("WR-Info" + s.substring(0,1), "<b>A20 wurde vergeben</b>")
-            }
+//            if (tar.innerText === "A20") {
+//                senden("WR-Info" + s.substring(0, 1), mist.childElementCount + " <b>A20 wurde(n) vergeben</b>")
+//            }
         }
     }
 }
@@ -603,24 +618,31 @@ function verwarnung(e) {
     var b = tar.className;
     switch (b) {
         case "verwbutton leer":
-/*            tar.className = "verwbutton gray";
-            tar.children[0].value = "0";
-            break;
-        case "verwbutton gray":
-*/
             tar.className = "verwbutton yell";
             tar.children[0].value = "0";
+            break;
+        case "bs_verw leer":
+            tar.className = "bs_verw yell";
+            tar.children[0].value = "3";
             break;
         case "verwbutton yell":
             tar.className = "verwbutton red";
             tar.children[0].value = "30";
             break;
+        case "bs_verw yell":
+            tar.className = "bs_verw red";
+            tar.children[0].value = "5";
+            break;
         case "verwbutton red":
             tar.className = "verwbutton black";
             tar.children[0].value = "100";
             break;
+        case "bs_verw red":
+            tar.className = "bs_verw leer";
+            tar.children[0].value = "0";
+            break;
         default:
-            tar.className = "verwbutton leer";
+            tar.classList[1] = "leer";
             tar.children[0].value = "";
     }
 }

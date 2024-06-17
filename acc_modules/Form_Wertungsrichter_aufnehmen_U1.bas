@@ -153,6 +153,14 @@ Private Sub CTRL20_KeyDown(KeyCode As Integer, Shift As Integer)
     taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
 End Sub
 
+Private Sub CTRL21_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
+Private Sub CTRL22_KeyDown(KeyCode As Integer, Shift As Integer)
+    taste_up_down KeyCode, Shift, Me.ActiveControl.Name, Me.SelTop
+End Sub
+
 Function taste_up_down(KeyCode, Shift, ctl, top)
 On Error GoTo Fehlerout
     Dim sqlcmd As String
@@ -212,4 +220,3 @@ Function update_insert(WR_ID, st_kl, anz, func)
     End If
     dbs.Execute sqlcmd
 End Function
-

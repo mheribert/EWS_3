@@ -9,6 +9,15 @@ Private Sub Auswahl_AfterUpdate()
 End Sub
 
 Private Sub Befehl0_Click()
+    Dim re As Recordset
+    Set dbs = CurrentDb()
+    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MA' GROUP BY Startklasse HAVING Count(WR_function)>1;")
+    If Not re.EOF Then _
+        MsgBox "Achtung!" & vbCrLf & "zu viele MA-Wertungsrichter " & re!Startklasse
+    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MB' GROUP BY Startklasse HAVING Count(WR_function)>3;")
+    If Not re.EOF Then _
+        MsgBox "Achtung!" & vbCrLf & "zu viele MB-Wertungsrichter bei " & re!Startklasse
+
     DoCmd.Close
 End Sub
 
@@ -21,8 +30,6 @@ End Sub
 Public Sub btnAddOffiziellen_Click()
     Dim rstoff, rsCheck As Recordset
     Dim Count, i As Integer
-    
-    ' Bezug auf aktuelle Datenbank zurückgeben.
     Set dbs = CurrentDb
     
     ' Prüfen, ob der WR schon in der DB vorhanden ist (nur, wenn mit Lizenznr. eingegeben
@@ -43,6 +50,12 @@ Public Sub btnAddOffiziellen_Click()
         If Nz(rsCheck!maxLiz) >= i Then i = rsCheck!maxLiz + 1
         Me!Lizenznr = i
         Me!Club = 0
+    End If
+    
+    ' Prüfen ob WR-Anzahl max erreicht.
+    If DCount("WR_Kuerzel", "Wert_Richter") > get_properties("max_WR") - 1 Then
+        MsgBox "Die maximale Anzahl der Wertungsrichter ist erreicht!"
+        Exit Sub
     End If
     
     If Not IsNull(VName) And Not IsNull(NName) Then
@@ -103,31 +116,48 @@ Public Sub Form_Close()
     Dim db As Database
     Dim re As Recordset
     Dim sqlstr As String
+    Dim stkl As String
     Set db = CurrentDb
     sqlstr = "DELETE * FROM Startklasse_Wertungsrichter WHERE WR_ID NOT IN (SELECT WR_ID FROM Wert_Richter);"
     db.Execute sqlstr
     sqlstr = "DELETE * FROM Startklasse_Wertungsrichter WHERE Startklasse NOT IN (SELECT Startklasse FROM Startklasse_Turnier);"
     db.Execute sqlstr
-    Set re = db.OpenRecordset("SELECT Count(Wert_Richter.WR_ID) AS AnzWR, Startklasse FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (WR_Azubi=False AND WR_Function <> 'Ob') GROUP BY Startklasse;")
+    Set re = db.OpenRecordset("SELECT Count(Wert_Richter.WR_ID) AS AnzWR, Startklasse FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE (WR_Azubi=False AND WR_Function <> 'Ob' AND WR_Function<>'MA' AND WR_Function<>'MB') GROUP BY Startklasse;")
     If re.RecordCount > 0 Then re.MoveFirst
     Do Until re.EOF
         If re!anzWR > 8 Then
-            MsgBox "Die Anzahl der aktiven Wertungsrichter bei " & re!Startklasse & " überschreitet die maximale Anzahl des TLP."
+            stkl = stkl & re!Startklasse & vbCrLf
         End If
         re.MoveNext
     Loop
+    If Len(stkl) > 0 Then
+        MsgBox "Die Anzahl der aktiven Wertungsrichter bei " & vbCrLf & stkl & "überschreitet die maximale Anzahl des TLP."
+    End If
+    ' Sperre Observer Probewertungsrichter
+    Set re = db.OpenRecordset("SELECT Startklasse_Wertungsrichter.WR_ID FROM Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID WHERE WR_function='Ob' AND WR_Azubi=True;")
+    If re.RecordCount > 0 Then
+        re.MoveFirst
+        Do Until re.EOF
+            sqlstr = "DELETE * FROM Startklasse_Wertungsrichter WHERE WR_ID = " & re!WR_ID
+            db.Execute sqlstr
+            re.MoveNext
+        Loop
+        MsgBox "Ein Probe/Schattenwertungsrichter darf kein Observer sein!" & vbCrLf & "Diese Einteilung wurde gelöscht!"
+    End If
 End Sub
 
 Private Sub Form_Open(Cancel As Integer)
     Dim re As Recordset
     Dim lo As Integer
+    Dim maxWR As Integer
 
     Set dbs = CurrentDb
-    Set re = dbs.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_ID, Wert_Richter.WR_func, WR_Azubi, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1 FROM Wert_Richter WHERE (Wert_Richter.Turniernr=" & [Forms]![A-Programmübersicht]![Akt_Turnier] & ") ORDER BY Wert_Richter.WR_Kuerzel;")
+    Set re = dbs.OpenRecordset("SELECT Wert_Richter.WR_Kuerzel, Wert_Richter.WR_ID, Wert_Richter.WR_func, WR_Azubi, [WR_Nachname] & "" "" & [WR_Vorname] AS Ausdr1 FROM Wert_Richter WHERE (Wert_Richter.Turniernr=" & get_aktTNr & ") ORDER BY Wert_Richter.WR_Kuerzel;")
 
     If Not re.EOF Then re.MoveFirst
     lo = 1
-    Do Until (re.EOF Or lo = 21)
+    maxWR = get_properties("max_WR")
+    Do Until (re.EOF Or (lo = maxWR + 1))
         If re!WR_AzuBi = True Then
             Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).BackStyle = 1
         Else
@@ -181,7 +211,7 @@ Private Sub RegisterStr65_Change()
         If Me!UForm_wr_liste.Form.RecordsetClone.RecordCount > 0 Then
             If Me!RegisterStr65.Value = 1 Then
                 Me!UForm_wr_liste.Form.CTRL01.SetFocus
-                For lo = 2 To 20
+                For lo = 2 To get_properties("max_WR")
                     Me!UForm_wr_liste.Form.Controls("Text" & Format(lo, "0#")).Visible = False
                     Me!UForm_wr_liste.Form.Controls("CTRL" & Format(lo, "0#")).Visible = False
                     Me!UForm_wr_liste.Form.Controls("Name" & Format(lo, "0#")).Caption = ""

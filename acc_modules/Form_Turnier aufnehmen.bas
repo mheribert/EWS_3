@@ -81,6 +81,8 @@ Private Sub Form_Open(Cancel As Integer)
             Me!MehrkampfStationen.Visible = False
         Case "BY"
             Me!MehrkampfStationen.Visible = False
+        Case "HE"
+            Me!MehrkampfStationen.Visible = False
             
         Case Else
     End Select
@@ -170,5 +172,13 @@ End Sub
 
 Private Sub Tanzfläche_Exit(Cancel As Integer)
     Me!Tanzfläche.Format = "@;""z.B. 6m x 6 m""[Blue]"
+End Sub
+
+Private Sub Belag_Enter()
+    Me!Belag.Format = ""
+End Sub
+
+Private Sub Belag_Exit(Cancel As Integer)
+    Me!Belag.Format = "@;""z.B. Parkett""[Blue]"
 End Sub
 

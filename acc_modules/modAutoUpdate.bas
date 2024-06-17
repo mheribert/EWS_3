@@ -63,7 +63,7 @@ Public Function updateTLP(dl_data, rmldg)
                     off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V20/")
                     If off <> 0 Then
                         Version = Replace(Mid(Version, off + 53, Len(aktVersion)), "-", ".")
-                        If Version - aktVersion > 0 Then
+                        If Val(Version) - Val(aktVersion) > 0 Then
                             If Len(fMsg) > 1 Then fMsg = vbCrLf + fMsg
                             fMsg = "Es gibt eine neue Version (" & Version & ") des Turnierprogramms." & fMsg
                         End If
@@ -108,7 +108,7 @@ Function get_url_to_string(url)
 
     Set winHttpReq = CreateObject("WinHttp.WinHttpRequest.5.1")
     winHttpReq.Open "GET", url, False
-    winHttpReq.send
+    winHttpReq.Send
     get_url_to_string = winHttpReq.responseText
 exit_sub:
 End Function
@@ -121,7 +121,7 @@ Function post_url_string()
     winHttpReq.Open "POST", url, False
     winHttpReq.setRequestHeader "User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)"
     winHttpReq.setRequestHeader "Content-type", "application/x-www-form-urlencoded"
-    winHttpReq.send ("wr_id=4&passwort=1234")
+    winHttpReq.Send ("wr_id=4&passwort=1234")
 
 End Function
 

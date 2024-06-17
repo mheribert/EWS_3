@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2019';
+﻿var ver = 'V3.2020';
 const rei = false;
 
 exports.wr_login = function (wertungsrichter, title) {
@@ -7,7 +7,8 @@ exports.wr_login = function (wertungsrichter, title) {
 
     HTML_Seite += '<link rel="stylesheet" href="EWS3.css">' + '\r\n';
     HTML_Seite += '<script> window.onload = start;' + '\r\n';
-    HTML_Seite += 'function start() {t = document.getElementsByClassName("wr_l"); for (var i = 0; i < t.length; i++) { t[i].setAttribute("onclick", "wr_onclick(event)"); } }' + '\r\n';
+    HTML_Seite += 'function start() {t = document.getElementsByClassName("wr_l"); for (var i = 0; i < t.length; i++) { t[i].setAttribute("onclick", "wr_onclick(event)"); }';
+    HTML_Seite += 't = document.getElementsByClassName("wr_prl"); for (var i = 0; i < t.length; i++) { t[i].setAttribute("onclick", "wr_onclick(event)"); } }' + '\r\n';
     HTML_Seite += 'function wr_onclick(e) { e = e || window.event; var tar = e.target || e.srcElement; var eingabe = window.prompt(tar.innerHTML + " bitte geben Sie das Passwort ein", "");';
     HTML_Seite += 'if (eingabe != null) { document.getElementById("wr_id").value = tar.attributes.max.value; document.getElementById("passwort").value = eingabe; document.forms["Login"].submit(); } }';
     HTML_Seite += '</script></head>';
@@ -15,7 +16,11 @@ exports.wr_login = function (wertungsrichter, title) {
     HTML_Seite += '<body><form name="Login" action=/login method=post><center><table border="1" rules="rows">' + '\r\n';
     HTML_Seite += '<tr><td class="ind_o" colspan="2">' + title + '<input type="hidden" name="wr_id" id="wr_id"><input type="hidden" name="passwort" id="passwort"></td></tr>' + '\r\n';
     for (var i in wertungsrichter) {
-        HTML_Seite += '<tr><td class="wr_m">' + wertungsrichter[i].WR_Kuerzel + '</td><td class="wr_l" max="' + wertungsrichter[i].WR_ID + '">' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td></tr>' + '\r\n';
+        if (wertungsrichter[i].WR_Azubi === true) {
+            HTML_Seite += '<tr><td class="wr_prm">' + wertungsrichter[i].WR_Kuerzel + '</td><td class="wr_prl" max="' + wertungsrichter[i].WR_ID + '">' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td></tr>' + '\r\n';
+        } else {
+            HTML_Seite += '<tr><td class="wr_m">' + wertungsrichter[i].WR_Kuerzel + '</td><td class="wr_l" max="' + wertungsrichter[i].WR_ID + '">' + wertungsrichter[i].WR_Vorname + ' ' + wertungsrichter[i].WR_Nachname + '</td></tr>' + '\r\n';
+        }
     }
     HTML_Seite += '</table></center></form></body></html>';
     return HTML_Seite;
@@ -189,6 +194,30 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
 };
 
+exports.BS_HE_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
+    var st_kl = runden_info[0].Startklasse;
+    var trunde = runden_info[0].RundeArt;
+    var sei;
+
+    HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, tausch) + '\r\n';
+    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
+    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
+        sei = s;
+        if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
+        HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
+        HTML_Seite += make_bs_inp('th' + sei, 5, 'Technik Herr', st_kl) + '\r\n';
+        HTML_Seite += make_bs_inp('td' + sei, 5, 'Technik Dame', st_kl) + '\r\n';
+        HTML_Seite += make_bs_inp('ta' + sei, 5, 'Tanzfiguren', st_kl) + '\r\n';
+        HTML_Seite += make_bs_inp('ak' + sei, 5, 'Choreographie', st_kl) + '\r\n';
+        HTML_Seite += '<tr><td class="bs_schmal"></td></tr>';
+        HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
+        HTML_Seite += make_bs_feh(sei, 1) + '</table></td> ' + '\r\n';
+    }
+    HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
+
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
+};
+
 exports.BS_SL_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].RundeArt;
@@ -213,6 +242,23 @@ exports.BS_SL_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io)
     HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
 
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
+};
+
+exports.BS_BY_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
+    var HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, false) + '\r\n';
+    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
+
+    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
+        HTML_Seite += '<td align="center" id="couple' + s + '" width="450px"><table border="0" cellpadding="1" cellspacing="5">';
+        HTML_Seite += '<tr id="seite' + s + '">' + '\r\n';
+        HTML_Seite += '<td height="140px"></td></tr>';
+        HTML_Seite += '<tr><td class="bs_verw leer" onclick="verwarnung(event)" value="0">Verwarnung<input name="wverw' + s + '" type="hidden"></td></td></tr>' + '\r\n';
+        HTML_Seite += '<td height="140px"></td></tr>';
+        HTML_Seite += '</table></td>' + '\r\n';
+    }
+    HTML_Seite += '</tr>' + make_absenden(true, true, false) + '</table></center></form>';
+
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'OB_' });
 };
 
 exports.BW_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
@@ -373,7 +419,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                 }
             } // wr-teil
             for (wr in wertungsrichter) {
-                if (wertungsrichter[wr].WR_Azubi === false) {
+//                if (wertungsrichter[wr].WR_Azubi === false) {
                     if (wertungsrichter[wr].WR_func === "X") {
                         tp_id = runden_info[rd_ind + seite - 1].TP_ID;
                         if (typeof wertungen[wr] !== "undefined") {
@@ -394,10 +440,14 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                                         }
                                     }
                                 } else {
-                                    if (wertungen[wr][tp_id].in === true) {
-                                        HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
-                                    } else {
-                                        HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                    if (wertungsrichter[wr].WR_Azubi === true) {    //  WR_Azubi gelb
+                                        HTML_Seite += '<tr bgcolor="#ff0"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                    } else { 
+                                        if (wertungen[wr][tp_id].in === true) {
+                                            HTML_Seite += '<tr bgcolor="#fff"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                        } else {
+                                            HTML_Seite += '<tr bgcolor="#dbd"><td height="35px">' + wertungsrichter[wr].WR_Nachname + '</td>';
+                                         }
                                     }
                                     if (new_guidelines) {
                                         var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
@@ -452,7 +502,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                             }
                         }
                     }
-                }
+//                }
             }
             HTML_Seite += '</tbody></table></td></tr><tr><td>&nbsp;<input name="Obs_check' + seite + '" value="Ok" type="hidden"></td></tr>';
             HTML_Arr[seite] = HTML_Seite;
@@ -588,7 +638,7 @@ exports.RR_Observer = function (rd_ind, runden_info, seite, wr_name, wr_id, akro
             }
             HTML_Seite += '<tr><td class="akro" width="400px">Fu&szlig;technik</td></tr>';
             HTML_Seite += make_fehler(s, true, false);
-//            HTML_Seite += make_A20(s + 'a20') + '\r\n';
+            HTML_Seite += make_A20(s) + '\r\n';
         }
         HTML_Seite += '</table></td>' + '\r\n';
     }
@@ -747,10 +797,17 @@ exports.RR_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         } else {
             HTML_Seite += '<tr><td width="450" height="120"></td></tr>';
         }
-        // A20 Anzeige ----------------------------------------------
+        // A20 Z20 Anzeige ----------------------------------------------
         HTML_Seite += '<tr>';
         if (cgi_val['tfl' + s + 'a20'] !== "" && typeof cgi_val['tfl' + s + 'a20'] !== "undefined") {
-            HTML_Seite += '<td colspan="' + wr.length + '">A20</td><td><table><tr id="fl' + s + 'a20"><td class="obsbuttons">A20</td></tr></table></td>';
+            HTML_Seite += '<td colspan="' + wr.length + '">A20 Z20</td><td><table><tr id="fl' + s + 'a20">';
+            if (cgi_val['tfl' + s + 'a20'].indexOf("A20") > -1) {
+                HTML_Seite += '<td class="obsbuttons">A20</td >';
+            }
+            if (cgi_val['tfl' + s + 'a20'].indexOf("Z20") > -1) {
+                HTML_Seite += '<td class="obsbuttons">Z20</td >';
+            }
+            HTML_Seite += '</tr ></table ></td >';
             // A20 back ----------------------------------------------
             HTML_Seite += '<td><table><tr id="fl' + s + 'a20"><td class="obsbuttons">&nbsp;&nbsp;-&nbsp;&nbsp;</td>';
             HTML_Seite += '<td><input id="tfl' + s + 'a20" name="tfl' + s + 'a20" class="mistakes_inputs" autocomplete="off" type="text" value=""><input value="0" type="hidden" name="wfl' + s + 'a20" id="wfl' + s + 'a20"></td>';
@@ -1076,11 +1133,14 @@ function make_fehler(seite, takt, ak) {
 }
 
 function make_A20(seite) {
-    var a20fl = '<tr><td colspan="21"><div class="mistakes" id="mistakes' + seite + '">';
-    a20fl += '<div><div class="btn-warning">A20</div></div>';
-    a20fl += '<div><div class="mistakes-list" id="mistakes-list' + seite + '"></div></div>' + '\r\n';
-    a20fl += '<input name="tfl' + seite + '" id="tfl' + seite + '" type="hidden" value="" autocomplete="off">';
-    a20fl += '<input name="wfl' + seite + '" id="wfl' + seite + '" type="hidden" value="0" autocomplete="off"></div></td></tr>';
+    var a20fl = '<tr><td colspan="21" style="display: inline-flex;">';
+    a20fl += '<div class="mistakes" id = "mistakes' + seite + 'a20";"> ';
+    a20fl += '<div><div class="btn-attention">A20</div></div>';
+    a20fl += '<div><div class="btn-attention">Z20</div></div>';
+    a20fl += '<div><div class="mistakes-list" id="mistakes-list' + seite + 'a20"></div></div>' + '\r\n';
+    a20fl += '<input name="tfl' + seite + 'a20" id="tfl' + seite + 'a20" type="hidden" value="" autocomplete="off">';
+    a20fl += '<input name="wfl' + seite + 'a20" id="wfl' + seite + 'a20" type="hidden" value="0" autocomplete="off"></div>';
+    a20fl += '</td></tr>';
 
     return a20fl;
 }

@@ -1,1 +1,1 @@
-Taenze
+SELECT Taenze.Tanz_ID, Taenze.Tanz FROM Taenze ORDER BY Taenze.Tanz;

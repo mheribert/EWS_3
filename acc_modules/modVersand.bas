@@ -25,7 +25,7 @@ Sub send_zeitplan(Turniernr)
     Loop
     Set zFile = file_handle(zFileName)
     zFile.writeline (Zeitplan)
-    zFile.Close
+    zFile.close
 
     If OutlookInstalliert Then
         Dim objOutlook, objOLAtt, objOutMsg As Object
@@ -266,7 +266,7 @@ Function export_tabelle(tbl, FileToZip)
     Loop
     Set out = file_handle(FileToZip)
     out.writeline (line)
-    out.Close
+    out.close
 End Function
 
 Sub alle_Paare_anschreiben()
@@ -298,29 +298,42 @@ Sub alle_Paare_anschreiben()
 End Sub
 
 Public Sub versand_ausschreibung(turnier)
-    Dim fName As String
+    Dim fName, new_fName As String
+    Dim as_pfad As String
     OpenFile.lpstrFilter = "Turnierdatenbanken (*.pdf)" & Chr(0) & "*.pdf" & Chr(0)
     OpenFile.lpstrInitialDir = getBaseDir
     If get_Filename(0) <> "" Then
         fName = OpenFile.lpstrFile
-        FileCopy fName, getBaseDir & turnier & "_" & "Ausschreibung.pdf"
+        new_fName = getBaseDir & "Turnierleiterpaket\" & turnier & "_" & "Ausschreibung.pdf"
+        as_pfad = left(OpenFile.lpstrFile, Len(OpenFile.lpstrFile) - Len(OpenFile.lpstrFileTitle))
+        If as_pfad = getBaseDir & "Turnierleiterpaket\" Then _
+            gen_Ordner "Turnierleiterpaket"
+        If as_pfad = getBaseDir & "Turnierleiterpaket\" Then
+            If OpenFile.lpstrFileTitle <> turnier & "_" & "Ausschreibung.pdf" Then
+                FileCopy fName, new_fName
+            End If
+        Else
+            FileCopy fName, new_fName
+        End If
+        If OutlookInstalliert Then
+            Dim objOutlook, objOLAtt, objOutMsg As Object
+            Dim oApp As Object
+
+            Set objOutlook = CreateObject("Outlook.Application")
+            Set objOutMsg = objOutlook.CreateItem(0)
+            With objOutMsg
+                .To = "turnierueberwachung@drbv.de"
+                .Subject = turnier & "_Ausschreibung"
+                .body = turnier & "_Ausschreibung"
+            End With
+            Set objOLAtt = objOutMsg.Attachments.Add(new_fName)
+            objOutMsg.Display
+            objOutMsg.Send
+
+            Set objOutMsg = Nothing
+            Set objOutlook = Nothing
+        End If
     End If
-    If OutlookInstalliert Then
-        Dim objOutlook, objOLAtt, objOutMsg As Object
-        Dim oApp As Object
-    
-        Set objOutlook = CreateObject("Outlook.Application")
-        Set objOutMsg = objOutlook.CreateItem(0)
-        With objOutMsg
-            .To = "turnierueberwachung@drbv.de"
-            .Subject = turnier & "Ausschreibung"
-            .body = turnier & "Ausschreibung"
-        End With
-'        Set objOLAtt = objOutMsg.Attachments.Add(zFileName)
-        objOutMsg.Display
-        'objOutMsg.Send
-    
-        Set objOutMsg = Nothing
-        Set objOutlook = Nothing
-    End If
- End Sub
+
+End Sub
+

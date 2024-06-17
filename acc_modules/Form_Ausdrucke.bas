@@ -406,14 +406,19 @@ Private Sub Befehl51_Click()
 End Sub
 
 Private Sub Startklasse_einstellen_AfterUpdate()
-    Dim source As String
+    Dim Source As String
     
-    source = "SELECT Tanz_Runden.R_NAME_ABLAUF, Runden4Drucken.Startklasse_text, Runden4Drucken.RT_ID, Runden4Drucken.Runde, Runden4Drucken.Startklasse, Runden4Drucken.Turniernum, Runden4Drucken.Turnier_Name, Runden4Drucken.InRundeneinteilung, Startklasse.Reihenfolge, Tanz_Runden.Rundenreihenfolge"
-    source = source & " FROM Tanz_Runden INNER JOIN (Startklasse INNER JOIN Runden4Drucken ON Startklasse.Startklasse = Runden4Drucken.Startklasse) ON Tanz_Runden.Runde = Runden4Drucken.Runde"
-    source = source & " WHERE (((Runden4Drucken.InRundeneinteilung) > 0) and ((Runden.Startklasse)=[Startklasse_einstellen]))"
-    source = source & " ORDER BY Startklasse.Reihenfolge, Tanz_Runden.Rundenreihenfolge;"
+'    Source = "SELECT Tanz_Runden.R_NAME_ABLAUF, Runden4Drucken.Startklasse_text, Runden4Drucken.RT_ID, Runden4Drucken.Runde, Runden4Drucken.Startklasse, Runden4Drucken.Turniernum, Runden4Drucken.Turnier_Name, Runden4Drucken.InRundeneinteilung, Rundentab.Rundenreihenfolge, Tanz_Runden.Rundenreihenfolge"
+'    Source = Source & " FROM (Tanz_Runden INNER JOIN Runden4Drucken ON Tanz_Runden.Runde = Runden4Drucken.Runde) INNER JOIN Rundentab ON Runden4Drucken.RT_ID = Rundentab.RT_ID"
+'    Source = Source & " WHERE (Runden4Drucken.InRundeneinteilung > 0 AND Rundentab.Rundenreihenfolge<1000 AND Runden.Startklasse=[Startklasse_einstellen])"
+'    Source = Source & " ORDER BY Rundentab.Rundenreihenfolge, Tanz_Runden.Rundenreihenfolge;"
 
-    Runde_auswaehlen.RowSource = source
+    Source = "SELECT Tanz_Runden_fix.Rundentext, Rundentab.Startklasse, Rundentab.RT_ID, Tanz_Runden_fix.Runde, Rundentab.Startklasse, Rundentab.Rundenreihenfolge"
+    Source = Source & " FROM Rundentab INNER JOIN Tanz_Runden_fix ON Rundentab.Runde = Tanz_Runden_fix.Runde"
+    Source = Source & " WHERE (((Rundentab.Startklasse) = [Startklasse_einstellen]) And ((Rundentab.Rundenreihenfolge) < 1000))"
+    Source = Source & " ORDER BY Rundentab.Rundenreihenfolge;"
+
+    Runde_auswaehlen.RowSource = Source
     Runde_auswaehlen.Requery
     Runde_auswaehlen = Null
     Runde_einstellen = Null
