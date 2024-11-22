@@ -17,8 +17,25 @@ End Sub
 
 Private Sub Beenden_Click()
 On Error GoTo Err_Beenden_Click
-
-
+    Dim i As Integer
+    Dim VR As Integer
+    Dim ZR As Integer
+    Dim ER As Integer
+    
+    For i = 1 To 8
+        If Nz(Me("Akro" & i & "_VR")) <> "" Then
+            VR = VR + 1
+        End If
+        If Nz(Me("Akro" & i & "_ZR")) <> "" Then
+            ZR = ZR + 1
+        End If
+        If Nz(Me("Akro" & i & "_ER")) <> "" Then
+            ER = ER + 1
+        End If
+    Next
+    If (ZR = 0 Or ER = 0) And VR > 0 Then
+        MsgBox "Es gibt keine Akrobatiken in Zwischenrunde und/oder Endrunde!"
+    End If
     DoCmd.Close
 
 Exit_Beenden_Click:
@@ -28,6 +45,22 @@ Err_Beenden_Click:
     MsgBox err.Description
     Resume Exit_Beenden_Click
     
+End Sub
+
+Private Sub btn_Paare_Akrobatiken_1_Click()
+    Dim i As Integer
+    For i = 1 To 8
+        Me("Akro" & i & "_ZR") = Me("Akro" & i & "_VR")
+        Me("Wert" & i & "_ZR") = Me("Wert" & i & "_VR")
+        Me("Akro" & i & "_ER") = Me("Akro" & i & "_VR")
+        Me("Wert" & i & "_ER") = Me("Wert" & i & "_VR")
+    Next
+    DoCmd.Requery
+End Sub
+
+Private Sub btn_Paare_Akrobatiken_2_Click()
+    DoCmd.OpenForm "Tanzpaare_neueAkro"
+
 End Sub
 
 Private Sub Form_Load()
@@ -174,13 +207,24 @@ End Sub
 Private Sub AkrobatikenPaarRowsource()
 ' diese Funktion sucht mit den Parametern das Paar und erstellt ein SQL Skript für die RowSource mit den jeweiligen Akrobatiken und Ersatzakrobatiken
 
-Dim sql As Variant
-Dim Startklasse, Tanzrunde As String
-Dim akronummer, TP_ID As Integer
-
-Startklasse = Forms!Tanzpaare_aufnehmen!Startkl
-TP_ID = Me.TP_ID
-
+    Dim sql As Variant
+    Dim Startklasse, Tanzrunde As String
+    Dim akronummer, TP_ID As Integer
+    
+    Select Case Forms!Tanzpaare_aufnehmen!Startkl
+        Case "BS_BW_EI"
+            Startklasse = "RR_S"
+        Case "BS_BW_FO"
+            Startklasse = "RR_C"
+        Case "BS_BW_HA"
+            Startklasse = "RR_A"
+        Case "BS_F_RR_JF", "BS_F_RR_EF"
+            Startklasse = "F_RR_M"
+        Case Else
+            Startklasse = Forms!Tanzpaare_aufnehmen!Startkl
+    End Select
+    TP_ID = Me.TP_ID
+    
     For akronummer = 1 To 8
         Tanzrunde = "VR"
         
@@ -220,11 +264,23 @@ Public Sub AkrobatikenStartklasseRowsource()
 ' diese Funktion füllt die Akrobatiken mit allen in der Startklasse möglichen Akrobatiken
 
     Dim sql As String
-    Dim st_kl As String
+    Dim Startklasse As String
     Dim i As Integer
         
-    st_kl = Forms!Tanzpaare_aufnehmen!Startkl
-    sql = "SELECT TOP 1 '' AS Ausdr1, ' < keine > ' AS Ausdr2, '' AS Ausdr3 FROM Tanz_Runden UNION SELECT Akrobatik, [nr#] & ' ' & Langtext, " & st_kl & " FROM Akrobatiken WHERE Nz([" & st_kl & "])>='0' ORDER BY Ausdr2;"
+    Select Case Forms!Tanzpaare_aufnehmen!Startkl
+        Case "BS_BW_EI"
+            Startklasse = "RR_S"
+        Case "BS_BW_FO"
+            Startklasse = "RR_C"
+        Case "BS_BW_HA"
+            Startklasse = "RR_A"
+        Case "BS_F_RR_JF", "BS_F_RR_EF"
+            Startklasse = "F_RR_M"
+        Case Else
+            Startklasse = Forms!Tanzpaare_aufnehmen!Startkl
+    End Select
+    
+    sql = "SELECT TOP 1 '' AS Ausdr1, ' < keine > ' AS Ausdr2, '' AS Ausdr3 FROM Tanz_Runden UNION SELECT Akrobatik, [nr#] & ' ' & Langtext, " & Startklasse & " FROM Akrobatiken WHERE Nz([" & Startklasse & "])>='0' ORDER BY Ausdr2;"
     For i = 1 To 8
         Me("Akro" & i & "_VR").RowSource = sql
         Me("Akro" & i & "_ZR").RowSource = sql
@@ -234,29 +290,29 @@ Public Sub AkrobatikenStartklasseRowsource()
 End Sub
 
 Private Sub MusikListenFuellen()
-Dim db As Database
-Dim Paare As DAO.Recordset
-Dim RowSourceString As String
-
-Set db = CurrentDb()
-Set Paare = db.OpenRecordset("Select * from paare where TP_ID = " & Me.TP_ID)
-
-If Not Paare.EOF Then
-    RowSourceString = ";"
+    Dim db As Database
+    Dim Paare As DAO.Recordset
+    Dim RowSourceString As String
     
-    If (Not IsNull(Paare!Musik_FT)) And Not Paare!Musik_FT = "" Then RowSourceString = RowSourceString & Paare!Musik_FT & ";"
-    If (Not IsNull(Paare!Musik_Akro)) And Not Paare!Musik_Akro = "" Then RowSourceString = RowSourceString & Paare!Musik_Akro & ";"
-    If (Not IsNull(Paare!Musik_Stell)) And Not Paare!Musik_Stell = "" Then RowSourceString = RowSourceString & Paare!Musik_Stell & ";"
-    If (Not IsNull(Paare!Musik_Form)) And Not Paare!Musik_Form = "" Then RowSourceString = RowSourceString & Paare!Musik_Form & ";"
-    If (Not IsNull(Paare!Musik_Sieg)) And Not Paare!Musik_Sieg = "" Then RowSourceString = RowSourceString & Paare!Musik_Sieg & ";"
-
+    Set db = CurrentDb()
+    Set Paare = db.OpenRecordset("Select * from paare where TP_ID = " & Me.TP_ID)
     
-    Me.MusikAkrobatik.RowSource = RowSourceString
-    Me.MusikFusstechnik.RowSource = RowSourceString
-    Me.MusikStellprobe.RowSource = RowSourceString
-    Me.MusikFormation.RowSource = RowSourceString
-    Me.MusikSiegertanz.RowSource = RowSourceString
-End If
+    If Not Paare.EOF Then
+        RowSourceString = ";"
+        
+        If (Not IsNull(Paare!Musik_FT)) And Not Paare!Musik_FT = "" Then RowSourceString = RowSourceString & Paare!Musik_FT & ";"
+        If (Not IsNull(Paare!Musik_Akro)) And Not Paare!Musik_Akro = "" Then RowSourceString = RowSourceString & Paare!Musik_Akro & ";"
+        If (Not IsNull(Paare!Musik_Stell)) And Not Paare!Musik_Stell = "" Then RowSourceString = RowSourceString & Paare!Musik_Stell & ";"
+        If (Not IsNull(Paare!Musik_Form)) And Not Paare!Musik_Form = "" Then RowSourceString = RowSourceString & Paare!Musik_Form & ";"
+        If (Not IsNull(Paare!Musik_Sieg)) And Not Paare!Musik_Sieg = "" Then RowSourceString = RowSourceString & Paare!Musik_Sieg & ";"
+    
+        
+        Me.MusikAkrobatik.RowSource = RowSourceString
+        Me.MusikFusstechnik.RowSource = RowSourceString
+        Me.MusikStellprobe.RowSource = RowSourceString
+        Me.MusikFormation.RowSource = RowSourceString
+        Me.MusikSiegertanz.RowSource = RowSourceString
+    End If
 
 End Sub
 
@@ -270,6 +326,10 @@ Sub AnzahlTaenzereinstellen()
         werte = werte & ";" & i
     Next
     Me!AnzahlTaenzerInnen.RowSource = werte
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    setzte_buttons Me.Name, Me.Name, Forms![A-Programmübersicht]!Turnierausw.Column(8)
 End Sub
 
 Private Sub Form_Resize()

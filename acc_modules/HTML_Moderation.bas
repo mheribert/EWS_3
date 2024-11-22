@@ -2,7 +2,6 @@ Option Compare Database
 Option Explicit
 
 Public Sub make_a_startlist(RT_ID As Integer)
-    'Const RT_ID = 11
     
     If get_properties("EWS") <> "EWS1" Then Exit Sub
     
@@ -34,23 +33,23 @@ Public Sub make_a_startlist(RT_ID As Integer)
     Do Until re.EOF
          line = line & vbCrLf & "    <tr height=""40"">" & vbCrLf & _
                 Space(8) & "<td width=6% align=""center"">" & re!Startnr & "</td>" & vbCrLf & _
-                Space(8) & "<td width=47%>" & IIf(re!isTeam, re!Name_Team, re!dname & " - " & re!hName) & "</td>" & vbCrLf & _
-                Space(8) & "<td width=47%>" & re!Verein_Name & "</td>" & vbCrLf & _
+                Space(8) & "<td width=47%>" & Umlaute_Umwandeln(IIf(re!isTeam, re!Name_Team, re!dname & " - " & re!hName)) & "</td>" & vbCrLf & _
+                Space(8) & "<td width=47%>" & Umlaute_Umwandeln(re!Verein_Name) & "</td>" & vbCrLf & _
                 "    </tr>"
         re.MoveNext
     Loop
-    out.writeline (line)
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.WriteLine (line)
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.Close
     
     Set re = db.OpenRecordset("SELECT Rundentab.* FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr & ") AND ((Rundentab.RT_ID)=" & RT_ID & "));")
     re.Edit
     re!RT_Stat = 1
     re.Update
     
-    re.close
-    ht.close
-    db.close
+    re.Close
+    ht.Close
+    db.Close
     make_a_schedule         'Zeiplan neu schreiben
     make_a_off              'Offiziellenliste schreiben
     make_a_wrlist           'WR-Einteilung schreiben
@@ -89,8 +88,8 @@ Public Sub make_a_Vorstellungslist()
     Do Until re.EOF
         line = line & vbCrLf & "    <tr height=""40"">" & vbCrLf & _
                 Space(8) & "<td width=6% align=""center"">" & re!Startnr & "</td>" & vbCrLf & _
-                Space(8) & "<td width=47%>" & IIf(re!isTeam, re!Name_Team, re!dname & " - " & re!hName) & "</td>" & vbCrLf & _
-                Space(8) & "<td width=47%>" & re!Startklasse_text & "</td>" & vbCrLf & _
+                Space(8) & "<td width=47%>" & Umlaute_Umwandeln(IIf(re!isTeam, re!Name_Team, re!dname & " - " & re!hName)) & "</td>" & vbCrLf & _
+                Space(8) & "<td width=47%>" & Umlaute_Umwandeln(re!Startklasse_text) & "</td>" & vbCrLf & _
                 "    </tr>"
         re.MoveNext
         If Not re.EOF Then
@@ -102,13 +101,13 @@ Public Sub make_a_Vorstellungslist()
             End If
         End If
     Loop
-    out.writeline (line)
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.WriteLine (line)
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.Close
     
-    re.close
-    ht.close
-    db.close
+    re.Close
+    ht.Close
+    db.Close
 End Sub
 
 Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, runde_id)
@@ -156,7 +155,7 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
                 line = Replace(line, "rt__st", Sta)
                 line = Replace(line, "rt__cou", cou)
                 line = Replace(line, "rt__org", org)
-                out.writeline (line)
+                out.WriteLine (line)
                 line = ht!F2
                 Runden_anz = Runden_anz + 1
                 line = Replace(line, "rt__nr", Runden_anz)
@@ -167,17 +166,17 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
             End If
             Sta = Sta & IIf(Len(Sta) = 0, "", "<br>") & re!Startnr
             If IsNull(re!Name_Team) Then    'Dame u Herr
-                cou = cou & IIf(Len(cou) = 0, "", "<br>") & get_Dame(re) & " - " & get_Herr(re)
+                cou = cou & IIf(Len(cou) = 0, "", "<br>") & Umlaute_Umwandeln(get_Dame(re) & " - " & get_Herr(re))
             Else                            'Team
-                cou = cou & IIf(Len(cou) = 0, "", "<br>") & re!Name_Team
+                cou = cou & IIf(Len(cou) = 0, "", "<br>") & Umlaute_Umwandeln(re!Name_Team)
             End If
             If re!Anwesend_Status = 2 Then
                 cou = cou & "<br><b>noch nicht Anwesend!</b>"
             End If
-            org = org & IIf(Len(org) = 0, "", "<br>") & re!Verein_Name
+            org = org & IIf(Len(org) = 0, "", "<br>") & Umlaute_Umwandeln(re!Verein_Name)
             re.MoveNext
             If re.EOF And fil = False Then
-                pr.Filter = "nochmal = true"
+                pr.filter = "nochmal = true"
                 Set re = pr.OpenRecordset
                 fil = True
                 If Not re.EOF Then
@@ -189,9 +188,9 @@ Public Sub make_a_round(pr As Recordset, st_klasse As String, Runde As String, r
         line = Replace(line, "rt__st", Sta)
         line = Replace(line, "rt__cou", cou)
         line = Replace(line, "rt__org", org)
-        out.writeline (line)
-        out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-        out.close
+        out.WriteLine (line)
+        out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+        out.Close
     End If
 End Sub
 
@@ -225,8 +224,8 @@ Public Sub make_a_siegerehrung(RT_ID As Integer)
     line = Replace(ht!F1, "x_title", "Siegerehrung  " & re![r.Startklasse_text])
     line = Replace(line, "rt__txt", "Siegerehrung  " & re![r.Startklasse_text] & "  Moderator")
     line = get_sieger(re, "MajoritaetKurz", line)
-    out.writeline (line)
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.WriteLine (line)
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
     re.MoveFirst
     
     If left(re![r.Startklasse], 3) <> "RR_" Then
@@ -240,12 +239,12 @@ Public Sub make_a_siegerehrung(RT_ID As Integer)
             line = Replace(line, "rt__loc", tr_nr)
             line = get_sieger(re, "WR" & t, line)
             
-            out.writeline (line)
-            out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+            out.WriteLine (line)
+            out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
             t = t + 1
             wr.MoveNext
         Loop
-        out.close
+        out.Close
     End If
     make_a_schedule
     Start_Seite tr_nr
@@ -280,7 +279,7 @@ Function get_sieger(st, Feld, line)
         line = line & vbCrLf & "    <tr id=""rhrd" & t & """ class=""sie_a"" >" & vbCrLf & _
                Space(8) & "<td width=8%><font size=""5"">" & st![v.Platz] & "</font></td>" & vbCrLf & _
                Space(8) & "<td width=8%>" & st!Startnr & "</td>" & vbCrLf & _
-               Space(8) & "<td width=55% align=""Left"">" & st![p.Name] & "<br>" & st!Verein_Name & _
+               Space(8) & "<td width=55% align=""Left"">" & Umlaute_Umwandeln(st![p.Name]) & "<br>" & Umlaute_Umwandeln(st!Verein_Name) & _
                IIf(st!DQ_ID > 0, "<br><span style=""background-color: #FF1010; color:#FFFFFF"">&nbsp;Disqualifiziert &nbsp;</span>", "") & _
                IIf(st!pa_grund <> "Alles OK", "<br><span style=""background-color: #FF1010; color:#FFFFFF"">&nbsp;Regelversto&szlig; &nbsp;</span>", "") & _
                "</td>" & vbCrLf & Space(8) & "<td width=29%><font size=""6""><a href=""javascript:cha_co('" & t & "','" & st(Feld) & "')"">" & IIf(left(st!Startkl, 3) = "RR_", "<img src=""../ball.red.png"" border=""0""  alt=""done"">", st(Feld)) & "</font></td>" & vbCrLf & _
@@ -315,14 +314,14 @@ Public Sub make_a_schedule()
     line = Replace(ht!F1, "x_title", "Zeitplan")
     line = Replace(line, "wr_k", "&nbsp")
     line = Replace(line, "tr__txt", Forms![A-Programmübersicht]!Turnierbez)
-    out.writeline (line)
+    out.WriteLine (line)
     line = "    <tr height=""50"">" & vbCrLf & _
            "        <td class=""rd_m"" width=10%>&nbsp;</td>" & vbCrLf & _
            "        <td class=""rd_n"" width=50%>Offizielle</td>" & vbCrLf & _
            "        <td class=""rd_n"" width=20%><a href=""" & tr_nr & "_offizielle.html"" Target=""_blank""><img src=""../ball.red.png"" border=""0""  alt=""done""></td>" & vbCrLf & _
            "        <td class=""rd_n"" width=20%><a href=""" & tr_nr & "_WRlist.html"" Target=""_blank""><img src=""../ball.red.png"" border=""0""  alt=""done""></td>" & vbCrLf & _
            "    </tr>"
-    out.writeline (line)
+    out.WriteLine (line)
     Do Until re.EOF
         If (re!HTML = False And Nz(re!RT_Stat) = False) Then
             If InStr(1, re!Ausdr1, "Vorstellung der Tanzpaare") > 0 Then
@@ -350,11 +349,11 @@ Public Sub make_a_schedule()
                    "        <td class=""rd_v"" width=20%>" & IIf(re!HTML, "<a href=" & tr_nr & "_Mod_K" & re!RT_ID & ".html Target=""_blank""><img src=""../ball.red.png"" border=""0"" alt=""done"">", "&nbsp;") & " </td>" & vbCrLf & _
                    "    </tr>"
         End If
-        out.writeline (line)
+        out.WriteLine (line)
         re.MoveNext
     Loop
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.Close
 
 End Sub
 
@@ -385,11 +384,11 @@ Private Sub make_a_off()
     line = line & "    <tr>" & vbCrLf & _
            "        <td colspan=""2"" width=""720"" class=""wr_l"" >Offizielle</td>" & vbCrLf & _
            "    </tr>"
-    out.writeline (line)
+    out.WriteLine (line)
     Do Until re.EOF
         line = Replace(ht!F2, "rt__of", re!TLF_Name)
         line = Replace(line, "rt__wr", re!TLName)
-        out.writeline (line)
+        out.WriteLine (line)
         re.MoveNext
     Loop
 
@@ -402,12 +401,12 @@ Private Sub make_a_off()
     Do Until re.EOF
         line = Replace(ht!F2, "rt__of", IIf(re!WR_AzuBi = True, "Probe oder<br>SchattenWR", "Wertungsrichter"))
         line = Replace(line, "rt__wr", re!wrname)
-        out.writeline (line)
+        out.WriteLine (line)
         re.MoveNext
     Loop
 
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.Close
 
 End Sub
 
@@ -436,7 +435,7 @@ Private Sub make_a_wrlist()
            "        <td colspan=""" & wr.RecordCount + 1 & """ class=""wr_l"" >Wertungsrichtereinteilung</td>" & vbCrLf & _
            "    </tr>"
     
-    out.writeline (line)
+    out.WriteLine (line)
     line = tr & vbCrLf
     line = line & "        <td class=""rd_m"" width=""200"">" & "&nbsp" & "</td>" & vbCrLf
     wr.MoveFirst
@@ -445,7 +444,7 @@ Private Sub make_a_wrlist()
 
         wr.MoveNext
     Loop
-    out.writeline (line & trn)
+    out.WriteLine (line & trn)
     
     re.MoveFirst
     Do Until re.EOF
@@ -471,12 +470,12 @@ Private Sub make_a_wrlist()
                 Loop
     
         line = line & trn
-        out.writeline (line)
+        out.WriteLine (line)
         re.MoveNext
     Loop
     
-    out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-    out.close
+    out.WriteLine ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
+    out.Close
 
 End Sub
 

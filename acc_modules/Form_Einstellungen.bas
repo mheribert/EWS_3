@@ -32,18 +32,6 @@ End Sub
 
 Private Sub Form_Current()
 
-    If Me!Untergeordnet96.Form!PROP_VALUE = "EWS2" Then
-        Me!Einstellungen_Properties.Visible = True
-        Me!Text18.Visible = True
-        Me!Untergeordnet66.Visible = True
-        Me!Text19.Visible = True
-    Else
-        Me!Einstellungen_Properties.Visible = False
-        Me!Text18.Visible = False
-        Me!Untergeordnet66.Visible = False
-        Me!Text19.Visible = False
-    End If
-    
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
@@ -64,19 +52,7 @@ End Sub
 Private Sub Form_Open(Cancel As Integer)
     Dim retl As Integer
     retl = EnumRegistryValues(&H80000002, "SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts")
-    Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
-        Case "SL"
-            Me.Einstellungen_PPT.Visible = True
-            Me.Präsentationen.Visible = True
-        Case "BW"
-            Me.Einstellungen_PPT.Visible = True
-            Me.Präsentationen.Visible = True
-        Case "BY"
-            Me.Einstellungen_PPT.Visible = True
-            Me.Präsentationen.Visible = True
-        Case Else
-    End Select
-    
+    setzte_buttons Me.Name, "einstellungen", Forms![A-Programmübersicht]!Turnierausw.Column(8)
 End Sub
 
 Private Sub Form_Resize()

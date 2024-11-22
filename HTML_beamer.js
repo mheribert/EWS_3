@@ -1,4 +1,4 @@
-var ver = 'V3.2020' ;
+var ver = 'V3.2021' ;
 var beamer_inhalt = new Object();
 var HTML_Kopf = '';
 var HTML_Inhalt = '';
@@ -65,7 +65,7 @@ exports.beamer_runde = function (io, runden_info, runde, rd_ind) {
                 HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind + 1].Dame + '<br>' + runden_info[rd_ind + 1].Herr + '<br><p class="tver">' + runden_info[rd_ind + 1].Verein_Name + '</p></td>';
             }
         } else {                                    // Formationen
-            HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Name_Team + '<br><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
+            HTML_Inhalt += '<td class="tzer">' + runden_info[rd_ind].Name_Team + '<br><small><small>' + (runden_info[rd_ind].Motto || '') + '</small></small><p class="tver">' + runden_info[rd_ind].Verein_Name + '</p></td>';
         }
         HTML_Inhalt += '</tr>';
         //WR-Info
@@ -163,7 +163,11 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     var punkte = 0;
     var linie = false;
     var max_paare = 8;
-    HTML_Inhalt = make_thead('') + '<tbody>';
+    if (typeof ratings[0] === 'undefined') {
+        HTML_Inhalt = make_thead('', true) + '<tbody>';
+    } else {
+        HTML_Inhalt = make_thead('', ratings[0].punkte_anzeige) + '<tbody>';
+    }
     allranking = new Object();
 
     for (p in ratings) {
@@ -194,13 +198,13 @@ exports.beamer_ranking = function (io, runden_info, runde) {
             } else {
                 HTML_Inhalt += '<td class="text_left">' + ratings[p].Name_Team + '</td>';
             }
- //           if (ratings[p].punkte_anzeige === true) {       // keine Punkte anzeigen
+            if (ratings[p].punkte_anzeige === true) {       // true Punkte anzeigen
                 if (ratings[p].ersteRunde !== null) {
                     HTML_Inhalt += '<td style="font-size:1.6vw;">' + ratings[p].ersteRunde.toFixed(2) + ' + ' + ratings[p].Punkte.toFixed(2) + '</td>';
                 }
                 punkte = ratings[p].ersteRunde + ratings[p].Punkte;
                 HTML_Inhalt += '<td>' + (ratings[p].ersteRunde + ratings[p].Punkte).toFixed(2).replace('.', ',') + ins_strafe(ratings[p]) + '</td>';
-//            }
+            }
             HTML_Inhalt += '</tr>'
         }
     }
@@ -212,10 +216,10 @@ exports.beamer_ranking = function (io, runden_info, runde) {
     function ins_strafe(strafe) {
         var back = "";
         if (strafe.a20 === true) {
-            back = "&nbsp;<b>A</b>";
+            back = "<span><big><big>&#9398;</big></big></span>";             //"&nbsp;<b>A</b>";
         }
         if (strafe.z20 === true) {
-            back += "&nbsp;<b>Z</b>";
+            back += "<span><big><big>&#9423;</big></big></span>";          // "&nbsp;<b>Z</b>";
         }
         return back;
     }
@@ -227,7 +231,7 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
         .query('SELECT * FROM View_Rundenablauf WHERE RT_ID =' + rt_id + ' ORDER BY Platz, Startnr;')
         .on('done', function (data) {
             var HTML_Kopf = 'Siegerehrung<br>' + data[0].Tanzrunde_Text;
-            var HTML_Inhalt = make_thead(data[0].Runde) + '<tbody>';
+            var HTML_Inhalt = make_thead(data[0].Runde, data[0].punkte_anzeige) + '<tbody>';
             var cl = '';
             for (var p in data) { 
                 if (Platz &&  parseInt(Platz) > data[p].Platz) { // für getaktetes Anzeigen
@@ -241,9 +245,11 @@ exports.beamer_siegerehrung = function (io, connection, rt_id, Platz) {
                 } else {
                     HTML_Inhalt += '<td>' + data[p].Startnr + '</td><td class="text_left">' + data[p].Name_Team + '</td>';
                 }
-                data[p].jetztRunde = data[p].jetztRunde || 0;
-                punkte = data[p].jetztRunde.toFixed(2);
-                HTML_Inhalt += '<td class="pkte">' + punkte.replace('.', ',') + '</td></tr>';
+                if (data[p].punkte_anzeige === true) {
+                    data[p].jetztRunde = data[p].jetztRunde || 0;
+                    punkte = data[p].jetztRunde.toFixed(2);
+                    HTML_Inhalt += '<td class="pkte">' + punkte.replace('.', ',') + '</td></tr>';
+                }
             }
             HTML_Inhalt += '</tbody>';
 
@@ -259,7 +265,7 @@ exports.beamer_allranking = function (io, runde, runden_info) {
         io.emit('chat', { msg: 'beamer', bereich: 'beamer_inhalt', cont: HTML_Inhalt });
         return;
     }
-    var HTML_Seite = make_thead('') + '<tbody>';
+    var HTML_Seite = make_thead('', runden_info[0].punkte_anzeige) + '<tbody>';
 
     for (p = runde; p < runde + 8; p++) {
         if (p + 1 > allranking.lenght) {
@@ -272,11 +278,14 @@ exports.beamer_allranking = function (io, runde, runden_info) {
         } else {
             HTML_Seite += '<td class="text_left">' + runden_info[allranking[p + 1]].Name_Team + '</td>';
         }
-        if (runden_info[allranking[p + 1]].ersteRunde !== null) {
-            HTML_Seite += '<td style="font-size:1.6vw;">' + runden_info[allranking[p + 1]].ersteRunde.toFixed(2) + ' + ' + runden_info[allranking[p + 1]].Punkte.toFixed(2) + '</td>';
+        if (runden_info[0].punkte_anzeige === true) {       // true Punkte anzeigen
+            if (runden_info[allranking[p + 1]].ersteRunde !== null) {
+                HTML_Seite += '<td style="font-size:1.6vw;">' + runden_info[allranking[p + 1]].ersteRunde.toFixed(2) + ' + ' + runden_info[allranking[p + 1]].Punkte.toFixed(2) + '</td>';
+            }
+            punkte = (runden_info[allranking[p + 1]].summe).toFixed(2);
+            HTML_Seite += '<td>' + punkte.replace('.', ',') + '</td>';
         }
-        punkte = (runden_info[allranking[p + 1]].summe).toFixed(2);
-        HTML_Seite += '<td>' + punkte.replace('.', ',') + '</td></tr>';
+        HTML_Seite += '</tr>';
     }
     HTML_Seite += '</tbody>';
 
@@ -317,14 +326,16 @@ exports.beamer_stellprobe = function (io, connection, teams, title) {
         });
 };
 
-function make_thead(rde) {
+function make_thead(rde, p_anzeige) {
     var t_head = '<thead><tr><th style="width: 90px; font-size: 35px;" class="sorting text_center">Platz</th>';
     t_head += '<th style="width: 80px; font-size: 35px;" class="sorting text_center">&nbsp;StNr.&nbsp;</th>';
     t_head += '<th style="width: auto; font-size: 35px;" class="sorting">Paar</th>';
     if (rde ==="MK_5_TNZ") {
         t_head += '<th style="width: auto; font-size: 35px; text-align: center;" class="sorting">Summe aller<br>Pl&auml;tze</th></tr></thead>';
     } else {
-        t_head += '<th style="width: auto; font-size: 35px; text-align: center;" class="sorting">Punkte</th></tr></thead>';
+        if (p_anzeige === true) {
+            t_head += '<th style="width: auto; font-size: 35px; text-align: center;" class="sorting">Punkte</th></tr></thead>';
+        } 
     }
     return t_head;
 }

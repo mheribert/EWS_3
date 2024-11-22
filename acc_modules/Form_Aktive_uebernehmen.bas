@@ -79,7 +79,7 @@ Public Sub Befehl114_Click()
 End Sub
 
 Private Sub Befehl12_Click()
-DoCmd.close
+DoCmd.Close
 End Sub
 
 Private Sub Befehl59_Click()
@@ -224,6 +224,7 @@ Private Sub btn_aktive_1_Click()    ' paare xls-datei laden
                     rstpaare("Akro" & i & "_ER") = rstimport("Akro" & i & "_VR")
                     rstpaare("Wert" & i & "_ER") = rstimport("Wert" & i & "_VR")
                 Next
+                If Nz(rstimport!Motto) <> "" Then !Motto = left(rstimport!Motto, 50)
                 .Update
                 importiert = importiert + 1
             End With
@@ -265,6 +266,7 @@ Private Sub btn_aktive_2_Click()    'gemeldete paare vom Server laden
     If cnt > 0 Then
         dbs.Execute ("DELETE FROM Akrobatiken;")
         dbs.Execute ("INSERT INTO Akrobatiken SELECT * FROM MSys__Akrobatiken;")
+        dbs.Execute ("INSERT INTO " & w_list & " (CGI_Input, zeit) VALUES ('Paare geladen', '" & Time & "')")
         fName = "T" & Forms![A-Programmübersicht]!Turnier_Nummer & "_Anmeldung.txt"
         retl = get_url_to_file("http://www.drbv.de/cms/images/Download/TurnierProgramm/startlisten/" & fName, getBaseDir() & "Turnierleiterpaket\" & fName)
         
@@ -291,6 +293,8 @@ Private Sub btn_aktive_3_Click()
         
         db.Execute ("DELETE FROM Akrobatiken;")
         db.Execute ("INSERT INTO Akrobatiken SELECT * FROM MSys__Akrobatiken;")
+        db.Execute ("INSERT INTO " & w_list & " (CGI_Input, zeit) VALUES ('Akros aktualisiert', '" & Time & "')")
+        
     End If
 
 End Sub
@@ -308,6 +312,7 @@ Private Sub btn_aktive_4_Click()
         If retl = 0 Then
             retl = update_drbv_tables("Paare", fName, getBaseDir() & "Turnierleiterpaket\")
             Set re = db.OpenRecordset("SELECT Count(0) AS Anz FROM Paare;")
+            db.Execute ("INSERT INTO " & w_list & " (CGI_Input, zeit) VALUES ('Akroänderung geladen', '" & Time & "')")
             MsgBox "Es wurden " & re!anz & " Paare aktualisiert.", , "Turnierprogramm"
     
         Else

@@ -1,4 +1,4 @@
-﻿var ver = 'V3.2020';
+﻿var ver = 'V3.2021';
 var fs = require('fs');
 var wr_kr = ["ng_ttd", "ng_tth", "ng_bda", "ng_dap", "ng_bdb", "ng_fta", "ng_fts", "ng_ftb", "ng_inf", "ng_ins", "ng_inb"];
 
@@ -127,11 +127,14 @@ function rechne_wertungen(body, seite, runden_info) {
                 case "BS_BY_BE":
                 case "BS_BY_BS":
                 case "BS_BY_S1":
-                    Punkte =  parseFloat(body["wgs" + seite] || 0) * kl_punkte[0] / 10;  // Grundschritt
-                    Punkte += parseFloat(body["wbd" + seite] || 0) * kl_punkte[1] / 10;  // Basic Dancing, Lead & Follow, Harmonie
-                    Punkte += parseFloat(body["wtf" + seite] || 0) * kl_punkte[2] / 10;  // Tanzfiguren (einfache, highlight)
-                    Punkte += parseFloat(body["win" + seite] || 0) * kl_punkte[3] / 10;  // Interpretation (Figuren, spontane Interpretation)
-                    Punkte += parseFloat(body["wverw" + seite] || 0);               // Fehlerabzüge)
+                case "BS_BY_FU":
+                case "BS_BY_SH":
+                    Punkte =  parseFloat(body["wsd" + seite] || 0) * kl_punkte[0] / 10;  // Grundschritt follower
+                    Punkte += parseFloat(body["wsh" + seite] || 0) * kl_punkte[1] / 10;  // Grundschritt leader
+                    Punkte += parseFloat(body["wbd" + seite] || 0) * kl_punkte[2] / 10;  // Basic Dancing, Lead & Follow, Harmonie
+                    Punkte += parseFloat(body["wtf" + seite] || 0) * kl_punkte[3] / 10;  // Tanzfiguren (einfache, highlight)
+                    Punkte += parseFloat(body["win" + seite] || 0) * kl_punkte[4] / 10;  // Interpretation (Figuren, spontane Interpretation)
+                    Punkte += parseFloat(body["wverw" + seite] || 0);              // Fehlerabzüge)
                     break;
                 case "BS_BW_EI":        // BWRRV
                 case "BS_BW_FO":
@@ -553,7 +556,9 @@ function Punkteverteilung(Startklasse, trunde, rd) {
         case "BS_BY_BE":
         case "BS_BY_BS":
         case "BS_BY_S1":
-            punkte_verteilung = Array(15, 15, 10, 25, 0, 0, 0);
+        case "BS_BY_FU":
+        case "BS_BY_SH":
+            punkte_verteilung = Array(7.5, 7.5, 15, 10, 25, 0, 0, 0);
             break;
         // Default
         default:

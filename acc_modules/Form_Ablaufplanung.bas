@@ -40,11 +40,11 @@ Private Sub Feld81_AfterUpdate()
 
     Select Case Me!Feld81
         Case "*"
-            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr() & ")) ORDER BY Rundentab.Rundenreihenfolge;"
+            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, Rundentab.punkte_anzeige FROM Rundentab WHERE (((Rundentab.Turniernr)=" & get_aktTNr() & ")) ORDER BY Rundentab.Rundenreihenfolge;"
         Case "<"
-            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE Rundentab.Rundenreihenfolge < 1000 ORDER BY Rundentab.Rundenreihenfolge;"
+            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, Rundentab.punkte_anzeige FROM Rundentab WHERE Rundentab.Rundenreihenfolge < 1000 ORDER BY Rundentab.Rundenreihenfolge;"
         Case Else
-            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige FROM Rundentab WHERE (Rundentab.Startklasse=""" & Me!Feld81 & """ AND Rundentab.Turniernr= " & get_aktTNr() & ") ORDER BY Rundentab.Rundenreihenfolge;"
+            Me.RecordSource = "SELECT Rundentab.RT_ID, Rundentab.Turniernr, Rundentab.Runde, Rundentab.Startklasse, Rundentab.Anz_Paare, Rundentab.getanzt, Rundentab.Rundenreihenfolge, Rundentab.Startzeit, Rundentab.Paare, Rundentab.Dauer, Rundentab.WB, Rundentab.HTML, Rundentab.RT_Stat, Rundentab.ranking_anzeige, Rundentab.punkte_anzeige FROM Rundentab WHERE (Rundentab.Startklasse=""" & Me!Feld81 & """ AND Rundentab.Turniernr= " & get_aktTNr() & ") ORDER BY Rundentab.Rundenreihenfolge;"
     End Select
     Requery
 End Sub
@@ -55,7 +55,7 @@ Private Sub Feld81_DblClick(Cancel As Integer)
 End Sub
 
 Private Sub Form_Close()
-    If get_properties("EWS") = "EWS3" Then
+    If get_properties("EWS") = "EWS3" And get_properties("Externer_Pfad") = 0 Then
         make_wr_zeitplan
     End If
 End Sub
@@ -88,12 +88,41 @@ Private Sub Form_Open(Cancel As Integer)
         Exit Sub
     End If
     
+    If get_properties("EWS") = "EWS1" Then
+        Me!Kontrollkästchen84.Visible = True        ' HTML Seiten
+        Me!Bezeichnungsfeld82.Visible = True        ' HTML Seiten
+        Me!ranking.Visible = False
+        Me!Bezeichnungsfeld91.Visible = False       ' ranking
+        Me!Punkte.Visible = False
+        Me!PunkteF.Visible = False
+        Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+            Case "D"
+    
+            Case Else
+                Me!hochladen.Visible = False
+
+        End Select
+    Else
+        Me!Kontrollkästchen84.Visible = False
+        Me!Bezeichnungsfeld82.Visible = False
+        Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
+            Case "D"
+            
+            Case "BW"
+                Me!hochladen.Visible = False
+                Me!ranking.Visible = True
+                Me!Bezeichnungsfeld91.Visible = True
+                Me!Punkte.Visible = True
+                Me!PunkteF.Visible = True
+            Case "BY"
+                Me!hochladen.Visible = False
+            Case Else
+                Me.hochladen.Visible = False
+        End Select
+    End If
+    
     Set re = dbs.OpenRecordset("SELECT * FROM Turnier;")
     
-    If Not re!BS_Erg = "D" Then
-        Me.hochladen.Visible = False
-        Me.Zeitplan.Visible = False
-    End If
     Select Case re!MehrkampfStationen
         Case "Bodenturnen und Trampolin"
             sqlwhere = " UNION SELECT Runde, Rundentext, Rundenreihenfolge, MitStartklasse, R_IS_ENDRUNDE FROM Tanz_Runden_fix WHERE Runde Like 'MK_3*' Or Runde Like 'MK_4*' Or Runde Like 'MK_5*'"
@@ -226,8 +255,26 @@ Private Sub Paare_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
+Private Sub Punkte_Click()
+    If Me.Kombinationsfeld53 = "Sieger" Then Exit Sub
+    [punkte_anzeige] = Not [punkte_anzeige]
+    DoCmd.Requery "punkte"
+End Sub
+
+Private Sub Punkte_KeyDown(KeyCode As Integer, Shift As Integer)
+    Pfeil_up_down KeyCode, Shift
+    If KeyCode = 32 Then Punkte_Click
+End Sub
+
 Private Sub ranking_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
+    If KeyCode = 32 Then ranking_Click
+End Sub
+
+Private Sub ranking_Click()
+    If Me.Kombinationsfeld53 = "Sieger" Then Exit Sub
+    [ranking_anzeige] = Not [ranking_anzeige]
+    DoCmd.Requery "ranking"
 End Sub
 
 Private Sub Rundenreihenfolge_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -248,6 +295,8 @@ Private Sub runden_ergaenzen_Click()
     Dim msg As String
     Dim i, j As Integer
     Dim Startklasse_text As String
+    
+    check_ablaufzeit
     
     Set dbs = CurrentDb
     stmt = "SELECT DISTINCT Startklasse FROM Rundentab WHERE Startklasse <> '';"
@@ -432,6 +481,7 @@ End Sub
 
 Private Sub schliesssen_Click()
     DoCmd.Close
+    
 End Sub
 
 Private Sub Rundenplanung_Click()
@@ -485,7 +535,7 @@ Private Sub Zeitplan_Click()
         line = Replace(line, "x__zoom", "")                  ' "style=""padding:200px""")
         
         Set out = file_handle(ht_pfad & "index.html")
-        out.writeline (line)
+        out.WriteLine (line)
         out.Close
     Else
         st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer_zeitplan&text=" & Me!RT_ID)
@@ -520,5 +570,28 @@ Public Function get_mk(rnd)        ' Mehrkampfstationen sammeln
             get_mk = ""
     End Select
     get_mk = Split(rnd, ", ")
+End Function
+
+Function check_ablaufzeit()
+    Dim re As Recordset
+    Set dbs = CurrentDb
+    Dim prev As Date
+    ' prüfen ob uhrzeit konsistent
+    Set re = dbs.OpenRecordset("SELECT * FROM Rundentab WHERE Rundenreihenfolge < 1000 ORDER BY Rundenreihenfolge;")
+    If re.RecordCount > 0 Then re.MoveFirst
+    prev = re!Startzeit
+    re.MoveNext
+    Do Until re.EOF()
+        If re!Runde <> "Startbuchabgabe" And re!Runde <> "WR_Besp" Then
+            If DateDiff("n", prev, re!Startzeit) > 0 Then
+                prev = re!Startzeit
+            Else
+                MsgBox "Der Zeitablauf bei " & re!Rundenreihenfolge & " " & re!Runde & " ist nicht durchgängig"
+            End If
+        
+        End If
+        re.MoveNext
+    Loop
+
 End Function
 

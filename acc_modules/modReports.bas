@@ -1,5 +1,7 @@
 Option Compare Database
 
+    Public away_werte
+
 Public Function rep_show_lines(beName, Trennlinien)
     For i = 12 To 19
         beName("Linie" & (i)).Visible = False
@@ -111,8 +113,11 @@ End Function
 Function Boogie_auswertung(beName, cgivar, fld, aIndex, rde)
     Dim kl_punkte
     Dim erg As String
-    
-    kl_punkte = Punkteverteilung("BW_NG", ch_runde(rde), rde)
+    If away_werte = 1 Then
+        kl_punkte = Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+    Else
+        kl_punkte = Punkteverteilung("BW_NG", ch_runde(rde), rde)
+    End If
     Select Case fld
         Case "Ber1"     'ttd
             erg = cgivar.Item("wng_ttd" & aIndex) * (kl_punkte(0))
@@ -199,7 +204,11 @@ Public Sub read_raw()
     
     If re.RecordCount > 0 Then re.MoveFirst
     Do Until re.EOF
-        fName = getBaseDir & get_TerNr() & "_" & "RT" & re!RT_ID & "_raw.txt"
+        If get_properties("EWS") = "EWS3" Then
+            fName = getBaseDir & get_TerNr() & "_" & "RT" & re!RT_ID & "_raw.txt"
+        Else
+            fName = getBaseDir & get_TerNr() & "_" & "RT" & re!RT_ID & ".txt"
+        End If
         If Dir(fName) <> "" Then
             Open fName For Input As #1
             Do While Not EOF(1)

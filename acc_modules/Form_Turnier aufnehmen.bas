@@ -66,7 +66,7 @@ Private Sub Form_Close()
 End Sub
 
 Private Sub Form_Current()
-    MehrkampfStationen_AfterUpdate
+    ctl_turnier_1_AfterUpdate
 End Sub
 
 Private Sub Form_Open(Cancel As Integer)
@@ -76,15 +76,16 @@ Private Sub Form_Open(Cancel As Integer)
     End If
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "SL"
-            Me!MehrkampfStationen.Visible = False
+            Me!ctl_turnier_1.Visible = False
         Case "BW"
-            Me!MehrkampfStationen.Visible = False
+            Me!ctl_turnier_1.Visible = False
         Case "BY"
-            Me!MehrkampfStationen.Visible = False
+            Me!ctl_turnier_1.Visible = False
         Case "HE"
-            Me!MehrkampfStationen.Visible = False
-            
+            Me!ctl_turnier_1.Visible = False
         Case Else
+            Me!ctl_turnier_1.Visible = True
+
     End Select
 End Sub
 
@@ -104,7 +105,7 @@ Sub Kombinationsfeld35_AfterUpdate()
     Me.Bookmark = Me.RecordsetClone.Bookmark
 End Sub
 
-Private Sub MehrkampfStationen_AfterUpdate()
+Private Sub ctl_turnier_1_AfterUpdate()
     mk_visible False
     Select Case Me!MehrkampfStationen
         Case "Bodenturnen und Trampolin"

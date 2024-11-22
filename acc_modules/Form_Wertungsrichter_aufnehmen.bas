@@ -2,21 +2,13 @@ Option Compare Database
 
     Dim dbs As Database
 
-Private Sub Auswahl_AfterUpdate()
-    Dim gewvnr
-    gewvnr = Forms!RR_Paare_aufnehmen!auswahl.Column(0)
-    Me.Refresh
-End Sub
-
+'Private Sub Auswahl_AfterUpdate()
+'    Dim gewvnr
+'    gewvnr = Forms!RR_Paare_aufnehmen!auswahl.Column(0)
+'    Me.Refresh
+'End Sub
+'
 Private Sub Befehl0_Click()
-    Dim re As Recordset
-    Set dbs = CurrentDb()
-    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MA' GROUP BY Startklasse HAVING Count(WR_function)>1;")
-    If Not re.EOF Then _
-        MsgBox "Achtung!" & vbCrLf & "zu viele MA-Wertungsrichter " & re!Startklasse
-    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MB' GROUP BY Startklasse HAVING Count(WR_function)>3;")
-    If Not re.EOF Then _
-        MsgBox "Achtung!" & vbCrLf & "zu viele MB-Wertungsrichter bei " & re!Startklasse
 
     DoCmd.Close
 End Sub
@@ -144,6 +136,27 @@ Public Sub Form_Close()
         Loop
         MsgBox "Ein Probe/Schattenwertungsrichter darf kein Observer sein!" & vbCrLf & "Diese Einteilung wurde gelöscht!"
     End If
+    ' Check ob zuviele MK-WR
+    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MA' GROUP BY Startklasse HAVING Count(WR_function)>1;")
+    If Not re.EOF Then _
+        MsgBox "Achtung!" & vbCrLf & "zu viele MA-Wertungsrichter " & re!Startklasse
+    Set re = dbs.OpenRecordset("SELECT Startklasse FROM Startklasse_Wertungsrichter WHERE WR_function='MB' GROUP BY Startklasse HAVING Count(WR_function)>3;")
+    If Not re.EOF Then _
+        MsgBox "Achtung!" & vbCrLf & "zu viele MB-Wertungsrichter bei " & re!Startklasse
+    ' Check ob alle MK_WR eingetragen
+    If get_mk() <> "" Then
+        Set re = db.OpenRecordset("SELECT Startklasse_Turnier.Startklasse, (SELECT Count(WR_ID) from Startklasse_Wertungsrichter where WR_function LIKE 'M*' and Startklasse_Wertungsrichter.Startklasse = Startklasse_Turnier.Startklasse ) AS Mx, (SELECT Count(TP_ID) from Paare where Paare.Startkl = Startklasse_Turnier.Startklasse and Paare.Anwesent_Status = 1 ) AS Pa FROM Startklasse_Turnier;")
+        st_kl = "RR_J RR_S RR_S1 RR_S2"
+        If re.RecordCount > 0 Then re.MoveFirst
+        Do Until re.EOF()
+            If InStr(st_kl, re!Startklasse) > 0 Then
+                If re!Mx = 0 And re!pa > 0 Then
+                    MsgBox "Bei " & re!Startklasse & " gibt es keine MK-WR!"
+                End If
+            End If
+            re.MoveNext
+        Loop
+    End If
 End Sub
 
 Private Sub Form_Open(Cancel As Integer)
@@ -251,7 +264,7 @@ On Error GoTo EMail_noSend
     Set re = Forms!Wertungsrichter_aufnehmen!Offizielle.Form.RecordsetClone
     re.MoveFirst
     Do Until re.EOF
-        Set wr = dbs.OpenRecordset("SELECT * FROM TLP_OFFIZIELLE WHERE Lizenzn = '" & re!WR_Lizenznr & "';")
+        Set wr = dbs.OpenRecordset("SELECT * FROM TLP_OFFIZIELLE WHERE Lizenzn = '" & re!WR_Lizenznr & "' AND WName ='" & re!WR_Nachname & "';")
         If wr.RecordCount > 0 Then
             If wr![e-mail] <> "" Then
                 MailAn = MailAn & wr![e-mail] & "; "

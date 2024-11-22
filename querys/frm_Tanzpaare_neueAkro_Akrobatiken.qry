@@ -1,0 +1,1 @@
+SELECT Akrobatiken.Akrobatik, [nr#] & ' ' & Langtext AS Ausdr1, Akrobatiken.RR_C, Akrobatiken.Einstufung FROM Akrobatiken WHERE (((Nz([RR_C]))>='0')) ORDER BY 1;

@@ -1,5 +1,8 @@
 Option Compare Database
+Option Explicit
 
+    Public ext_Pfad As String
+    
 Public Function bindTables()
     
     ' Alle verknüpften Tabellen dynamisch neu einbinden
@@ -39,7 +42,11 @@ On Error Resume Next
     Dim strsql As String
     Dim i As Integer
 
-    strDaten = getBaseDir & "T" & mdb_Nr & "_TDaten.mdb"
+    If get_properties("Externer_Pfad") = 0 Then
+        strDaten = getBaseDir & "T" & mdb_Nr & "_TDaten.mdb"
+    Else
+        strDaten = ext_Pfad & "T" & mdb_Nr & "_TDaten.mdb"
+    End If
     
 'Die Nächten 3 Zeilen dienen dem Schutz vor doppelten Feldname WR_func  als Bugfixing
     Set db = DBEngine.Workspaces(0).OpenDatabase(strDaten)

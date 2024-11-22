@@ -1,22 +1,6 @@
 Option Compare Database
 Option Explicit
     
-Public Function get_Filename(fenst)
-    OpenFile.lStructSize = Len(OpenFile)
-    OpenFile.hwndOwner = fenst
-    OpenFile.lpstrFile = String(257, 0)
-    OpenFile.nMaxFile = Len(OpenFile.lpstrFile) - 1
-    OpenFile.lpstrFileTitle = OpenFile.lpstrFile
-    OpenFile.nMaxFileTitle = OpenFile.nMaxFile
-    OpenFile.flags = 0  'OFN_ALLOWMULTISELECT Or OFN_EXPLORER
-    get_Filename = GetOpenFileName(OpenFile)
-    ' Bei Multiselect sind Teile mit 0 getrennt
-    OpenFile.lpstrFileTitle = Mid(OpenFile.lpstrFileTitle, 1, InStr(1, OpenFile.lpstrFileTitle, Chr(0)) - 1)
-    OpenFile.lpstrFile = Mid(OpenFile.lpstrFile, 1, InStr(1, OpenFile.lpstrFile, Chr(0)) - 1)
-    get_Filename = OpenFile.lpstrFile
-    
-End Function
-
 Sub Beamer_generieren(Optional ausw)
     
     If get_properties("EWS") <> "EWS1" Then Exit Sub

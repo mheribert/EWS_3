@@ -1,4 +1,4 @@
-var ver = 'V3.2020';
+var ver = 'V3.2021';
 var express        = require('express');
 var app            = express();
 var server         = require('http').createServer(app);
@@ -216,8 +216,25 @@ app.get('/hand', function (req, res) {
                                 });
 
                             console.log(runden_info[0].Tanzrunde_Text + " gestartet");
+
+                            switch (runden_info[0].Startklasse) {
+                                case "BS_F_RR_EF":
+                                case "BS_F_RR_JF":
+                                    var ak_kl = "RR_F_M";
+                                    break;
+                                case "BS_BW_HA":
+                                    ak_kl = "RR_A";
+                                    break;
+                                case "BS_BW_FO":
+                                    ak_kl = "RR_C";
+                                    break;
+                                default:
+                                    ak_kl = runden_info[0].Startklasse;
+                                    break;
+                            }
+
                             connection
-                                .query('SELECT [NR#], Akrobatik, Langtext, ' + runden_info[0].Startklasse + ' FROM Akrobatiken WHERE ' + runden_info[0].Startklasse + ' <> "";')
+                                .query('SELECT [NR#], Akrobatik, Langtext, ' + ak_kl + ' FROM Akrobatiken WHERE ' + ak_kl + ' <> "";')
                                 .on('done', function (data) {
                                     for (i in data) {
                                         akrobatiken[data[i].Akrobatik] = data[i];
@@ -681,6 +698,8 @@ function verteilen(WR_ID) {
                                 case "BS_BY_BE":
                                 case "BS_BY_BS":
                                 case "BS_BY_S1":
+                                case "BS_BY_FU":
+                                case "BS_BY_SH":
                                     HTML_Seite = HTML_erstellen.BS_BY_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;
                                 case "BS_F_RR_EF":      // BWRRV
@@ -688,7 +707,7 @@ function verteilen(WR_ID) {
                                 case "BS_BW_EI":
                                 case "BS_BW_FO":
                                 case "BS_BW_HA":
-                                    HTML_Seite = HTML_erstellen.BS_BW_BWSeite(rd_ind, runden_info, wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
+                                    HTML_Seite = HTML_erstellen.BS_BW_Seite(rd_ind, runden_info, akrobatiken,  wr_name, WR_ID, wertungsrichter[WR_ID].WR_tausch, io);
                                     break;                                   
                                 case "BS_GR_GS":        //Schulsport Saarland
                                 case "BS_GR_GSV":
@@ -765,6 +784,8 @@ function verteilen(WR_ID) {
                                 case "BS_BY_BE":
                                 case "BS_BY_BS":
                                 case "BS_BY_S1":
+                                case "BS_BY_FU":
+                                case "BS_BY_SH":
 //                                    HTML_Seite = HTML_erstellen.BS_BY_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     HTML_Seite = HTML_erstellen.BW_Observer(rd_ind, runden_info, wr_name, WR_ID, io);
                                     break;

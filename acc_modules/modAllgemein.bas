@@ -1,4 +1,5 @@
 Option Compare Database
+Option Explicit
 
     Public sel_fld As String
     Public Const w_list = "analyse"
@@ -42,18 +43,37 @@ Turnier_aktuell_check_Err:
 End Sub
 
 Public Function setzte_buttons(frm, btns, Land)
+    Dim db As Database
+    Dim re As Recordset
     Set db = CurrentDb
-    Set re = db.OpenRecordset("SELECT * FROM Dokumente WHERE btn Like 'btn_" & btns & "_*';")
+    Set re = db.OpenRecordset("SELECT * FROM Dokumente WHERE btn Like '*_" & btns & "_*';")
     If re.RecordCount > 0 Then re.MoveFirst
     Do Until re.EOF
-        If re(Land & "_Caption") = ". . ." Then
-            Forms(frm)(re!btn).Visible = False
+        If left(re!btn, 3) = "btn" Then
+            If re(Land & "_Caption") = ". . ." Then
+                Forms(frm)(re!btn).Visible = False
+            Else
+                Forms(frm)(re!btn).Visible = True
+                If Not re!Bef Then
+                    Forms(frm)(re!btn).Caption = re(Land & "_Caption")
+                End If
+            End If
         Else
-            Forms(frm)(re!btn).Visible = True
-            If Not re!Bef Then Forms(frm)(re!btn).Caption = re(Land & "_Caption")
+            If Not re(Land & "_Caption") = ". . ." Then
+                Forms(frm)(re(Land & "_Caption")).Visible = True
+            End If
         End If
+        
         re.MoveNext
     Loop
+End Function
+
+Public Function btn_oeffne_ObWB_213()       ' Akrobatiken je Tanzrunde für den Observer
+    If Not Forms![ausdrucke]![Runde_einstellen] = " " Then
+        DoCmd.OpenReport "ObserverWertungsbogen", acPreview, , "Startkl = '" & Forms!ausdrucke!Startklasse_einstellen & "' AND RT_ID = " & Forms!ausdrucke!Runde_auswaehlen.Column(2) & ""
+    Else
+        MsgBox ("Bitte Runde auswählen")
+    End If
 End Function
 
 ' Ermittelt, ob zu einem Tanzpaar bereits Wertungen eingegeben wurden oder nicht
@@ -99,6 +119,17 @@ Public Sub showDocument(url As String)
         FollowHyperlink completeURL
     End If
 End Sub
+
+Public Function tableExists() As Boolean
+    On Error GoTo Fehlerbehandlung
+    Dim tdf As TableDef
+    
+    Set tdf = CurrentDb.TableDefs("TLP_OFFIZIELLE_filled")
+    tableExists = True
+    Exit Function
+Fehlerbehandlung:
+    tableExists = False
+End Function
 
 Public Function Get_WR(wr, Startklasse)
     Dim dbs As Database
@@ -193,14 +224,15 @@ Fehlerout:
 End Function
 
 Public Sub start_config_webserver()
+    Dim db As Database
     Dim strZeile As String
     Dim neuPfad As String
     Dim nodePfad As String
     Dim st As String
     Dim EWS, EWSser As String
-    Dim db As Database
-    Set db = CurrentDb()
     Dim retVal
+    Dim SngSec As Double
+    Set db = CurrentDb()
     EWS = get_properties("EWS")
     EWSser = get_properties("EWS1_NodeServer")
     
@@ -209,7 +241,7 @@ Public Sub start_config_webserver()
     If EWS = "EWS1" And EWSser = 1 Then
         nodePfad = getBaseDir & "webserver"
         retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\miniserver.js""", vbMinimizedNoFocus)
-        db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('EWS1 Server gestartet', '" & Time & "')"
+        db.Execute "INSERT INTO " & w_list & " (CGI_Input,zeit) VALUES ('EWS1 MiniServer gestartet', '" & Time & "')"
         If retVal = 0 Then MsgBox "Der WebServer konnte nicht gestartet werden!"
     End If
     If EWS = "EWS1" And EWSser = 0 And Len(Dir(neuPfad & "\conf\httpd.conf.original")) > 0 Then
@@ -230,6 +262,7 @@ Public Sub start_config_webserver()
     If EWS = "EWS3" Then
         make_wr_zeitplan
         nodePfad = getBaseDir & "webserver"
+        verst (nodePfad & "\views\")
         write_config_json nodePfad
         '
         retVal = Shell(nodePfad & "\node.exe """ & nodePfad & "\server.js""", vbMinimizedNoFocus)
@@ -267,7 +300,7 @@ Public Function get_properties(PROP_KEY)
     get_properties = ""
     Set db = CurrentDb
     Set re = db.OpenRecordset("SELECT PROP_VALUE FROM Properties WHERE Prop_Key ='" & PROP_KEY & "';")
-    get_properties = Nz(re!PROP_VALUE)
+   get_properties = Nz(re!PROP_VALUE)
 End Function
 
 Public Function get_mk()
@@ -286,6 +319,8 @@ End Function
 Public Sub Print_Givaway(RundenTab_ID, Runde)
     Dim re As Recordset
     Dim fil As String
+    Dim stDocName As String
+    
     Set re = DBEngine(0)(0).OpenRecordset("SELECT TP_ID FROM Majoritaet WHERE  RT_ID=" & RundenTab_ID & " And RT_ID Is Not Null AND Runde_Report=1;")
 '*****AB***** V13.05 - falls es sich um eine Endrunde handelt andere Abfrage ohne Runde_Report
 '*****HM 14.07 ***** - auf geteilte Endrunden erweitert

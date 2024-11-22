@@ -1,4 +1,4 @@
-﻿    var ver =  'V3.2020';
+﻿    var ver =  'V3.2021';
     window.onload = start;
     var socket = io.connect();
     var ausw;
@@ -47,7 +47,7 @@ function start() {
                             btn.value = data.val / 2;
                             break;
                         default:
-                            var such = "wsbs1 wsbs2 wakro whigh";
+                            var such = ["wsbs1", "wsbs2", "wakro", "whigh"];
                             if (such.indexOf(data.fld.substring(0, data.fld.length - 1)) > -1) {
                                 btn = document.getElementById(data.fld);
                                 btn.value = data.val /2;
@@ -157,28 +157,6 @@ function set_events() {
     }
 }
 
-function wr_delmistake(e) {
-    e = e || window.event;
-    var tar = e.target || e.srcElement;
-    var t = tar.parentNode;
-    var s = t.id.substr(13,4);
-    var fl = tar.innerText.substr(1,2);
-    if (tar.className === "btn-danger" || tar.className === "btn-attention") {
-        var pu = document.getElementById("tfl" + s);
-        pu.value = pu.value.replace(" " + tar.innerText, "");
-        pu = document.getElementById("wfl" + s);
-        pu.value = parseInt(pu.value) - parseInt(fl);
-        tar.parentNode.removeChild(tar);
-      /*  if (tar.innerText === "A20") {
-            if (t.childElementCount === 0) {
-                senden("WR-Info" + s.substring(0, 1), "alle A20 wurden gelöscht");
-            } else {
-                senden("WR-Info" + s.substring(0, 1), t.childElementCount + " A20 wurde(n) vergeben");
-            }
-        }*/
-    }
-}
-
 function bs_mistake(e) {
     e = e || window.event;
     var tar = e.target || e.srcElement;
@@ -254,7 +232,7 @@ function poll_mistakes() {
         }
     }
     function check_inhalt(mis) {
-        var mistakes = ['-', 'T2' ,'T10', 'T20', 'U2', 'U10', 'U20', 'S20', 'V5','P0','A20', 'Z20'];
+        var mistakes = ['-', 'T2', 'T10', 'TF2', 'TF10','T20' ,'U2' ,'U10' ,'U20' ,'S20' ,'V5' ,'P0' ,'A20' ,'Z20'];
         var fld = document.getElementById('w' + mis.name.substr(1,8));
         fld.value = 0;
         mis.value = mis.value.replace(/x/gi, "-");
@@ -318,9 +296,12 @@ function wr_addmistake(e) {
     e = e || window.event;
     var tar = e.target || e.srcElement;
     var t = tar.parentNode.parentNode;
-    var s = t.id.substr(8,4);
-    var fl = tar.innerText.substr(1,2);
-
+    var s = t.id.substr(8, 4);
+    if (tar.innerText.substr(0, 2) === "TF") {
+        var fl = tar.innerText.substr(2, 2);
+    } else {
+        fl = tar.innerText.substr(1,2);
+    }
     var mist = document.getElementById("mistakes-list" + s);
     if ( mist.childElementCount < 5 ) {
         if (tar.className === "btn-attention" ) {
@@ -341,6 +322,32 @@ function wr_addmistake(e) {
 //                senden("WR-Info" + s.substring(0, 1), mist.childElementCount + " <b>A20 wurde(n) vergeben</b>")
 //            }
         }
+    }
+}
+
+function wr_delmistake(e) {
+    e = e || window.event;
+    var tar = e.target || e.srcElement;
+    var t = tar.parentNode;
+    var s = t.id.substr(13, 4);
+    if (tar.innerText.substr(0, 2) === "TF") {
+        var fl = tar.innerText.substr(2, 2);
+    } else {
+        fl = tar.innerText.substr(1, 2);
+    }
+    if (tar.className === "btn-danger" || tar.className === "btn-attention") {
+        var pu = document.getElementById("tfl" + s);
+        pu.value = pu.value.replace(" " + tar.innerText, "");
+        pu = document.getElementById("wfl" + s);
+        pu.value = parseInt(pu.value) - parseInt(fl);
+        tar.parentNode.removeChild(tar);
+        /*  if (tar.innerText === "A20") {
+              if (t.childElementCount === 0) {
+                  senden("WR-Info" + s.substring(0, 1), "alle A20 wurden gelöscht");
+              } else {
+                  senden("WR-Info" + s.substring(0, 1), t.childElementCount + " A20 wurde(n) vergeben");
+              }
+          }*/
     }
 }
 
@@ -639,6 +646,10 @@ function verwarnung(e) {
             break;
         case "bs_verw red":
             tar.className = "bs_verw leer";
+            tar.children[0].value = "0";
+            break;
+        case "verwbutton black":
+            tar.className = "verwbutton leer";
             tar.children[0].value = "0";
             break;
         default:

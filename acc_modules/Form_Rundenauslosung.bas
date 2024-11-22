@@ -396,7 +396,7 @@ Private Sub umgekehrte_Reihenfolge()
         Set rstpaare = dbs.OpenRecordset("SELECT Majoritaet.TP_ID, Count(Majoritaet.RT_ID) AS AnzahlvonRT_ID, Min(Majoritaet.Platz) AS Platzierung, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Majoritaet INNER JOIN Paare_Rundenqualifikation ON (Majoritaet.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (Majoritaet.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Majoritaet.TP_ID ORDER BY Count(Majoritaet.RT_ID) DESC, Min(Majoritaet.Platz) DESC;")
     ElseIf Me!Feld52 = 4 Then
         ' gleiche Startreihenfolge
-        Set rstpaare = dbs.OpenRecordset("SELECT Majoritaet.TP_ID, Count(Majoritaet.RT_ID) AS AnzahlvonRT_ID, Min(Majoritaet.Platz) AS Platzierung, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Majoritaet INNER JOIN Paare_Rundenqualifikation ON (Majoritaet.RT_ID = Paare_Rundenqualifikation.RT_ID) AND (Majoritaet.TP_ID = Paare_Rundenqualifikation.TP_ID) WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Majoritaet.TP_ID ORDER BY Last(Paare_Rundenqualifikation.Rundennummer);")
+        Set rstpaare = dbs.OpenRecordset("SELECT Paare_Rundenqualifikation.TP_ID, Count(Paare_Rundenqualifikation.RT_ID) AS AnzahlvonRT_ID, Last(Paare_Rundenqualifikation.Rundennummer) AS LetzterWertvonRundennummer FROM Paare_Rundenqualifikation WHERE (Paare_Rundenqualifikation.RT_ID=" & fil & ") GROUP BY Paare_Rundenqualifikation.TP_ID ORDER BY Count(Paare_Rundenqualifikation.RT_ID) DESC, Last(Paare_Rundenqualifikation.Rundennummer) ASC;")
     Else
         MsgBox "Fehler bei der Sortierreihenfolge!"
     End If
@@ -740,6 +740,14 @@ Private Sub Runde_suchen_Enter()
             re.MoveNext
         Loop
     End If
+End Sub
+
+Private Sub Text162_Click()     ' wegen im Vordergrung bei klick
+    Me!Kontrollkästchen44.SetFocus
+End Sub
+
+Private Sub Text162_DblClick(Cancel As Integer) ' wegen im Vordergrung bei klick
+    Me!Kontrollkästchen44.SetFocus
 End Sub
 
 Private Sub Übertrag_EXCEL_Click()

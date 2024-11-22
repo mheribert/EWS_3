@@ -3,7 +3,7 @@ Option Explicit
     Dim stDocName As String
 
 Private Sub Befehl0_Click()
-    DoCmd.Close
+    DoCmd.close
 End Sub
 
 Private Sub Befehl2_Click()
@@ -190,12 +190,16 @@ End Sub
 Public Function btn_Ausdr(nr)
     Dim doc As String
     Dim lae As String
+    Dim retl
     lae = Forms![A-Programmübersicht]!Turnierausw.Column(8)
     
     If Me("btn_Ausdrucke_" & nr).Caption = ". . ." Then Exit Function
     doc = DLookup(lae & "_Dokumentation", "Dokumente", "btn = 'btn_Ausdrucke_" & nr & "'")
     If InStr(doc, ".pdf") > 0 Then
         Call showDocument(doc)
+    ElseIf InStr(doc, "code") Then
+        doc = Replace(doc, "code ", "")
+        retl = Eval(doc)
     Else
         DoCmd.OpenReport doc, acViewPreview
     End If
@@ -263,8 +267,8 @@ Private Sub btnBetreuerliste_Click()
         Next
         rst.MoveNext
     Loop
-    rst.Close
-    dbs.Close
+    rst.close
+    dbs.close
     
     stDocName = "Betreuerliste_Einzelpaarturnier"
     DoCmd.OpenReport stDocName, acPreview
@@ -293,7 +297,7 @@ Private Sub btn_Ausdrucke_210_Click()       ' Daten für Urkunden ausgeben
         sFilters = "Microsoft Excel-Dateien (*.xls)" & vbNullChar & "*.xls" & vbNullChar & vbNullChar
         
         Dim sFilepath As String
-        sFilepath = FileSaveAs("Urkundendaten.xls", ".xls", sFilters)
+        sFilepath = FileSaveAs("Urkundendaten.xls", sFilters, getBaseDir())
         
         If Len(sFilepath) Then
             DoCmd.OutputTo acQuery, "ausgeschiedene_Paare_Urkunden", "MicrosoftExcel(*.xls)", sFilepath, False, ""
@@ -459,7 +463,7 @@ Private Sub btn_Ausdrucke_212_Click()       ' Wertungsbögen_Startklasse
             Set re = dbs.OpenRecordset("select * from Rundentab where startklasse = '" & sk & "' and turniernr = " & get_aktTNr & " and runde='End_r_schnell'")
             If re.RecordCount > 0 Then print_wait_close "Wertungsbogen", acViewPreview, "rt_ID =" & re!RT_ID & " AND (" & fil & ")"
 
-            re.Close
+            re.close
         Else
             DoCmd.OpenReport "Wertungsbogen", acViewPreview, , "rt_ID =" & Me!Runde_auswaehlen.Column(2) & " AND (" & fil & ")"
         End If

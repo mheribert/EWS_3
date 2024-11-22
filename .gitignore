@@ -367,3 +367,5 @@ config.json
 *.jpg
 /webserver - Kopie.njsproj
 /package-lock.json
+/views/bb_logo_2022-bf8984e0.png
+/views/logo.jpg

@@ -50,7 +50,7 @@ Sub build_html(pr, RT_nr, Runde)
     Do Until wr.EOF
         rd = 0
         fil = False
-        pr.Filter = "Anwesend_Status=1"
+        pr.filter = "Anwesend_Status=1"
         Set re = pr.OpenRecordset
         re.MoveLast
         rmax = Int(re.RecordCount / a_paare) + re.RecordCount Mod a_paare
@@ -408,10 +408,10 @@ Sub build_html(pr, RT_nr, Runde)
             line = Replace(line, "x_vbs", "/cgi-bin/page.vbs")
             line = Replace(line, "x_rt", RT_nr)
             out.writeline (line)
-            out.Close
+            out.close
             re.MoveNext
             If re.EOF And fil = False Then
-                pr.Filter = "nochmal = true"
+                pr.filter = "nochmal = true"
                 Set re = pr.OpenRecordset
                 fil = True
                 If Not re.EOF Then
@@ -439,13 +439,13 @@ Sub build_html(pr, RT_nr, Runde)
         line = Replace(line, "x_html", tr_nr & "R" & wr!WR_Lizenznr & "_K" & RT_nr & "_1000.html")
         line = Replace(line, "x_pic", IpAddrs & "/" & tr_nr & "_K" & RT_nr & ".gif")
         out.writeline (line)
-        out.Close
+        out.close
         wr.MoveNext
     Loop
     db.Execute ("UPDATE rundentab SET [HTML] = -1 WHERE RT_ID =" & RT_nr & ";")
     Start_Seite tr_nr
     
-    pr.Filter = "Anwesend_Status=1"
+    pr.filter = "Anwesend_Status=1"
 '    make_beobachter pr, rd_klasse, tr_nr, RT_nr
     
     
@@ -454,7 +454,7 @@ Sub build_html(pr, RT_nr, Runde)
     Set ht = open_re("All", "Script")
     line = Replace(ht!F2, "x_pfad", getBaseDir)
     out.writeline (line)
-    out.Close
+    out.close
     
     'Schreibe vbs zur Seite
     Set out = file_handle(vb_pfad & "page.vbs")
@@ -462,7 +462,7 @@ Sub build_html(pr, RT_nr, Runde)
     line = Replace(ht!F1, "x_url", IpAddrs)
     line = Replace(line, "x_pfad", vb_pfad)
     out.writeline (line)
-    out.Close
+    out.close
     
     Set wr = Nothing
     Set ht = Nothing
@@ -493,7 +493,7 @@ Function make_beobachter(pr, stkl_rde, tr_nr, RT_ID)
     line = Replace(line, "x__rt_id", RT_ID)
     'Schreibe
     out.writeline (line)
-    out.Close
+    out.close
 End Function
 
 Private Function write_index(fName)
@@ -795,7 +795,7 @@ Public Function gen_default(pfad)   'erstellt bei Start des WebServers eine ganz
     If Dir(nFile) <> "index.html" Then
         Set out = file_handle(nFile)
         out.writeline ("<!DOCTYPE html><html><head><title>" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez) & "</title><meta http-equiv=""expires"" content=""0""></head><body><p style=""font-size:50pt;""  align=""center""><br><br>" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez) & "<br>" & ordner(4) & "</p></body></html>")
-        out.Close
+        out.close
     End If
 End Function
 
@@ -848,7 +848,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
     line = Replace(line, "x__loc", loc)
     line = Replace(line, "x__nwr", nwr)
     out.writeline (line)
-    out.Close
+    out.close
     
     ' Ab hier werden die WR-Einteilungen erstellt
     Set ht = open_re("All", "WR_Start")
@@ -892,7 +892,7 @@ Public Sub Start_Seite(tr_nr)         'Alle WR und ihre Einteilungen
             out.writeline (line)
         Loop
         out.writeline ("    </table>" & vbCrLf & "   </form>" & vbCrLf & "</body>" & vbCrLf & "</html>")
-        out.Close
+        out.close
         wr.MoveNext
     Loop
 End Sub
@@ -1037,7 +1037,7 @@ Public Sub pg_platzieren(RT_ID, WR_ID, mehrfach, pg_id, s_kl)
     html_page = Replace(html_page, "x_rtid", re!RT_ID * 1000)    ' ID für Dateinamen
     
     out.writeline html_page
-    out.Close
+    out.close
 
 End Sub
 
@@ -1232,5 +1232,6 @@ Public Function make_wr_zeitplan()
         Print #1, "</tbody></table></td></tr></table></td></tr></table></body></html>"
         Close #1
 End Function
+
 
 

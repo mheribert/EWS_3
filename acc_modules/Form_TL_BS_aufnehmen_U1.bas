@@ -22,12 +22,16 @@ Private Sub km_holen_Click()
     Dim objIE As Object
     Dim ti, s
     Set db = CurrentDb
-    Set wr = db.OpenRecordset("SELECT * FROM TLP_OFFIZIELLE WHERE Lizenzn=""" & Me!Lizenznr & """;")
+    If tableExists Then
+        Set wr = db.OpenRecordset("SELECT * FROM TLP_OFFIZIELLE_filled WHERE Lizenzn=""" & Me!Lizenznr & """;")
+    Else
+        Set wr = db.OpenRecordset("SELECT * FROM TLP_OFFIZIELLE WHERE Lizenzn=""" & Me!Lizenznr & """;")
+    End If
     Set re = db.OpenRecordset("SELECT * FROM turnier WHERE turniernum=" & get_aktTNr & ";")
 
     If wr.RecordCount > 0 Then
         Set objIE = CreateObject("WScript.Shell")
-        objIE.Run """https://www.google.de/maps/dir/" & wr!straﬂe & ", " & wr!plz & " " & wr!ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10) & """"  '"About:blank"
+        objIE.Run """https://www.google.de/maps/dir/" & wr!Straﬂe & ", " & wr!PLZ & " " & wr!Ort & "/" & re!Veranst_Ort & Chr(13) & Chr(10) & """"  '"About:blank"
     End If
 
 End Sub

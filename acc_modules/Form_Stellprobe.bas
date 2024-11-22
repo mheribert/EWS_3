@@ -1,14 +1,10 @@
 Option Compare Database
 Option Explicit
     Const seku = 1.15740740740741E-05
-    Dim count_down As Integer
+    Dim count_down
     Dim stpr As Recordset
     Dim st As String
     Dim HTML As String
-
-Private Sub Kombinationsfeld53_KeyDown(KeyCode As Integer, Shift As Integer)
-    Pfeil_up_down KeyCode, Shift
-End Sub
 
 Private Sub alle_holen_Click()
     Dim db As Database
@@ -44,6 +40,7 @@ End Sub
 
 Private Sub Form_Current()
     Dim re As Recordset
+    Dim i As Integer
     If get_properties("EWS") = "EWS3" Then
         Me!Folie_anzeigen.Visible = False
     End If
@@ -62,20 +59,14 @@ Private Sub Form_Current()
             Me!Danach_verein = IIf(re.EOF, "", re!Verein_Name)
             re.MovePrevious
         End If
-        markiere_liste
+        For i = 0 To Me.Formationen.ListCount - 1
+            If Me.Formationen.ItemData(i) = Me!Jetzt Then
+                Me.Formationen.Selected(i) = True
+                Exit For
+            End If
+        Next
     End If
 End Sub
-
-Function markiere_liste()
-    Dim i As Integer
-    For i = 0 To Me.Formationen.ListCount - 1
-        If Me.Formationen.ItemData(i) = Me!Jetzt Then
-            Me.Formationen.Selected(i) = True
-            Exit For
-        End If
-    Next
-
-End Function
 
 Private Sub Form_Resize()
     If Me.WindowHeight > 7100 Then
@@ -91,7 +82,7 @@ End Sub
 Private Sub next_rec_Click()
 On Error Resume Next
 '    DoCmd.GoToRecord , , acNext
-    count_down = 0
+    count_down = Time()
 End Sub
 
 Private Sub Nummern_eingeben_Click()
@@ -114,19 +105,37 @@ Private Sub Nummern_eingeben_Click()
     End If
 End Sub
 
+Private Sub Pause_Click()
+    Dim ctl
+    Dim i As Integer
+    Dim we As Boolean
+    ctl = Array("stell_starten", "next_rec", "Folie_anzeigen", "vorgabe", "Wechselzeit", "Jetzt", "Danach")
+    If Me!Pause Then
+        we = False
+    Else
+        we = True
+    End If
+    
+    For i = 0 To UBound(ctl)
+        Me(ctl(i)).Enabled = we
+    Next
+End Sub
+
 Private Sub RegisterStr87_Click()
     Dim re As Recordset
     
     If Me!RegisterStr87 = 0 Then
         Set re = Me!Stellprobe_Liste.Form.RecordsetClone
-        re.MoveLast
-        If Not re!Stell_TP_ID = -1 Then
-            re.AddNew
-            re!Stell_TP_ID = -1
-            re!Stell_Reihe = DMax("Stell_Reihe", "Stellprobe") + 1
-            re.Update
+        If re.RecordCount > 0 Then
+            re.MoveLast
+            If Not re!Stell_TP_ID = -1 Then
+                re.AddNew
+                re!Stell_TP_ID = -1
+                re!Stell_Reihe = DMax("Stell_Reihe", "Stellprobe") + 1
+                re.Update
+            End If
+            Zeit_eintragen_Click
         End If
-        Zeit_eintragen__drucken_Click
     End If
     If Nz(Me.stell_starten) = False Then DoCmd.Requery
 End Sub
@@ -142,7 +151,8 @@ End Sub
 Private Sub stell_starten_Click()
     If Me.stell_starten Then
         Me.stell_starten.Caption = "Stop"
-        count_down = Me!vorgabe
+        Me!Pause.Visible = True
+        count_down = Time() + (Me!vorgabe * seku)
         If get_properties("EWS") = "EWS3" Then
             Set stpr = Me.RecordsetClone
             stpr.Bookmark = Me.Bookmark
@@ -155,19 +165,22 @@ Private Sub stell_starten_Click()
         End If
         Me.TimerInterval = 1000
     Else
+        Me!Pause.Visible = False
         Me.TimerInterval = 0
         Me.stell_starten.Caption = "Starten"
-        vorgabe_AfterUpdate
         Me.Folie_anzeigen.Enabled = True
         Me.next_rec.Enabled = True
     End If
 End Sub
 
 Private Sub Form_Timer()
-    Me!stell_zeit.Caption = Int(count_down / 60) & ":" & Format(Int(count_down Mod 60), "00")
-    If count_down = 0 Then
+    Me!stell_zeit.Caption = Format(count_down - Time(), "n:ss")
+    If Nz(Me!Pause) Then _
+        count_down = count_down + seku
+   
+    If count_down - Time < 0 Then
         Me.stell_starten.SetFocus
-        count_down = Me!vorgabe
+        count_down = Time() + (Me!vorgabe * seku)
         Me!Stell_erst = True
         DoCmd.GoToRecord , , acNext
         If Not stpr.EOF Then
@@ -177,26 +190,23 @@ Private Sub Form_Timer()
                 Folie_anzeigen_Click
             End If
         End If
-        If Me!Jetzt = "Pause" Or (stpr.EOF And count_down = Me!vorgabe) Then
+        If Me!Jetzt = "Pause" Or (stpr.EOF And count_down - Time() < (Me!vorgabe * seku)) Then
             Me.stell_starten = 0
             stell_starten_Click
             Me!Stell_erst = True
             DoCmd.GoToRecord , , acNext
         End If
     Else
-        count_down = count_down - 1
         If get_properties("EWS") = "EWS3" Then
-             If count_down > Me!vorgabe - 21 Then
-'                st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=")
-            Else
+            If count_down - ((Me!vorgabe - Me!Wechselzeit + 1) * seku) < Time() Then
                 st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=beamer&bereich=beamer_minute&cont=" & Me!stell_zeit.Caption)
             End If
         Else
-            If Me!vorgabe > 225 And count_down < Me!vorgabe - 225 Then
-'                Me.verkürzen.Visible = True
-            Else
-                Me.verkürzen.Visible = False
-            End If
+'            If Me!vorgabe > 225 And count_down < Me!vorgabe - 225 Then
+''                Me.verkürzen.Visible = True
+'            Else
+'                Me.verkürzen.Visible = False
+'            End If
         End If
     End If
 End Sub
@@ -218,12 +228,7 @@ Private Sub Stellprobe_drucken__Aktualisieren_Click()
 End Sub
 
 Private Sub verkürzen_Click()
-    count_down = 0
-End Sub
-
-Private Sub vorgabe_AfterUpdate()
-    Me!stell_zeit.Caption = Int(Me!vorgabe / 60) & ":" & Format(Int(Me!vorgabe Mod 60), "00")
-    count_down = Me!vorgabe
+    count_down = Time()
 End Sub
 
 Private Sub Folie_anzeigen_Click()
@@ -249,7 +254,7 @@ Private Sub Folie_anzeigen_Click()
         startHTML = "<!DOCTYPE html PUBLIC ""-//W3C//DTD HTML 4.01//EN"" ><html><head><meta http-equiv=""refresh"" content=""0; URL=" & _
                      "st" & Format(re!Stell_Reihe, "00000") & ".html""><title></title></head><body></body></html>"
         Set out = file_handle(ht_pfad & "stellprobe.html")
-        out.writeline (startHTML)
+        out.WriteLine (startHTML)
         out.Close
         ' Countdownseite + Warteseite scheiben
         For i = 0 To 1
@@ -277,7 +282,7 @@ Private Sub Folie_anzeigen_Click()
             End If
             line = Replace(line, "x__html", next_HTML)
             
-            out.writeline (line)
+            out.WriteLine (line)
             out.Close
         Next
     End If
@@ -291,7 +296,7 @@ Private Sub Folie_anzeigen_Click()
     Me!Ende_ca.Caption = "Ende ca.: " & Format(Now() + (i * Me!vorgabe * seku), "hh:mm")
 End Sub
 
-Private Sub Zeit_eintragen__drucken_Click()
+Private Sub Zeit_eintragen_Click()
     Dim db As Database
     Dim re As Recordset
     Dim rt_stellprobe As Date

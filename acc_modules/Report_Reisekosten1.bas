@@ -6,6 +6,7 @@ On Error GoTo raus
     Me!VorZuname = Forms!reisekostenabrechnung!Funktionär
     Me!Funktion = Forms!reisekostenabrechnung!Funktion
     Me!Anschrift = Forms!reisekostenabrechnung!Anschrift
+    Me!IBAN = Forms!reisekostenabrechnung!IBAN
     Me!von_nach = Forms!reisekostenabrechnung!Reise_von & ("  /  " + Forms!reisekostenabrechnung!Reise_nach)
 '    Me!grund_reise = Forms!reisekostenabrechnung!GrundReise
     Me!ReiseBD = Forms!reisekostenabrechnung!BeginnR

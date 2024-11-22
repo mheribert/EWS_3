@@ -1,5 +1,7 @@
-﻿var ver = 'V3.2020';
+﻿var ver = 'V3.2021';
 const rei = false;
+var conf = require('./config.json');
+var fs = require('fs');
 
 exports.wr_login = function (wertungsrichter, title) {
     var HTML_Seite = '<!DOCTYPE html>';
@@ -96,7 +98,8 @@ exports.BS_BY_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         sei = s;
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td align="center" id="couple' + s + '"><table align="center" border="0" cellpadding="0" cellspacing="0">' + '\r\n';
-        HTML_Seite += make_bs_inp('gs' + sei, 10, 'Grundschritt (Rhythmus & Fu&szlig;technik)', st_kl) + '\r\n';
+        HTML_Seite += make_bs_inp('sd' + sei, 10, 'Grundschritt Follower (Rhythmus & Fu&szlig;technik)', st_kl) + '\r\n';
+        HTML_Seite += make_bs_inp('sh' + sei, 10, 'Grundschritt Leader (Rhythmus & Fu&szlig;technik)', st_kl) + '\r\n';
         HTML_Seite += make_bs_inp('bd' + sei, 10, 'Basic Dancing, Lead & Follow, Harmonie', st_kl) + '\r\n';
         HTML_Seite += make_bs_inp('tf' + sei, 10, 'Tanzfiguren (einfache, highlight)', st_kl) + '\r\n';
         HTML_Seite += make_bs_inp('in' + sei, 10, 'Interpretation (Figuren, spontane Interpretation)', st_kl) + '\r\n';
@@ -105,6 +108,23 @@ exports.BS_BY_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
     HTML_Seite += '</tr>' + make_absenden(true, false, tausch === true && runden_info[rd_ind].PpR === 2) + '</table></center></form>';
 
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
+};
+
+exports.BS_BY_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
+    var HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, false) + '\r\n';
+    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
+
+    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
+        HTML_Seite += '<td align="center" id="couple' + s + '" width="450px"><table border="0" cellpadding="1" cellspacing="5">';
+        HTML_Seite += '<tr id="seite' + s + '">' + '\r\n';
+        HTML_Seite += '<td height="140px"></td></tr>';
+        HTML_Seite += '<tr><td class="bs_verw leer" onclick="verwarnung(event)" value="0">Verwarnung<input name="wverw' + s + '" type="hidden"></td></td></tr>' + '\r\n';
+        HTML_Seite += '<td height="140px"></td></tr>';
+        HTML_Seite += '</table></td>' + '\r\n';
+    }
+    HTML_Seite += '</tr>' + make_absenden(true, true, false) + '</table></center></form>';
+
+    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'OB_' });
 };
 
 exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io, wr_func) {
@@ -157,7 +177,7 @@ exports.MK_WB_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io,
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: ausw });
 };
 
-exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
+exports.BS_BW_Seite = function (rd_ind, runden_info, akrobatiken, wr_name, wr_id, tausch, io) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].RundeArt;
     var sei;
@@ -181,7 +201,32 @@ exports.BS_BW_BWSeite = function (rd_ind, runden_info, wr_name, wr_id, tausch, i
         HTML_Seite += make_bs_inp('ta' + sei, 10, 'Tanz', st_kl) + '\r\n';
         HTML_Seite += '<tr><td colspan="21"><hr></td></tr>' + '\r\n';
         if (st_kl === "BS_BW_FO" || st_kl === "BS_BW_HA") {
-            HTML_Seite += make_bs_inp('ak' + sei, 10, 'Akrobatik', st_kl) + '\r\n';
+            var ak_kl;
+            var ak_text = "Akrobatik<br>";
+
+            switch (st_kl) {
+                case "BS_F_RR_EF":
+                case "BS_F_RR_JF":
+                    ak_kl = "RR_F_M";
+                    break;
+                case "BS_BW_HA":
+                    ak_kl = "RR_A";
+                    break;
+                case "BS_BW_FO":
+                    ak_kl = "RR_C";
+                    break;
+                default:
+                    ak_kl = st_kl;
+                    break;
+            }
+            for (var t = 1; t <= 6; t++) {
+                if (runden_info[rd_ind + s - 1]["Akro" + t + '_' + trunde] !== null) {
+                    pkt = akrobatiken[runden_info[rd_ind + s - 1]["Akro" + t + '_' + trunde]][ak_kl].replace(/,/, ".");
+                    akro = akrobatiken[runden_info[rd_ind + s - 1]["Akro" + t + '_' + trunde]]['Langtext'];
+                    ak_text += akro + "  " + pkt + '<br>';
+                } 
+            }
+            HTML_Seite += make_bs_inp('ak' + sei, 10, ak_text + '&nbsp;', st_kl) + '\r\n';
         } else {
             HTML_Seite += '<tr><td class="bs_ersatz"><input name="wak' + sei + '" id="wak' + sei + '" type="hidden" value="0"></td></tr>';
         }
@@ -244,23 +289,6 @@ exports.BS_SL_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io)
     io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'BS_' });
 };
 
-exports.BS_BY_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
-    var HTML_Seite = make_kopf(rd_ind, runden_info, 2, wr_name, false) + '\r\n';
-    HTML_Seite += '<tr id="anzeige_body">' + '\r\n';
-
-    for (var s = 1; s <= runden_info[rd_ind].PpR; s++) {
-        HTML_Seite += '<td align="center" id="couple' + s + '" width="450px"><table border="0" cellpadding="1" cellspacing="5">';
-        HTML_Seite += '<tr id="seite' + s + '">' + '\r\n';
-        HTML_Seite += '<td height="140px"></td></tr>';
-        HTML_Seite += '<tr><td class="bs_verw leer" onclick="verwarnung(event)" value="0">Verwarnung<input name="wverw' + s + '" type="hidden"></td></td></tr>' + '\r\n';
-        HTML_Seite += '<td height="140px"></td></tr>';
-        HTML_Seite += '</table></td>' + '\r\n';
-    }
-    HTML_Seite += '</tr>' + make_absenden(true, true, false) + '</table></center></form>';
-
-    io.sockets.emit('chat', { msg: 'body', WR: wr_id, HTML: HTML_Seite, ausw: 'OB_' });
-};
-
 exports.BW_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io) {
     var st_kl = runden_info[0].Startklasse;
     var trunde = runden_info[0].RundeArt;
@@ -303,7 +331,7 @@ exports.BW_NG_Seite = function (rd_ind, runden_info, wr_name, wr_id, tausch, io)
         sei = s;
         if (tausch === true && runden_info[rd_ind].PpR === 2) { sei = 3 - s; }
         HTML_Seite += '<td bgcolor = "#dddddd" style = "font-family: Arial; padding-left: 10px; padding-right: 10px; font-size: 16px;"><table align="center" border="0">';
-        HTML_Seite += kriterium_text("Schritt Dame", "Schritt Herr");
+        HTML_Seite += kriterium_text("Schritt follower", "Schritt leader");
         HTML_Seite += '<tr><td>' + make_inpNG_BW('ng_ttd' + sei, 5, '', st_kl, '') + '</td>';
         HTML_Seite += '<td colspan="2">' + make_inpNG_BW('ng_tth' + sei, 5, '', st_kl, '') + '</td></tr>' + '\r\n';
         HTML_Seite += kriterium_text("Basic Dancing,Lead & Follow,Harmonie,Dance Performance");
@@ -363,9 +391,9 @@ exports.BW_Observer = function (rd_ind, runden_info, wr_name, wr_id, io) {
         HTML_Seite += '<td align="center" id="couple' + s + '" width="450px"><table border="0" cellpadding="1" cellspacing="5">';
         if (runden_info[0].Startkl.substring(0, 3) === "BS_") {
             HTML_Seite += '<tr id="seite' + s + '">' + '\r\n';
-            HTML_Seite += '<td height="140px"></td></tr>';
+            HTML_Seite += '<td height="100px"></td></tr>';
             HTML_Seite += '<tr><td class="bs_text">Wenn Runde beendet ist, absenden.</td></tr> ';
-            HTML_Seite += '<td height="140px"></td></tr>';
+            HTML_Seite += '<td height="100px"></td></tr>';
         } else {
             for (var i = 0; i < krit.length; i = i + 3) {
                 HTML_Seite += '<tr id="' + krit[i] + s + '"><td class="spalte">-</td><td class="spalte_br"><table width ="100%">' + '\r\n';
@@ -409,7 +437,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
                 HTML_Seite += '<td>WR</td><td style="width: 120px;">Schritt</td><td style="width: 120px;">Syn</td><td>Fig Au</td><td>Fig Sch</td><td style="width: 120px;">Fig Bo</td><td style="width: 120px;">Ch</td><td style="width: 120px;">Ch Id</td><td style="width: 120px;">Ch Bo</td><td style="width: 120px;">AF Sy</td><td>AF Pos</td><td style="width: 120px;">AF Bo</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
             } else {
                 if (new_guidelines) {
-                    HTML_Seite += '<td>WR</td><td style="width: 120px;">GS D</td><td style="width: 120px;">GS H</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
+                    HTML_Seite += '<td>WR</td><td style="width: 120px;">Follow</td><td style="width: 120px;">Lead</td><td>Basic Dance</td><td>Dance Perf</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Fig Ausf</td><td style="width: 120px;">Fig Schw</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Interpr</td><td>Spontan</td><td style="width: 120px;">Bonus</td><td style="width: 120px;">Summe</td><td>&nbsp;</td></tr>';
                 } else {
                     if (trunde === 'ER') {
                         HTML_Seite += '<td>Name</td><td>Grundschritt</td><td>Basic Dancing</td><td>Tanzfig</td><td>Interpret</td><td>Spontane Int</td><td>Dance Perf</td><td>Summe</td><td>&nbsp;</td></tr>';
@@ -511,6 +539,7 @@ exports.BW_ObsCheck = function (rd_ind, wertungsrichter, wertungen, runden_info,
         for (seite in HTML_Arr) {
             HTML_Seite += HTML_Arr[seite];
         }
+        fs.appendFileSync(conf.pfad + '\\webserver\\views\\obs.html', HTML_Seite + '\r\n', encoding = 'utf8');
         HTML_Seite += make_absenden(true, true) + '</table></center></form>';
     } else {
         HTML_Seite = HTML_Seite + '<tr><td>Runde ist zuende</td></tr>';
@@ -846,12 +875,12 @@ exports.RR_Form_Seite = function (rd_ind, runden_info, akrobatiken, wr_func, wr_
             HTML_Seite += '<tr><td height="12px"></td></tr>';
             break;
         case "Ft":
-            HTML_Seite += make_inpRRE('tk1', 10, 'Technik - Grund-, Haltungs- und Drehtechnik', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('ch1', 10, 'Tanz - Wert inkl. Formationsfiguren und Abstimmung zur Musik', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('tf1', 10, 'Tanz - Ausführung', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('ab1', 10, 'AF - Wert der Bilder, Bildwechsel und Effekte', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('aw1', 10, 'AF - Ausführung', st_kl) + '\r\n';
-            HTML_Seite += make_inpRRE('af1', 10, 'Gesamtwirkung', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('tk1', 10, '<b>Technik </b>(Grund-, Haltungs- und Drehtechnik)', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('ch1', 10, '<b>Tanz-Wertigkeit </b>(Vielfalt, Schwierigkeit, Ideen, Musikalit&auml;t)', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('tf1', 10, '<b>Tanz-Ausf&uuml;hrung </b>(Synchronit&auml;t, Harmonie)', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('ab1', 10, '<b>Positionen-Wertigkeit </b>(Vielfalt, Schwierigkeit)', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('aw1', 10, '<b>Positionen-Ausf&uuml;hrung </b>(Exaktheit)', st_kl) + '\r\n';
+            HTML_Seite += make_inpRRE('af1', 10, '<b>Gesamtwirkung</b>', st_kl) + '\r\n';
             HTML_Seite += '<tr><td height="12px"></td></tr>' + make_fehler(1, true, false);
             break;
         case "Ak":
@@ -1116,10 +1145,11 @@ function make_kopf(rd_ind, runden_info, seiten, wr_name, tausch, switch_TP) {
 function make_fehler(seite, takt, ak) {
     var ftfl;
     ftfl = '<tr><td colspan="21"><div class="mistakes" id="mistakes' + seite + '">';
-    if (takt === true) {
-        ftfl += '<div><div class="btn-warning">T2</div><div class="btn-warning">T10</div><div class="btn-warning">T20</div></div>';
-    }
-    ftfl += '<div><div class="btn-warning">U2</div><div class="btn-warning">U10</div><div class="btn-warning">U20</div></div>';
+    //    if (takt === true) {
+    //        ftfl += '<div><div class="btn-warning">T2</div><div class="btn-warning">T10</div><div class="btn-warning">T20</div></div>';
+    //    }
+    //    ftfl += '<div><div class="btn-warning">U2</div><div class="btn-warning">U10</div><div class="btn-warning">U20</div></div>';
+    ftfl += '<div><div class="btn-warning" max="2">TF2</div><div class="btn-warning" max="10">TF10</div><div>&nbsp;&nbsp;</div></div>';
     ftfl += '<div><div class="btn-warning">S20</div></div>';
     ftfl += '<div><div class="btn-warning">V5</div></div>' + '\r\n';
     if (ak === true) {

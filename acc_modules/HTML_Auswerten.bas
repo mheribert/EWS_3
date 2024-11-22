@@ -246,11 +246,12 @@ Private Function rechne_punkte(PR_ID, inp, s_kl, rh, rde, ft_rt, WR_func)
             Select Case DLookup("Land", "Startklasse", "Startklasse ='" & s_kl & "'")
                 Case "BY"
                     kl_punkte = Punkteverteilung(s_kl, ch_runde(rde), rde)
-                    If vars.exists("wgs" & i) Or vars.exists("wverw" & i) Then
-                        Punkte = CSng(vars.Item("wgs" & i)) * kl_punkte(0) / 10
-                        Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(1) / 10
-                        Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(2) / 10
-                        Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(3) / 10
+                    If vars.exists("wsh" & i) Or vars.exists("wverw" & i) Then
+                        Punkte = CSng(vars.Item("wsh" & i)) * kl_punkte(0) / 10
+                        Punkte = Punkte + CSng(vars.Item("wsd" & i)) * kl_punkte(1) / 10
+                        Punkte = Punkte + CSng(vars.Item("wbd" & i)) * kl_punkte(2) / 10
+                        Punkte = Punkte + CSng(vars.Item("wtf" & i)) * kl_punkte(3) / 10
+                        Punkte = Punkte + CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
                         Punkte = Punkte + add_verstoesse(vars, i)
                     Else
                         Punkte = 0
@@ -392,10 +393,10 @@ Function Punkteverteilung(Startklasse, rd, rde)
         Case "BW_NG"
             punkte_verteilung = Array(1.5, 1.5, 1.5, 1.5, 1.5, 1, 1, 1, 2.5, 2.5, 2.5)
         ' Breitensport Bayern
-        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1"
-            punkte_verteilung = Array(15, 15, 10, 25, 0, 0, 0)
+        Case "BS_BY_BJ", "BS_BY_BE", "BS_BY_BS", "BS_BY_S1", "BS_BY_FU", "BS_BY_SH"
+            punkte_verteilung = Array(7.5, 7.5, 15, 10, 25, 0, 0, 0)
         Case Else
-            punkte_verteilung = Array(10, 10, 10, 10, 10, 10, 10, 10, 10)
+            punkte_verteilung = Array(10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10)
     End Select
     Punkteverteilung = punkte_verteilung
 End Function
@@ -909,7 +910,7 @@ Public Sub ObserverHTML(trunde)
     
     pfad = getBaseDir & "Apache2\htdocs\observer\index.html"
     Set out = file_handle(pfad)
-    out.writeline ("<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd""><html><head><title>" & Forms![A-Programmübersicht]!Turnierbez & "Observer Übersicht" & "</title> <meta http-equiv=""refresh"" content=""5""; URL="" " & GetIpAddrTable() & "/observer.html""><meta http-equiv=""expires"" content=""0""></head><body>" & HTML_Website & "</body></html>")
+    out.WriteLine ("<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN"" ""http://www.w3.org/TR/html4/loose.dtd""><html><head><title>" & Forms![A-Programmübersicht]!Turnierbez & "Observer Übersicht" & "</title> <meta http-equiv=""refresh"" content=""5""; URL="" " & GetIpAddrTable() & "/observer.html""><meta http-equiv=""expires"" content=""0""></head><body>" & HTML_Website & "</body></html>")
     out.Close
 
 ObserverHTML_Fehler_Exit:
@@ -945,3 +946,140 @@ Public Function Get_Akropunkte(TP_ID, Runde, akronummer)
     Get_Akropunkte = Paare(AkroText)
     
 End Function
+
+Public Function output_for_BRBV()
+    Dim db As Database
+    Dim re As Recordset
+    Dim sql As String
+    Dim HTML_Seite As String
+    Dim Paar As String
+    Dim rde As String
+    Dim i, j As Integer
+    Dim Punkte As Single
+    Dim vars
+    Dim kl_punkte As Variant
+    Dim wr As String
+    Set db = CurrentDb
+    
+    sql = "SELECT Auswertung.AUS_ID, Auswertung.Cgi_Input, First(Auswertung.reihenfolge) AS ErsterWertvonreihenfolge, Paare_Rundenqualifikation.TP_ID, Auswertung.Punkte, Paare.Da_Nachname, Paare.He_Nachname, Startklasse.Startklasse_text, Tanz_Runden_fix.Rundentext, Auswertung.WR_ID, Majoritaet.Platz, Majoritaet.WR7, Paare.Startnr, Rundentab.Startklasse "
+    sql = sql & "FROM Wert_Richter RIGHT JOIN ((Tanz_Runden_fix RIGHT JOIN (Startklasse RIGHT JOIN Rundentab ON Startklasse.Startklasse = Rundentab.Startklasse) ON Tanz_Runden_fix.Runde = Rundentab.Runde) INNER JOIN (Paare INNER JOIN (((Auswertung LEFT JOIN Startklasse_Wertungsrichter ON Auswertung.WR_ID = Startklasse_Wertungsrichter.WR_ID) INNER JOIN Paare_Rundenqualifikation ON Auswertung.PR_ID = Paare_Rundenqualifikation.PR_ID) INNER JOIN Majoritaet ON (Paare_Rundenqualifikation.RT_ID = Majoritaet.RT_ID) AND (Paare_Rundenqualifikation.TP_ID = Majoritaet.TP_ID)) ON Paare.TP_ID = Paare_Rundenqualifikation.TP_ID) ON Rundentab.RT_ID = Paare_Rundenqualifikation.RT_ID) ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID "
+    sql = sql & "WHERE (((Startklasse_Wertungsrichter.WR_function)<>'Ob') AND ((Wert_Richter.WR_Azubi)=False)) "
+    sql = sql & "GROUP BY Auswertung.AUS_ID, Auswertung.Cgi_Input, Paare_Rundenqualifikation.TP_ID, Auswertung.Punkte, Paare.Da_Nachname, Paare.He_Nachname, Startklasse.Startklasse_text, Tanz_Runden_fix.Rundentext, Auswertung.WR_ID, Majoritaet.Platz, Majoritaet.WR7, Paare.Startnr, Rundentab.Startklasse, Rundentab.Rundenreihenfolge "
+    sql = sql & "HAVING (((Rundentab.Startklasse) Like 'BS_BY_*')) "
+    sql = sql & "ORDER BY Rundentab.Startklasse, Rundentab.Rundenreihenfolge, Majoritaet.Platz, Paare.Startnr, Auswertung.Punkte;"
+    
+    Set re = db.OpenRecordset(sql)
+    re.MoveFirst
+    Paar = 0
+    rde = ""
+    HTML_Seite = "<!DOCTYPE html><html><head><style>"
+    HTML_Seite = HTML_Seite & "table {font-family: Arial; FONT-WEIGHT: bold; border-collapse: collapse; text-align: center; margin-left: auto; margin-right: auto;}" & vbCrLf
+    HTML_Seite = HTML_Seite & "td {border: thin solid red; background-color: white;}"
+    HTML_Seite = HTML_Seite & "td.paar_line { FONT-SIZE: 11pt; FONT-WEIGHT: bold; TEXT-ALIGN: center; color: black; BORDER-BOTTOM: #ccc 1px solid; padding: 5px;}" & vbCrLf
+    HTML_Seite = HTML_Seite & ".paar_detail { FONT-SIZE: 10pt; color: #E86E0E;}"
+    HTML_Seite = HTML_Seite & "td.werte { FONT-SIZE: 11pt; FONT-WEIGHT: bold; COLOR: navy; TEXT-ALIGN: center; BACKGROUND-COLOR: #acd; padding-left: 5px;padding-right: 5px; }" & vbCrLf
+    HTML_Seite = HTML_Seite & "</style></head>"
+    HTML_Seite = HTML_Seite & "<body style=""background-color: #347;""><table>"
+
+'    HTML_Seite = HTML_Seite & "<tr><td colspan=""8"" style=""font-size: 45px;"">" & Umlaute_Umwandeln(Forms![A-Programmübersicht]!Turnierbez) & "</td></tr>"
+    Do Until re.EOF
+        If rde <> re!Rundentext Then
+            HTML_Seite = HTML_Seite & "<tr><td colspan=""8"" height=""15px""></td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td colspan=""8"">" & re!Startklasse_text & " - " & re!Rundentext & "</td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td class=""werte"">Paar</td><td class=""werte"">Platz</td>x__wr<td class=""werte"">Punkte</td></tr>" & vbCrLf
+            rde = re!Rundentext
+            kl_punkte = Punkteverteilung("BS_BY_BJ", "ER", "")
+        End If
+        HTML_Seite = HTML_Seite & "<tr>"
+        HTML_Seite = HTML_Seite & "<td class=""paar_line"">" & Umlaute_Umwandeln(re!Da_NAchname & " - " & re!He_Nachname) & "</td>"
+        HTML_Seite = HTML_Seite & "<td class=""paar_line"">" & re!Platz & "</td>"
+        Punkte = 0
+        j = 0
+        wr = ""
+        Paar = re!Rundentext & re!TP_ID
+        Do Until re!Rundentext & re!TP_ID <> Paar
+            j = j + 1
+            Set vars = zerlege(DLookup("cgi_input", "auswertung", "AUS_ID =" & re!AUS_ID))
+            i = eins_zwei(re!TP_ID, vars)
+            Punkte = re!WR7
+            wr = wr & "<td class=""werte"">WR " & j & "</td>"
+            HTML_Seite = HTML_Seite & "<td class=""paar_line"" >" & Format(CSng(vars.Item("Punkte" & i)), "##0.00") & "<br><span class=""paar_detail"">"
+            Select Case left(re!Startklasse, 6)
+                Case "BW_JA", "BW_MA", "BW_MB", "BW_SA", "BW_SB"
+                    kl_punkte = Punkteverteilung("BW_NG", "ER", "")
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_ttd" & i)) * kl_punkte(0) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_tth" & i)) * kl_punkte(1) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_bda" & i)) * kl_punkte(2) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_dap" & i)) * kl_punkte(3) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_bdb" & i)) * kl_punkte(4) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_fta" & i)) * kl_punkte(5) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_fts" & i)) * kl_punkte(6) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_ftb" & i)) * kl_punkte(7) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_inf" & i)) * kl_punkte(8) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_ins" & i)) * kl_punkte(9) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wng_inb" & i)) * kl_punkte(10)
+                Case "BS_BY_"
+                    kl_punkte = Punkteverteilung("BS_BY_BJ", "ER", "")
+                    If vars.exists("wgs" & i) Then     ' für Turniere von dem 01.08.2024
+                        HTML_Seite = HTML_Seite & CSng(vars.Item("wgs" & i)) * (kl_punkte(0) + kl_punkte(1)) / 10 & "&#124;"
+                    Else
+                        HTML_Seite = HTML_Seite & CSng(vars.Item("wsd" & i)) * kl_punkte(0) / 10 & "&#124;"
+                        HTML_Seite = HTML_Seite & CSng(vars.Item("wsh" & i)) * kl_punkte(1) / 10 & "&#124;"
+                    End If
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wbd" & i)) * kl_punkte(2) / 10 & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wtf" & i)) * kl_punkte(3) / 10 & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("win" & i)) * kl_punkte(4) / 10
+                Case "BS_BW_", "BS_F_R"
+                    kl_punkte = Punkteverteilung("BS_BY_BJ", "ER", "")
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wth" & i)) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wtd" & i)) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wta" & i)) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wak" & i)) & "&#124;"
+                    HTML_Seite = HTML_Seite & CSng(vars.Item("wfe" & i)) * -1
+            End Select
+            HTML_Seite = HTML_Seite & "</span></td>"
+            re.MoveNext
+            If re.EOF Then Exit Do
+        Loop
+        HTML_Seite = HTML_Seite & "<td class=""paar_line"">" & Format(Punkte, "##0.00") & "</td>"
+        HTML_Seite = HTML_Seite & "</tr>" & vbCrLf
+    Loop
+    HTML_Seite = HTML_Seite & "<tr><td colspan=""8"" height=""25px""></td></tr>"
+    HTML_Seite = Replace(HTML_Seite, "x__wr", wr)
+    re.MoveFirst
+    Select Case left(re!Startklasse, 6)
+        Case "BS_BY_"
+            If vars.exists("wgs" & i) Then        ' für Turniere von dem 01.08.2024
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 1</td><td colspan=""8"" class=""paar_detail"">Grundschritt (Rhythmus & Fu&szlig;technik)</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 2</td><td colspan=""8"" class=""paar_detail"">Basic Dancing, Lead & Follow, Harmonie</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 3</td><td colspan=""8"" class=""paar_detail"">Tanzfiguren (einfache, highlight)</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 4</td><td colspan=""8"" class=""paar_detail"">Interpretation (Figuren, spontane Interpretation)</td></tr>"
+            Else
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 1</td><td colspan=""8"" class=""paar_detail"">Grundschritt Follower (Rhythmus & Fu&szlig;technik)</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 2</td><td colspan=""8"" class=""paar_detail"">Grundschritt Leader (Rhythmus & Fu&szlig;technik)</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 3</td><td colspan=""8"" class=""paar_detail"">Basic Dancing, Lead & Follow, Harmonie</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 4</td><td colspan=""8"" class=""paar_detail"">Tanzfiguren (einfache, highlight)</td></tr>"
+                HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 5</td><td colspan=""8"" class=""paar_detail"">Interpretation (Figuren, spontane Interpretation)</td></tr>"
+            End If
+        Case "BS_BW_", "BS_F_R"
+            HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 1</td><td colspan=""8"" class=""paar_detail"">Technik Herr/Technik Formationen</td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 2</td><td colspan=""8"" class=""paar_detail"">Technik Dame</td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 3</td><td colspan=""8"" class=""paar_detail"">Tanz/Tanz Form</td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 4</td><td colspan=""8"" class=""paar_detail"">Akrobatik</td></tr>"
+            HTML_Seite = HTML_Seite & "<tr><td class=""paar_detail"">Wert 5</td><td colspan=""8"" class=""paar_detail"">Abz&#252;ge</td></tr>"
+    End Select
+    HTML_Seite = HTML_Seite & "<tr><td>Punkte</td><td colspan=""8"">bei geteilter Endrunde Summe der Hin- und R&#252;ckrunde</td></tr><tr>"
+    HTML_Seite = HTML_Seite
+    HTML_Seite = HTML_Seite
+    HTML_Seite = HTML_Seite & "</table></body></html>"
+    HTML_Seite = HTML_Seite
+'    Debug.Print HTML_Seite
+    
+    Open gen_Ordner(getBaseDir & "_Versand\") & Forms![A-Programmübersicht]!Turnierbez & ".html" For Output As #1
+    Print #1, HTML_Seite
+    Close #1
+
+End Function
+
+
+

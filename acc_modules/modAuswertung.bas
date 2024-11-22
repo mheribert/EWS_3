@@ -77,7 +77,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             
             sqlstm = "SELECT PR_ID FROM Auswertung WHERE PR_ID=" & pr!PR_ID & " AND InStr([Cgi_Input],'=&')>0 ORDER BY PR_ID;"
             Set ft_ak = db.OpenRecordset(sqlstm)
-            If ft_ak.RecordCount > 0 Then w_dis = 1
+'            If ft_ak.RecordCount > 0 Then w_dis = 1
 
 '            bw_pu = bw_pu * 2 + 0.000000001
 '            Set ft_ak = db.OpenRecordset("SELECT Sum(Platz) AS MK_Sum FROM Majoritaet WHERE (RT_ID=9001 OR RT_ID=9003) AND TP_ID=" & pr!PR_ID & ";")
@@ -129,7 +129,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             maj!WR3 = Format(ak_pu, "##0.00")
             maj!WR5 = Format(bw_pu, "##0.00")
             If st_kl = "RR_S1" Or st_kl = "RR_S2" Then
-                maj!WR6 = Format(bw_verst, "##0.00")
+'                maj!WR6 = Format(bw_verst, "##0.00")
                 bw_verst = bw_verst * -1
             Else
                 maj!WR6 = FormatNumber(bw_verst, 2)
@@ -140,7 +140,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
             maj!WR7 = Format(ges_Punkte, "##0.00")
             maj!WR7_Punkte = ges_Punkte
         Else
-             maj!DQ_ID = 1
+'             maj!DQ_ID = 1
         End If
         maj.Update
         pr.MoveNext
@@ -149,6 +149,7 @@ Public Sub RR_Auswertung(rt, TNR, ft_id, st_kl)
         Call RR_KO_Sieger_ermitteln(rt)
     End If
     Call RR_platz_vergeben(rt, 0)
+    db.Execute "UPDATE Rundentab SET runde_ausgewertet = true WHERE RT_ID=" & rt & ";"
     Set tu = db.OpenRecordset("Turnier")
     If Runde = "MK_5_TNZ" Then      ' Or ((st_kl <> "RR_A" Or st_kl <> "RR_B") And Nz(tu!MehrkampfStationen) <> "") Then      ' Zusammenführen von MK1 und MK2 Stationen und platzieren
         db.Execute "DELETE * FROM Majoritaet WHERE rt_id >" & 9000
@@ -310,11 +311,11 @@ Function get_mittel(avr, Runde, st_kl)
     Dim i(8) As Double
     Dim min As Integer
     Dim max As Integer
-    Dim X As Integer
+    Dim x As Integer
     
     avr.MoveLast
-    For X = 1 To avr.RecordCount
-        i(X) = Nz(avr!Punkte)
+    For x = 1 To avr.RecordCount
+        i(x) = Nz(avr!Punkte)
         avr.MovePrevious
     Next
     
@@ -356,8 +357,8 @@ Function get_mittel(avr, Runde, st_kl)
         min = 1
         max = avr.RecordCount
     End If
-    For X = min To max
-        i(0) = i(0) + i(X)
+    For x = min To max
+        i(0) = i(0) + i(x)
     Next
     get_mittel = i(0) / (max - min + 1)
 

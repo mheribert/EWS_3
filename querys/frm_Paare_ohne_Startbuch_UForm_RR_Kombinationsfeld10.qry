@@ -1,1 +1,0 @@
-SELECT [Startbuch_Status].[SBS_ID], [Startbuch_Status].[SBS_Bezeichnung], [Startbuch_Status].[SBS_Reihenfolge] FROM [Startbuch_Status] ORDER BY [SBS_Reihenfolge];

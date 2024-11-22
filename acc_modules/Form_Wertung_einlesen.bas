@@ -180,8 +180,12 @@ Public Sub Runde_starten_Click()
         db.Execute "UPDATE Wert_Richter INNER JOIN Startklasse_Wertungsrichter ON Wert_Richter.WR_ID = Startklasse_Wertungsrichter.WR_ID SET WR_func = [WR_function], WR_status = 'start' WHERE (((Startklasse_Wertungsrichter.WR_function) Like 'M*'));"
     End If
     db.Execute "UPDATE rundentab SET gestartet = true WHERE RT_ID=" & Me!RT_ID & ";"
+    Me!runde_gestartet.BackStyle = DLookup("gestartet", "Rundentab", "RT_ID =" & Me!Tanzrunde) * -1
     rundeninfo = RT_ID
     If get_properties("Gopro") = True Then DoCmd.OpenForm "Gopro"
+    retl = DCount("nochmal", "Paare_Rundenqualifikation", "nochmal = true AND RT_ID=" & Tanzrunde.Column(0))
+    If retl > 0 Then _
+        MsgBox "Achtung mindestens 1 Paar ist mit " & vbCrLf & vbCrLf & "nochmal tanzen" & vbCrLf & vbCrLf & "markiert!", vbOK
     st = get_url_to_string_check("http://" & GetIpAddrTable() & "/hand?msg=observer_starten&text=" & rundeninfo & "&mdb=" & get_TerNr)
         SngSec = Timer + 1
         Do While Timer < SngSec
@@ -201,6 +205,8 @@ Private Sub Runde_beenden_Click()
     Set db = CurrentDb
     Call Wertungen_einlesen_Click
     AuswertenundPlatzieren Me.Tanzrunde, Me.Tanzrunde.Column(3), Me.Tanzrunde.Column(17), Me.Tanzrunde.Column(6), Me.Tanzrunde.Column(7)
+    Me!runde_beendet.BackStyle = DLookup("runde_ausgewertet", "Rundentab", "RT_ID =" & Me!Tanzrunde) * -1
+    DoCmd.Requery "Tanzrunde"
     If get_properties("EWS") = "EWS3" Then
         Set re = db.OpenRecordset("Select* from Rundentab Where RT_ID =" & Me!Tanzrunde & ";")
         If re!gestartet = True Then     'And re!getanzt = False Then
@@ -269,6 +275,8 @@ Sub Tanzrunde_AfterUpdate()
                 Me!Runde_starten.Visible = False
                 Me!Rundenergebnis.Visible = False
             End If
+            Me!runde_gestartet.BackStyle = DLookup("gestartet", "Rundentab", "RT_ID =" & Me!Tanzrunde) * -1
+            Me!runde_beendet.BackStyle = DLookup("runde_ausgewertet", "Rundentab", "RT_ID =" & Me!Tanzrunde) * -1
             If Right(Me!Tanzrunde.Column(6), 4) = "_Fuß" Then
                 where_part = "(WR_Azubi = false AND Rundentab.RT_ID=" & Me!Tanzrunde & " AND Wert_Richter.Turniernr=" & get_aktTNr & " AND WR_function<>'Ak')"
             Else
@@ -716,9 +724,12 @@ End Sub
 Private Sub Runde_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
     If no_runde_selected Then Exit Sub
     
-    Forms!Wertung_einlesen!HTML_Select = 2
-    get_url_to_string_check ("http://" & GetIpAddrTable() & "/hand?msg=beamer_runde&text=")
-    Beamer_generieren
+    If get_properties("EWS") = "EWS1" Then
+        Forms!Wertung_einlesen!HTML_Select = 2
+        Beamer_generieren
+    Else
+        get_url_to_string_check ("http://" & GetIpAddrTable() & "/hand?msg=beamer_runde&text=")
+    End If
 End Sub
 
 Private Sub Platzierungsliste_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)

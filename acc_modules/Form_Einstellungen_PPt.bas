@@ -27,7 +27,7 @@ End Sub
 
 Private Sub get_Pfad_Click()
     Dim nPfad As String
-    nPfad = GetFolder("Ordner für Folien", Screen.ActiveForm.hwnd)
+    nPfad = get_Folder("Ordner für Folien", "", getBaseDir)
     Me!PPT_Pfad = nPfad
     Me!PPT_Pfad.Requery
 End Sub

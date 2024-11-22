@@ -1,6 +1,7 @@
 Option Compare Database
 Option Explicit
     Public akt_st As String
+    Dim akt_sw As String
 
 Private Sub Akro_anzeigen_Click()
 
@@ -21,6 +22,28 @@ Err_Befehl12_Click:
     MsgBox err.Description
     Resume Exit_Befehl12_Click
     
+End Sub
+
+Private Sub btn_Paare_aufnehmen_1_Click()
+    Dim re As Recordset
+    Dim verw As String
+    Set re = Me.RecordsetClone
+    If re.RecordCount > 0 Then re.MoveFirst
+    Do Until re.EOF
+        If Nz(re!Verwarnung) <> "" Then
+            verw = verw & re!Startkl & "  " & re!Startnr & "  " & re!Verwarnung & vbCrLf
+        End If
+        re.MoveNext
+    Loop
+    If Len(verw) > 0 Then
+        MsgBox verw
+    Else
+        MsgBox "Es gibt keine Verwarnungen!"
+    End If
+End Sub
+
+Private Sub btn_Paare_aufnehmen_2_Click()
+    If Not IsNull(Me!TP_ID) Then DoCmd.OpenForm "Verwarnungen", , , "TP_ID = " & Me!TP_ID
 End Sub
 
 Private Sub btnAktualisieren_Click()
@@ -85,11 +108,26 @@ Private Sub test_akros()
         Next
         Paare.MoveNext
     Loop
-    If Len(fehlende) > 0 Then MsgBox fehlende
+    If Len(fehlende) > 0 Then MsgBox fehlende, vbOKOnly, "fehlende Akrobatik"
+End Sub
+
+Private Sub FilterStartklasse_KeyDown(KeyCode As Integer, Shift As Integer)
+    akt_sw = akt_sw & Chr(KeyCode)
+    If akt_sw = "wrb" Then
+        Me!FilterStartklasse = ""
+        DBEngine(0)(0).Execute ("UPDATE Properties SET PROP_VALUE = 1  WHERE PROP_KEY ='away';")
+        Me!Wertungen_ausdrucken.Visible = True
+    End If
+End Sub
+
+Private Sub Form_Close()
+    DBEngine(0)(0).Execute ("UPDATE Properties SET PROP_VALUE = 0  WHERE PROP_KEY ='away';")
 End Sub
 
 Private Sub Form_Load()
     Const xoff = 630
+    setzte_buttons "Tanzpaare_aufnehmen", "Paare_aufnehmen", Forms![A-Programmübersicht]!Turnierausw.Column(8)
+'    setzte_buttons "Tanzpaare_aufnehmen", "Paare_aufnehmen", IIf(lae = "", get_properties("LAENDER_VERSION"), lae)
     Select Case Forms![A-Programmübersicht]!Turnierausw.Column(8)
         Case "SL"
             Me.DA_Vorname1.left = Me.Da_Vorname.left - xoff
@@ -111,15 +149,12 @@ Private Sub Form_Load()
             Me!Boogie_Startkarte_H1.Visible = False
             Me!Startbuch.Visible = False
             Me!Startbuch1.Visible = False
-            Me.Wertungen_ausdrucken.Visible = False
         Case "BW"
-            Me.Wertungen_ausdrucken.Visible = True
         Case "BY"
-            Me.Wertungen_ausdrucken.Visible = False
             Me.Akro_anzeigen.Visible = False
         Case Else
     End Select
-    Me!Wertungen_ausdrucken.Visible = get_properties("Giveaway")
+    Me!Wertungen_ausdrucken.Visible = get_properties("away")
     Call test_akros
 
 End Sub
@@ -141,7 +176,7 @@ Private Sub Kombinationsfeld36_KeyDown(KeyCode As Integer, Shift As Integer)
     Pfeil_up_down KeyCode, Shift
 End Sub
 
-Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub moderator_vorstellung_MouseUp(Button As Integer, Shift As Integer, x As Single, Y As Single)
     Dim st As String
     If get_properties("EWS") = "EWS1" Then
         make_a_Vorstellungslist
@@ -177,16 +212,15 @@ End Sub
 Private Sub FilterStartklasse_Change()
     'MsgBox "Startklasse = " & [FilterStartklasse]
     If (IsNull([FilterStartklasse]) Or [FilterStartklasse] = -1) Then
-        Me.Filter = ""
+        Me.filter = ""
         Startnummernvergabe.Enabled = False
         Me.FilterOn = False
     Else
-        Me.Filter = "Startkl = '" & [FilterStartklasse] & "'"
+        Me.filter = "Startkl = '" & [FilterStartklasse] & "'"
         Startnummernvergabe.Enabled = True
         Me.FilterOn = True
     End If
     'Me.Refresh
-    
 End Sub
 
 Private Sub Form_Activate()
@@ -397,12 +431,19 @@ Private Sub Startnummernvergabe_Click()
 End Sub
 
 Private Sub Wertungen_ausdrucken_Click()
+    Dim tpid As Integer
+    tpid = Me!TP_ID
+    
+    If CurrentProject.AllReports("Wertung_Paare").IsLoaded Then
+        DoCmd.Close acReport, "Wertung_Paare"
+    End If
+    
     Call read_raw
     If Not IsNull(Me!TP_ID) Then
-        If get_properties("Giveaway_direct") Then
-            DoCmd.OpenReport "Wertung_Paare", acViewNormal, , "TP_ID = " & Me!TP_ID
+        If get_properties("away_direct") Then
+            DoCmd.OpenReport "Wertung_Paare", acViewNormal, , "TP_ID = " & tpid
         Else
-            DoCmd.OpenReport "Wertung_Paare", acViewPreview, , "TP_ID = " & Me!TP_ID
+            DoCmd.OpenReport "Wertung_Paare", acViewPreview, , "TP_ID = " & tpid
         End If
     End If
 End Sub

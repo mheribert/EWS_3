@@ -483,14 +483,14 @@ Function msystem(RT_ID As Integer, tnr1, klasse, Runde, AnzahlWR, autoDeleteWert
      With rstLoesch
          rstLoesch.MoveLast
          If rstLoesch.RecordCount > 0 Then
-            Dim Mldg, Stil, titel, Antwort, Text1
+            Dim Mldg, Stil, Titel, Antwort, Text1
             Mldg = "Majorität wurde schon errechnet. Bestehende Auswertung löschen?"   ' Meldung definieren.
             Stil = vbYesNo + vbCritical + vbDefaultButton2  ' Schaltflächen definieren.
-            titel = "Was nun?"  ' Titel definieren.
+            Titel = "Was nun?"  ' Titel definieren.
             If (autoDeleteWertung) Then
                 Antwort = vbYes
             Else
-                Antwort = MsgBox(Mldg, Stil, titel)    ' Meldung anzeigen.
+                Antwort = MsgBox(Mldg, Stil, Titel)    ' Meldung anzeigen.
             End If
             If (Antwort = vbYes) Then ' Benutzer hat "Ja" gewählt.
                rstLoesch.MoveFirst
@@ -594,6 +594,7 @@ Sub PaareInDieNaechsteRunde2(Turniernr As Integer, currentRT_ID As Integer, next
                     result = MsgBox("Die " & Rundentext & " besteht schon, sollen die Paare in dieser Runde gelöscht werden?", vbYesNo)
                     If (result = vbYes) Then
                         dbs.Execute ("Delete from Paare_rundenqualifikation where rt_id=" & nextRT_ID)
+                        dbs.Execute ("UPDATE Majoritaet SET RT_ID_weiter =0, Runde_report =0 WHERE rt_id=" & currentRT_ID & ";")
                     End If
                 End If
         '                     '
@@ -991,7 +992,7 @@ Public Sub UpdateAnzahl_Paare(RT_ID As Integer)
     ElseIf left(Runde, 4) = "MK_5" Then
         rstAnzahlPaare!mk = Anzahl
     ElseIf (Runde = "End_r" Or Runde = "End_r_Akro" Or Runde = "End_r_2" Or Runde = "End_r_schnell") Then
-        rstAnzahlPaare!er = Anzahl
+        rstAnzahlPaare!ER = Anzahl
     End If
     
     rstAnzahlPaare.Update

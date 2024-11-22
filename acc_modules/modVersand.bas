@@ -25,7 +25,7 @@ Sub send_zeitplan(Turniernr)
     Loop
     Set zFile = file_handle(zFileName)
     zFile.writeline (Zeitplan)
-    zFile.close
+    zFile.Close
 
     If OutlookInstalliert Then
         Dim objOutlook, objOLAtt, objOutMsg As Object
@@ -232,6 +232,10 @@ Function Info_Laufwerke(pfad)
      If lw.DriveType = 2 Then Info_Laufwerke = True
 End Function
 
+Sub akrobatiken_raus()
+    export_tabelle "Akrobatiken", "Akros.txt"
+End Sub
+
 Function export_tabelle(tbl, FileToZip)
     Dim db As Database
     Dim re As Recordset
@@ -266,10 +270,10 @@ Function export_tabelle(tbl, FileToZip)
     Loop
     Set out = file_handle(FileToZip)
     out.writeline (line)
-    out.close
+    out.Close
 End Function
 
-Sub alle_Paare_anschreiben()
+Sub alle_Paare_anschreiben()    ' no call
     Dim fName As String
     Dim line As String
     Dim mails As String
@@ -277,9 +281,7 @@ Sub alle_Paare_anschreiben()
     Dim vars
     Dim indexMail As Integer
     
-    OpenFile.lpstrFilter = "Turnierdatenbanken (*.csv)" & Chr(0) & "*.csv" & Chr(0)
-    OpenFile.lpstrInitialDir = "C:\"
-    fName = get_Filename(0)
+    fName = get_Filename("Turnierdatenbanken", "*.csv", "C:\")
 
     Open fName For Input As #1
     Line Input #1, line
@@ -289,7 +291,9 @@ Sub alle_Paare_anschreiben()
         Line Input #1, line
         line = del_kochkomma(line)
         vars = Split(line, ";")
-        mails = mails & vars(8) & "; "
+        If InStr(mails, vars(8)) = 0 Then
+            mails = mails & vars(8) & "; "
+        End If
     Loop
     Close #1
     empf = DLookup("Lizenznr", "Turnierleitung", "Art = 'TL'")
@@ -300,16 +304,14 @@ End Sub
 Public Sub versand_ausschreibung(turnier)
     Dim fName, new_fName As String
     Dim as_pfad As String
-    OpenFile.lpstrFilter = "Turnierdatenbanken (*.pdf)" & Chr(0) & "*.pdf" & Chr(0)
-    OpenFile.lpstrInitialDir = getBaseDir
-    If get_Filename(0) <> "" Then
-        fName = OpenFile.lpstrFile
+    fName = get_Filename("Ausschreibung", "*.pdf", getBaseDir)
+    If fName <> "" Then
         new_fName = getBaseDir & "Turnierleiterpaket\" & turnier & "_" & "Ausschreibung.pdf"
-        as_pfad = left(OpenFile.lpstrFile, Len(OpenFile.lpstrFile) - Len(OpenFile.lpstrFileTitle))
+        as_pfad = left(fName, InStrRev(fName, "\"))
         If as_pfad = getBaseDir & "Turnierleiterpaket\" Then _
             gen_Ordner "Turnierleiterpaket"
         If as_pfad = getBaseDir & "Turnierleiterpaket\" Then
-            If OpenFile.lpstrFileTitle <> turnier & "_" & "Ausschreibung.pdf" Then
+            If fName <> turnier & "_" & "Ausschreibung.pdf" Then
                 FileCopy fName, new_fName
             End If
         Else
@@ -328,7 +330,7 @@ Public Sub versand_ausschreibung(turnier)
             End With
             Set objOLAtt = objOutMsg.Attachments.Add(new_fName)
             objOutMsg.Display
-            objOutMsg.Send
+'            objOutMsg.Send
 
             Set objOutMsg = Nothing
             Set objOutlook = Nothing

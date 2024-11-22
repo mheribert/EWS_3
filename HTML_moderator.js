@@ -1,4 +1,4 @@
-var ver = 'V3.2020';
+var ver = 'V3.2021';
 var moderator_inhalt = '';
 
 exports.inhalt = function () {
@@ -62,18 +62,21 @@ function make_paar(runden_info, rd_ind, cl) {
     if (runden_info[rd_ind].Name_Team === null) {        // Einzel
         HTML_paar += '<td width="85" class="' + cl + '"><b>' + runden_info[rd_ind].Dame + '<br>' + runden_info[rd_ind].Herr + '</b><br>' + runden_info[rd_ind].Verein_Name + '</td>';
     } else {                                    // Formationen
-        HTML_paar += '<td width="85" class="' + cl + '"><b>' + runden_info[rd_ind].Name_Team + '</b><br>' + runden_info[rd_ind].Verein_Name + '</td>';
+        HTML_paar += '<td width="85" class="' + cl + '"><b>' + runden_info[rd_ind].Name_Team + '</b><br><small><small>Motto: ' + (runden_info[rd_ind].Motto || '') + '</small></small><br>' + runden_info[rd_ind].Verein_Name + '</td>';
     }
     return HTML_paar + '</tr>';
 }
 
 function add_platz(runden_info, rd_ind) {
     if (!runden_info[0].ranking_anzeige) { return ''; }
-    var platz = '<tr><td colspan="2" class="mod_m">Platz ' + runden_info[rd_ind].Platz + ' mit ';
-    if (runden_info[0].ersteRunde !== null) {
-        platz += '&nbsp;&nbsp;&nbsp;' + fix2(runden_info[rd_ind].ersteRunde) + '&nbsp;+&nbsp;' + fix2(runden_info[rd_ind].Punkte) + ' = ';
+    var platz = '<tr><td colspan="2" class="mod_m">Platz ' + runden_info[rd_ind].Platz;
+    if (runden_info[0].punkte_anzeige) {
+        platz += ' mit ';
+        if (runden_info[0].ersteRunde !== null) {
+            platz += '&nbsp;&nbsp;&nbsp;' + fix2(runden_info[rd_ind].ersteRunde) + '&nbsp;+&nbsp;' + fix2(runden_info[rd_ind].Punkte) + ' = ';
+        }
+        platz += fix2(runden_info[rd_ind].ersteRunde + runden_info[rd_ind].Punkte) + ' Punkten';
     }
-    platz += fix2(runden_info[rd_ind].ersteRunde + runden_info[rd_ind].Punkte) + ' Punkten';
     if (runden_info[rd_ind].a20 === true || runden_info[rd_ind].z20 === true) {
         platz += '<b>Strafe ' + runden_info[rd_ind].PunkteOb + ' Punkte</b>';
     }
@@ -185,7 +188,7 @@ exports.siegerehrung = function (io, connection, rt_id) {
     connection
         .query('SELECT * FROM View_Rundenablauf WHERE RT_ID =' + rt_id + ' ORDER BY Platz DESC, Startnr;')
         .on('done', function (data) {
-            var HTML_Inhalt = make_thead() + '<tbody>';
+            var HTML_Inhalt = make_thead(data[0].punkte_anzeige) + '<tbody>';
             var cl = '';
             for (var p in data) {
                 HTML_Inhalt += '<tr id="' + data[p].RT_ID + '" class="weiter"  ' + cl + '><td class="mod_s">' + data[p].Platz + '&nbsp;</td>';
@@ -196,9 +199,11 @@ exports.siegerehrung = function (io, connection, rt_id) {
                     HTML_Inhalt += data[p].Name_Team;
                 }
                 HTML_Inhalt += '<br><small><small><small>' + data[p].Verein_Name + '</small></small></small></td>';
-                data[p].jetztRunde = data[p].jetztRunde || 0;
-                punkte = data[p].jetztRunde.toFixed(2);
-                HTML_Inhalt += '<td class="mod_pkte">' + punkte + '</td></tr>';
+                if (data[p].punkte_anzeige === true) {
+                    data[p].jetztRunde = data[p].jetztRunde || 0;
+                    punkte = data[p].jetztRunde.toFixed(2);
+                    HTML_Inhalt += '<td class="mod_pkte">' + punkte + '</td></tr>';
+                }
             }
             HTML_Inhalt += '</tbody>';
 
@@ -208,11 +213,14 @@ exports.siegerehrung = function (io, connection, rt_id) {
 
 };
 
-function make_thead() {
+function make_thead(p_anzeige) {
     var t_head = '<thead><tr ><th class="mod_s">Platz</th>';
     t_head += '<th class="mod_s">&nbsp;StNr.&nbsp;</th>';
     t_head += '<th class="mod_s">Paar</th>';
-    t_head += '<th class="mod_s">Punkte</th></tr></thead>';
+    if (p_anzeige === true) {
+        t_head += '<th class="mod_s">Punkte</th>';
+    }
+    t_head += '</tr></thead>';
     return t_head;
 }
 

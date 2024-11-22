@@ -26,16 +26,22 @@ Public Function updateTLP(dl_data, rmldg)
         Dim fMsg As String
         Dim destDir As String
         Dim i As Integer
+        Dim x As Integer
         Dim cnt As Integer
         
         Select Case get_properties("LAENDER_VERSION")
             Case "SL"
-                dateien = Array("Termine-Start-Daten.txt", "WR-TL-Start-Daten.txt", "DRBV-Akrotabelle-12P.txt")
-                tbls = Array("TLP_TERMINE", "TLP_OFFIZIELLE", "MSys__Akrobatiken")
-        
+                dateien = Array("Termine-Start-Daten.txt", "WR-TL-Start-Daten.txt")
+                tbls = Array("TLP_TERMINE", "TLP_OFFIZIELLE")
+            Case "BW"
+                update_drbv_tables "MSYS__Akrobatiken", "BWRRV-Akrotabelle.txt", getBaseDir() & "Turnierleiterpaket\"
+                update_drbv_tables "TLP_OFFIZIELLE", "BWRRV-WR-TL.txt", getBaseDir() & "Turnierleiterpaket\"
+                cnt = 2
+                dateien = Array("Termine-Start-Daten.txt")
+                tbls = Array("TLP_TERMINE")
             Case Else
                 dateien = Array("BW-Start-Daten.txt", "RR-Start-Daten-Paare.txt", "Formationen.txt", "WR-TL-Start-Daten.txt", "Termine-Start-Daten.txt", "DRBV-Akrotabelle-12P.txt")
-                tbls = Array("TLP_BW_PAARE", "TLP_RR_PAARE", "TLP_FORMATIONEN", "TLP_OFFIZIELLE", "TLP_TERMINE", "MSys__Akrobatiken")
+                tbls = Array("TLP_BW_PAARE", "TLP_RR_PAARE", "TLP_FORMATIONEN", "TLP_OFFIZIELLE", "TLP_TERMINE", "MSYS__Akrobatiken")
         End Select
         
         
@@ -46,19 +52,19 @@ Public Function updateTLP(dl_data, rmldg)
             For i = 0 To UBound(dateien)
                 downloadTP = destDir & dateien(i)
                 If get_url_to_file("http://www.drbv.de/cms/images/Download/TurnierProgramm/" & dateien(i), downloadTP) = 0 Then
-                    cnt = cnt + 1
+                    x = x + 1
                 End If
             Next
-            If cnt = UBound(dateien) + 1 Then
+            If x = UBound(dateien) + 1 Then
                 fMsg = "Das Turnierleiterpaket wurde erfolgreich aktualisiert."
             Else
                 fMsg = "Es konnten nicht alle Dateien vom DRBV-Server geladen werden."
             End If
         
-            If cnt <> 0 And dl_data Then   'nichts heruntergeladen
+            If x <> 0 And dl_data Then   'nichts heruntergeladen
                 ' Check neues TLP
                 If get_properties("LAENDER_VERSION") = "D" Then
-                    aktVersion = Replace(db_Ver, "-", ".")
+                    aktVersion = Replace(Mid(db_Ver, 2), "-", ".")
                     Version = get_url_to_string("http://www.drbv.de/cms/index.php/aktivenportal/downloads/turnierprogramm")
                     off = InStr(1, Version, "/cms/images/Download/TurnierProgramm/TLP-V20/")
                     If off <> 0 Then
@@ -72,13 +78,10 @@ Public Function updateTLP(dl_data, rmldg)
             End If
         End If
         
-        cnt = 0
         For i = 0 To UBound(dateien)
             llRetVal = update_drbv_tables(tbls(i), dateien(i), destDir)
             cnt = cnt + llRetVal
         Next i
-        If Len(Dir(getBaseDir() & "Turnierleiterpaket\WR-TL-Ergänzung.txt")) > 0 Then _
-            update_drbv_tables "TLP_OFFIZIELLE", "WR-TL-Ergänzung.txt", getBaseDir() & "Turnierleiterpaket\"
         If Len(fMsg) > 1 Then fMsg = fMsg + vbCrLf
         If rmldg = True Then
             MsgBox fMsg & "Es wurden " & cnt & " Tabellen aktualisiert"
@@ -135,6 +138,8 @@ Public Function update_drbv_tables(tbl, fName, destDir)
     Dim re As Recordset
     Dim impo As String
     Dim sql As String
+    Dim meld As Boolean
+    Dim a_meld As String
     Dim strZeile As String
     Dim he, da As Variant
     Dim i, st, en As Integer
@@ -144,6 +149,9 @@ Public Function update_drbv_tables(tbl, fName, destDir)
         sql = "DELETE FROM " & tbl
         db.Execute sql
     End If
+    If InStr(fName, "Anmeldung_2.txt") > 0 And get_properties("a_diff") = 1 Then _
+        meld = True
+    
     Set re = db.OpenRecordset(tbl, DB_OPEN_DYNASET)
    
     If Len(Dir(destDir & fName)) <> 0 Then
@@ -154,37 +162,45 @@ Public Function update_drbv_tables(tbl, fName, destDir)
         he = Split(strZeile, ";")
         Do While Not EOF(1)
             Line Input #1, strZeile
-            strZeile = del_kochkomma(strZeile)
-            da = Split(strZeile, ";")
-            If InStr(fName, "Anmeldung_2.txt") > 0 Then
-                If da(9) <> "" Then
-                    re.FindFirst he(9) & " = " & da(9)
+            If strZeile <> "" Then
+                strZeile = del_kochkomma(strZeile)
+                da = Split(strZeile, ";")
+                If InStr(fName, "Anmeldung_2.txt") > 0 Then
+                    If da(9) <> "" Then
+                        re.FindFirst he(9) & " = " & da(9)
+                    Else
+                        re.FindFirst he(10) & " = " & da(10)
+                    End If
+                    If re.NoMatch Then
+                        MsgBox "Diese Startkarte existiert nicht"
+                        update_drbv_tables = 0
+                        Exit Do
+                    Else
+                        re.Edit
+                    End If
+                    ' Name und Verein aktualisieren oder neu schreiben
+                    st = 12     ' start der Akrobatiken
+                    en = 79     ' ende 71 ohne Musik
                 Else
-                    re.FindFirst he(10) & " = " & da(10)
+                    re.AddNew
+                    st = 0
+                    en = UBound(he)
                 End If
-                If re.NoMatch Then
-                    MsgBox "Diese Startkarte existiert nicht"
-                    update_drbv_tables = 0
-                    Exit Do
-                Else
-                    re.Edit
-                End If
-                ' Name und Verein aktualisieren oder neu schreiben
-                st = 12
-                en = 71
-            Else
-                re.AddNew
-                st = 0
-                en = UBound(he)
+                For i = st To en
+                    If da(i) <> "" Then
+                        If Nz(re(he(i))) <> Nz(da(i)) And InStr(he(i), "Wert") = 0 And meld Then
+                            a_meld = a_meld & re(he(1)) & "  " & he(i) & "  " & re(he(i)) & "  " & Nz(da(i)) & vbCrLf
+                        End If
+                        re(he(i)) = Nz(da(i))
+                    End If
+                Next i
+                re.Update
             End If
-            For i = st To en
-                If da(i) <> "" Then re(he(i)) = Nz(da(i))
-            Next i
-            re.Update
         Loop
         Close #1
     End If
     Set re = Nothing
+    If meld Then MsgBox a_meld, vbOKOnly, "geänderte Akros"
 End Function
 
 Function del_kochkomma(str)
@@ -223,7 +239,7 @@ Private Sub Endrunden_Musik_herunterladen()
 
 End Sub
 
-Public Sub DRBV_Musik_herunterladen()
+Public Sub DRBV_Musik_herunterladen()       ' no call
     Dim vars
     Dim db As Database
     Dim re As Recordset
@@ -236,10 +252,8 @@ Public Sub DRBV_Musik_herunterladen()
     Dim retl As Integer
     Dim fName As String
     
-    OpenFile.lpstrFilter = "Musikdateien (*.csv)" & Chr(0) & "*.csv" & Chr(0)
-    OpenFile.lpstrInitialDir = getBaseDir() & "Musik"
-    fName = get_Filename(0)
-    fName = Mid(OpenFile.lpstrFileTitle, 1, Len(OpenFile.lpstrFileTitle))
+    fName = get_Filename("Musikdateien", "*.csv", getBaseDir() & "Musik")
+    fName = Mid(fName, InStrRev(fName, "\"))
     If fName <> "" Then
         reihe = 1
         pfad = getBaseDir() & "Musik\"

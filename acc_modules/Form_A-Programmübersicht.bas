@@ -188,10 +188,13 @@ Private Sub Form_Open(Cancel As Integer)
     Set db = CurrentDb
     
     setzte_buttons "A-Programmübersicht", "Dokumentation", get_properties("LAENDER_VERSION")
+    If get_properties("Externer_Pfad") Then hide_buttons
+    
     Akt_Turnier = 0
     If get_properties("Externer_Pfad") Then
-        t_Pfad = get_Filename(Me.hwnd)
+        t_Pfad = get_Filename("Datenbanken", "*.mdb", "C:\")
         t_Pfad = left(t_Pfad, InStrRev(t_Pfad, "\"))
+        ext_Pfad = t_Pfad
     Else
         t_Pfad = getBaseDir()
     End If
@@ -244,6 +247,7 @@ Private Sub Turnierausw_AfterUpdate()
     End If
     lae = Nz(Forms![A-Programmübersicht]!Turnierausw.Column(8))
     setzte_buttons "A-Programmübersicht", "Dokumentation", IIf(lae = "", get_properties("LAENDER_VERSION"), lae)
+    If get_properties("Externer_Pfad") Then hide_buttons
 End Sub
 
 Sub setzte_logo(turnier)
@@ -254,6 +258,8 @@ Sub setzte_logo(turnier)
     Dim BilddateiID As Long
     Dim dbPfad As String
         
+    If get_properties("Externer_Pfad") = 1 Then Exit Sub
+    
     dbPfad = getBaseDir() & "\webserver\views\"
     If Len(Dir(dbPfad & turnier & ".jpg")) > 0 Then
         FileCopy dbPfad & turnier & ".jpg", dbPfad & "logo.jpg"
@@ -276,6 +282,15 @@ End Sub
 Private Sub Befehl93_Click()
     stDocName = "Startliste_Runden"
     DoCmd.OpenReport stDocName, acPreview
+End Sub
+
+Private Sub Turnierausw_DblClick(Cancel As Integer)
+    Dim objIE As Object
+    If Not IsNull(Turnierausw) Then
+        Set objIE = CreateObject("WScript.Shell")
+        objIE.Run """https://drbv.de/adm/adm_program/modules/dates/dates.php?mode=day&headline=Termine&date_from=" & Turnierausw.Column(2) & "&date_to=" & Turnierausw.Column(2) & "&cat_id=31"""  '"About:blank"
+    End If
+
 End Sub
 
 Private Sub Wertung_einlesen_Click()
@@ -306,4 +321,15 @@ Function Doc_btn(nr)
             DoCmd.OpenReport doc, acViewPreview
         End If
     End If
+End Function
+
+Function hide_buttons()
+    Dim btn As Variant
+    Dim i As Integer
+    btn = Array("Neues_Turnier", "Befehl12", "Befehl76", "Befehl13", "Befehl75", "btn_Dokumentation_41", "Befehl51", "Befehl27", _
+                "btn_Dokumentation_42", "Wertung_einlesen", "btn_Dokumentation_44", "Bezeichnungsfeld36", "IPAddr")
+    For i = 0 To UBound(btn)
+        Me(btn(i)).Visible = False
+
+    Next
 End Function
